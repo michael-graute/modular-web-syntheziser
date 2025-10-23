@@ -65,7 +65,7 @@ The synthesizer uses three types of signals, color-coded for easy identification
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd modular-web-synthersizer
+cd modular-web-synthesizer
 
 # Install dependencies
 npm install
