@@ -510,3 +510,131 @@ Gate signals from Keyboard components use a hybrid approach:
 - Phase 8: 27 tasks
 
 **Total: 209 tasks**
+
+## Phase 9: Step Sequencer Component
+
+### Core Sequencer Component
+- [ ] Create SequencerStep data structure (active, note, velocity, gateLength)
+- [ ] Create StepSequencer component class extending SynthComponent
+- [ ] Add STEP_SEQUENCER to ComponentType enum
+- [ ] Create CV/Gate output nodes (frequency, gate, velocity)
+- [ ] Add output ports (frequency CV, gate, velocity CV)
+- [ ] Add input port for arpeggiator mode (gate input)
+- [ ] Initialize 16-step array with default values
+- [ ] Register component in component registry and sidebar
+
+### Timing Engine
+- [ ] Implement MIDI to frequency conversion utility
+- [ ] Create clock interval calculation (BPM to seconds)
+- [ ] Implement note division to step interval conversion
+- [ ] Create gate length calculation logic
+- [ ] Implement lookahead scheduling system (100ms window)
+- [ ] Create scheduleNextSteps() method with lookahead
+- [ ] Implement scheduleStep() for individual step timing
+- [ ] Add step advancement logic (wrap at 16)
+- [ ] Test timing accuracy at various BPMs
+
+### Sequencer Parameters
+- [ ] Add BPM parameter (30-300, default 120)
+- [ ] Add note division parameter (whole to 1/32 note)
+- [ ] Add mode parameter (sequencer/arpeggiator)
+- [ ] Implement parameter update handlers
+- [ ] Add tempo change smoothing
+
+### Transport Controls
+- [ ] Implement start() method
+- [ ] Implement stop() method
+- [ ] Implement reset() method (jump to step 1)
+- [ ] Add isPlaying state tracking
+- [ ] Create scheduling interval management
+- [ ] Handle cleanup on component destruction
+
+### Sequencer Display UI
+- [ ] Create SequencerDisplay class
+- [ ] Implement 16-step grid rendering
+- [ ] Add current step indicator with animation
+- [ ] Implement step click/toggle functionality
+- [ ] Add visual distinction for active/inactive steps
+- [ ] Add velocity bar visualization per step
+- [ ] Add note pitch visualization (color or position)
+- [ ] Integrate SequencerDisplay with CanvasComponent
+
+### Step Editor UI
+- [ ] Create step editor panel UI
+- [ ] Add note selector (dropdown with note names C0-C8)
+- [ ] Add velocity slider (0-100%)
+- [ ] Add gate length dropdown (Tied, 1/1, 1/2, 1/4, 1/8, 1/16)
+- [ ] Implement step parameter update logic
+- [ ] Add visual feedback for selected step
+- [ ] Handle step editor show/hide on step selection
+
+### Component Layout & Visual Integration
+- [ ] Add SequencerDisplay to component layout config
+- [ ] Set component dimensions (300x250px)
+- [ ] Add display area configuration (280x180px)
+- [ ] Add transport control buttons to UI
+- [ ] Create play/stop button with state indicator
+- [ ] Create reset button
+- [ ] Add mode toggle switch UI
+- [ ] Add BPM and note division controls
+
+### CV/Gate Output Integration
+- [ ] Implement gate target registration (like KeyboardInput)
+- [ ] Create triggerGateTargets() method
+- [ ] Test CV output with oscillators
+- [ ] Test gate output with ADSR envelopes
+- [ ] Verify velocity CV modulation works
+- [ ] Test multiple simultaneous connections
+
+### Arpeggiator Mode
+- [ ] Add gate input port connection handling
+- [ ] Implement keyboard note detection
+- [ ] Create note distribution algorithm for arpeggiator
+- [ ] Implement auto-start on keyboard gate high
+- [ ] Implement auto-stop on keyboard gate low
+- [ ] Add arpeggiator pattern update logic
+- [ ] Test arpeggiator with KeyboardInput component
+
+### Pattern Management
+- [ ] Create SequencerPattern interface
+- [ ] Implement savePattern() method
+- [ ] Implement loadPattern() method
+- [ ] Add pattern data to component serialization
+- [ ] Test pattern persistence with patch save/load
+- [ ] Add pattern clear/reset functionality
+
+### Polish & Testing
+- [ ] Add tooltips for all controls
+- [ ] Test timing at BPM extremes (30 and 300)
+- [ ] Test all note division settings
+- [ ] Test with complex patches (multiple oscillators/envelopes)
+- [ ] Optimize display rendering performance
+- [ ] Add keyboard shortcuts (space = play/stop, R = reset)
+- [ ] Test arpeggiator mode thoroughly
+- [ ] Create example patches with sequencer
+
+### Optional Enhancements (Post-MVP)
+- [ ] Add swing/shuffle parameter
+- [ ] Add per-step probability (random triggering)
+- [ ] Add direction modes (forward, backward, ping-pong, random)
+- [ ] Add multiple pattern banks (A/B/C/D)
+- [ ] Add pattern chaining
+- [ ] Add step copy/paste functionality
+- [ ] Add pattern randomization button
+- [ ] Add step ratcheting/repeats
+- [ ] Add per-step micro-timing offset
+- [ ] Add MIDI file export
+
+## Updated Task Count Summary
+
+- Phase 1: 29 tasks
+- Phase 2: 27 tasks
+- Phase 3: 29 tasks
+- Phase 4: 26 tasks
+- Phase 5: 21 tasks
+- Phase 6: 23 tasks
+- Phase 7: 27 tasks
+- Phase 8: 27 tasks
+- Phase 9: 68 tasks (58 core + 10 optional)
+
+**Total: 277 tasks** (267 core + 10 optional)
