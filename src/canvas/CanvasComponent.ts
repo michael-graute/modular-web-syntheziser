@@ -408,6 +408,9 @@ export class CanvasComponent {
 
     // Recreate controls at new position
     this.createControls();
+
+    // Note: The viewport transform will be reapplied by Canvas.updateComponentViewportTransforms()
+    // which is called during drag operations and after snapping to grid
   }
 
   /**
@@ -576,6 +579,15 @@ export class CanvasComponent {
     if (this.oscilloscopeDisplay) {
       this.oscilloscopeDisplay.destroy();
       this.oscilloscopeDisplay = null;
+    }
+  }
+
+  /**
+   * Update viewport transform for embedded displays (like oscilloscope)
+   */
+  updateViewportTransform(zoom: number, panX: number, panY: number): void {
+    if (this.oscilloscopeDisplay) {
+      this.oscilloscopeDisplay.updateViewportTransform(zoom, panX, panY);
     }
   }
 

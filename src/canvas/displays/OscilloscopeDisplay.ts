@@ -13,6 +13,10 @@ export class OscilloscopeDisplay {
   private oscilloscope: Oscilloscope;
   private animationFrame: number | null;
   private isFrozen: boolean;
+  private baseWidth: number;
+  private baseHeight: number;
+  private baseX: number;
+  private baseY: number;
 
   constructor(
     x: number,
@@ -24,6 +28,10 @@ export class OscilloscopeDisplay {
     this.oscilloscope = oscilloscope;
     this.isFrozen = false;
     this.animationFrame = null;
+    this.baseX = x;
+    this.baseY = y;
+    this.baseWidth = width;
+    this.baseHeight = height;
 
     // Create canvas element
     this.canvas = document.createElement('canvas');
@@ -35,6 +43,7 @@ export class OscilloscopeDisplay {
     this.canvas.style.border = '1px solid #444';
     this.canvas.style.backgroundColor = '#1a1a1a';
     this.canvas.style.pointerEvents = 'none'; // Don't interfere with canvas interactions
+    this.canvas.style.transformOrigin = '0 0'; // Transform from top-left corner
 
     const context = this.canvas.getContext('2d');
     if (!context) {
@@ -197,8 +206,25 @@ export class OscilloscopeDisplay {
    * Update position when component moves
    */
   updatePosition(x: number, y: number): void {
+    this.baseX = x;
+    this.baseY = y;
     this.canvas.style.left = `${x}px`;
     this.canvas.style.top = `${y}px`;
+  }
+
+  /**
+   * Update viewport transform (zoom and pan)
+   */
+  updateViewportTransform(zoom: number, panX: number, panY: number): void {
+    // Apply CSS transform to match the main canvas viewport
+    const screenX = this.baseX * zoom + panX;
+    const screenY = this.baseY * zoom + panY;
+
+    this.canvas.style.left = `${screenX}px`;
+    this.canvas.style.top = `${screenY}px`;
+    this.canvas.style.transform = `scale(${zoom})`;
+    this.canvas.width = this.baseWidth;
+    this.canvas.height = this.baseHeight;
   }
 
   /**

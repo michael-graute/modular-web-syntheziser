@@ -304,6 +304,9 @@ export class Canvas {
 
       // Update state manager
       stateManager.setViewport(this.viewport.getState());
+
+      // Update viewport transform for all components
+      this.updateComponentViewportTransforms();
     } else if (
       this.interactionMode === InteractionMode.DRAGGING &&
       this.dragStartPos
@@ -335,6 +338,9 @@ export class Canvas {
       this.draggedComponents.forEach((componentId) => {
         this.connectionManager.updateConnectionPositions(componentId);
       });
+
+      // Update viewport transform for moved components (important for oscilloscope displays)
+      this.updateComponentViewportTransforms();
 
       // Emit event
       eventBus.emit(EventType.COMPONENT_MOVED, {
@@ -381,6 +387,9 @@ export class Canvas {
           }
         });
 
+        // Update viewport transform after snapping (important for oscilloscope displays)
+        this.updateComponentViewportTransforms();
+
         // Emit event after snapping
         eventBus.emit(EventType.COMPONENT_MOVED, {
           componentIds: this.draggedComponents,
@@ -418,6 +427,9 @@ export class Canvas {
 
     // Update state manager
     stateManager.setViewport(this.viewport.getState());
+
+    // Update viewport transform for all components
+    this.updateComponentViewportTransforms();
   }
 
   /**
@@ -456,11 +468,27 @@ export class Canvas {
   }
 
   /**
+   * Update viewport transform for all components with embedded displays
+   */
+  private updateComponentViewportTransforms(): void {
+    const zoom = this.viewport.getZoom();
+    const pan = this.viewport.getPan();
+    this.components.forEach((component) => {
+      component.updateViewportTransform(zoom, pan.x, pan.y);
+    });
+  }
+
+  /**
    * Add a component to the canvas
    */
   addComponent(component: CanvasComponent): void {
     this.components.push(component);
     this.connectionManager.registerComponent(component);
+
+    // Update viewport transform for the new component
+    const zoom = this.viewport.getZoom();
+    const pan = this.viewport.getPan();
+    component.updateViewportTransform(zoom, pan.x, pan.y);
   }
 
   /**
