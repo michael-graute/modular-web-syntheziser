@@ -59,6 +59,12 @@ function getControlLayout(type: ComponentType): ControlLayout {
         displayHeight: 150,
       };
 
+    case ComponentType.MIXER:
+      return {
+        numSliders: 5, // 4 channels + master
+        sliderHeight: 80,
+      };
+
     case ComponentType.KEYBOARD_INPUT:
     case ComponentType.LFO:
     case ComponentType.NOISE:
@@ -66,7 +72,6 @@ function getControlLayout(type: ComponentType): ControlLayout {
     case ComponentType.DELAY:
     case ComponentType.REVERB:
     case ComponentType.DISTORTION:
-    case ComponentType.MIXER:
     default:
       return {}; // No controls or minimal controls
   }
@@ -194,6 +199,11 @@ export function calculateComponentWidth(type: ComponentType): number {
   // ADSR needs more width for 4 sliders side by side
   if (controlLayout.numSliders && controlLayout.numSliders >= 4) {
     width = 160;
+  }
+
+  // Mixer needs more width for 5 sliders side by side
+  if (controlLayout.numSliders && controlLayout.numSliders >= 5) {
+    width = 200;
   }
 
   // Oscilloscope needs more width for display area

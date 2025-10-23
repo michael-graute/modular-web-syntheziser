@@ -135,7 +135,7 @@ export abstract class SynthComponent {
   /**
    * Get the main audio input node (for connections)
    */
-  abstract getInputNode(): AudioNode | null;
+  abstract getInputNode(portId?: string): AudioNode | null;
 
   /**
    * Get the main audio output node (for connections)
@@ -197,7 +197,7 @@ export abstract class SynthComponent {
         }
       } else {
         // Regular audio connection (AudioNode -> AudioNode)
-        const inputNode = target.getInputNode();
+        const inputNode = target.getInputNode(inputId);
 
         if (!inputNode) {
           console.warn(`Cannot connect: no input node for ${target.name}`);

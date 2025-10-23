@@ -289,6 +289,89 @@ export class CanvasComponent {
       }
     }
 
+    // Mixer-specific controls
+    if (this.type === ComponentType.MIXER) {
+      const gain1Param = this.synthComponent.getParameter('gain1');
+      const gain2Param = this.synthComponent.getParameter('gain2');
+      const gain3Param = this.synthComponent.getParameter('gain3');
+      const gain4Param = this.synthComponent.getParameter('gain4');
+      const masterParam = this.synthComponent.getParameter('master');
+
+      // Calculate Y position below port labels
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      // Create 5 vertical sliders for Mixer (4 channels + master)
+      const sliderStartY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 10;
+      const sliderHeight = 80;
+      const sliderWidth = 20;
+      const numSliders = 5;
+      const totalSpacing = this.width - 20;
+      const spacing = (totalSpacing - (numSliders * sliderWidth)) / (numSliders + 1);
+
+      if (gain1Param) {
+        const slider = new Slider(
+          this.position.x + 10 + spacing,
+          sliderStartY,
+          sliderWidth,
+          sliderHeight,
+          gain1Param,
+          'vertical'
+        );
+        this.controls.push(slider);
+      }
+
+      if (gain2Param) {
+        const slider = new Slider(
+          this.position.x + 10 + spacing * 2 + sliderWidth,
+          sliderStartY,
+          sliderWidth,
+          sliderHeight,
+          gain2Param,
+          'vertical'
+        );
+        this.controls.push(slider);
+      }
+
+      if (gain3Param) {
+        const slider = new Slider(
+          this.position.x + 10 + spacing * 3 + sliderWidth * 2,
+          sliderStartY,
+          sliderWidth,
+          sliderHeight,
+          gain3Param,
+          'vertical'
+        );
+        this.controls.push(slider);
+      }
+
+      if (gain4Param) {
+        const slider = new Slider(
+          this.position.x + 10 + spacing * 4 + sliderWidth * 3,
+          sliderStartY,
+          sliderWidth,
+          sliderHeight,
+          gain4Param,
+          'vertical'
+        );
+        this.controls.push(slider);
+      }
+
+      if (masterParam) {
+        const slider = new Slider(
+          this.position.x + 10 + spacing * 5 + sliderWidth * 4,
+          sliderStartY,
+          sliderWidth,
+          sliderHeight,
+          masterParam,
+          'vertical'
+        );
+        this.controls.push(slider);
+      }
+    }
+
     // Oscilloscope-specific controls
     if (this.type === ComponentType.OSCILLOSCOPE) {
       const displayModeParam = this.synthComponent.getParameter('displayMode');

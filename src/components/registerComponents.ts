@@ -10,6 +10,7 @@ import { Filter } from './processors/Filter';
 import { ADSREnvelope } from './processors/ADSREnvelope';
 import { KeyboardInput } from './utilities/KeyboardInput';
 import { MasterOutput } from './utilities/MasterOutput';
+import { Mixer } from './utilities/Mixer';
 import { Oscilloscope } from './analyzers/Oscilloscope';
 import { calculateComponentDimensions } from '../utils/componentLayout';
 
@@ -72,6 +73,15 @@ export function registerAllComponents(): void {
     'Utilities',
     (id, position) => new MasterOutput(id, position),
     calculateComponentDimensions(ComponentType.MASTER_OUTPUT)
+  );
+
+  componentRegistry.register(
+    ComponentType.MIXER,
+    'Mixer',
+    'Mix multiple audio sources',
+    'Utilities',
+    (id, position) => new Mixer(id, position),
+    calculateComponentDimensions(ComponentType.MIXER)
   );
 
   // Analyzers
