@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Browser-based modular synthesizer application" />
+    <title>Modular Synth</title>
+    <link rel="stylesheet" href="/src/styles/main.css" />
+    <link rel="stylesheet" href="/src/styles/components.css" />
+    <link rel="stylesheet" href="/src/styles/canvas.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <h1 class="text-lg font-semibold">Modular Synth</h1>
+        <input
+          type="text"
+          id="patch-name"
+          class="patch-name-input"
+          value="Untitled Patch"
+          placeholder="Patch name..."
+        />
+        <div class="top-bar-actions" style="margin-left: auto; display: flex; gap: 8px;">
+          <button id="btn-new">New</button>
+          <button id="btn-save">Save</button>
+          <button id="btn-load">Load</button>
+          <button id="btn-export">Export</button>
+          <button id="btn-import">Import</button>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Sidebar - Component Library -->
+        <div class="sidebar">
+          <div style="padding: 16px;">
+            <h2 class="text-base font-semibold" style="margin-bottom: 16px;">Components</h2>
+
+            <!-- Component Categories -->
+            <div class="component-category">
+              <h3 class="text-sm font-medium text-secondary" style="margin-bottom: 8px;">
+                Generators
+              </h3>
+              <div class="component-list" id="generators-list">
+                <!-- Components will be added here dynamically -->
+              </div>
+            </div>
+
+            <div class="component-category" style="margin-top: 16px;">
+              <h3 class="text-sm font-medium text-secondary" style="margin-bottom: 8px;">
+                Processors
+              </h3>
+              <div class="component-list" id="processors-list">
+                <!-- Components will be added here dynamically -->
+              </div>
+            </div>
+
+            <div class="component-category" style="margin-top: 16px;">
+              <h3 class="text-sm font-medium text-secondary" style="margin-bottom: 8px;">
+                Effects
+              </h3>
+              <div class="component-list" id="effects-list">
+                <!-- Components will be added here dynamically -->
+              </div>
+            </div>
+
+            <div class="component-category" style="margin-top: 16px;">
+              <h3 class="text-sm font-medium text-secondary" style="margin-bottom: 8px;">
+                Utilities
+              </h3>
+              <div class="component-list" id="utilities-list">
+                <!-- Components will be added here dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canvas Area -->
+        <div class="canvas-container">
+          <canvas id="synth-canvas"></canvas>
+          <div class="canvas-info" id="canvas-info">
+            Zoom: 100% | Pan: 0, 0
+          </div>
+        </div>
+      </div>
+
+      <!-- Keyboard Section -->
+      <div class="keyboard-section">
+        <div id="keyboard-container">
+          <canvas id="keyboard-canvas"></canvas>
+        </div>
+        <div style="margin-top: 12px; display: flex; gap: 8px; align-items: center;">
+          <button id="btn-octave-down">Octave -</button>
+          <span id="octave-display" class="text-sm">Octave: C3</span>
+          <button id="btn-octave-up">Octave +</button>
+          <button id="btn-panic" style="margin-left: 16px; background-color: var(--color-error);">
+            Panic (Stop All)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
