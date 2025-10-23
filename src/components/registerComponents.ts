@@ -11,6 +11,8 @@ import { ADSREnvelope } from './processors/ADSREnvelope';
 import { KeyboardInput } from './utilities/KeyboardInput';
 import { MasterOutput } from './utilities/MasterOutput';
 import { Mixer } from './utilities/Mixer';
+import { Delay } from './effects/Delay';
+import { Reverb } from './effects/Reverb';
 import { Oscilloscope } from './analyzers/Oscilloscope';
 import { calculateComponentDimensions } from '../utils/componentLayout';
 
@@ -82,6 +84,25 @@ export function registerAllComponents(): void {
     'Utilities',
     (id, position) => new Mixer(id, position),
     calculateComponentDimensions(ComponentType.MIXER)
+  );
+
+  // Effects
+  componentRegistry.register(
+    ComponentType.DELAY,
+    'Delay',
+    'Echo/delay effect with feedback',
+    'Effects',
+    (id, position) => new Delay(id, position),
+    calculateComponentDimensions(ComponentType.DELAY)
+  );
+
+  componentRegistry.register(
+    ComponentType.REVERB,
+    'Reverb',
+    'Algorithmic reverb effect',
+    'Effects',
+    (id, position) => new Reverb(id, position),
+    calculateComponentDimensions(ComponentType.REVERB)
   );
 
   // Analyzers

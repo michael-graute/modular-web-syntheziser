@@ -341,22 +341,22 @@ Gate signals from Keyboard components use a hybrid approach:
 ## Phase 6: Effects
 
 ### Delay Effect
-- [ ] Implement Delay component with DelayNode
-- [ ] Add delay time parameter (0ms - 2s)
-- [ ] Add feedback parameter (0 - 95%)
-- [ ] Add mix parameter (dry/wet 0 - 100%)
-- [ ] Manage feedback loop safely
-- [ ] Create UI controls
-- [ ] Create visual component
+- [x] Implement Delay component with DelayNode
+- [x] Add delay time parameter (0ms - 2s)
+- [x] Add feedback parameter (0 - 95%)
+- [x] Add mix parameter (dry/wet 0 - 100%)
+- [x] Manage feedback loop safely
+- [x] Create UI controls
+- [x] Create visual component
 
 ### Reverb Effect
-- [ ] Implement Reverb component with ConvolverNode
-- [ ] Create or load impulse response files
-- [ ] Add room size parameter (or IR selection)
-- [ ] Add damping parameter (optional)
-- [ ] Add mix parameter (dry/wet 0 - 100%)
-- [ ] Create UI controls
-- [ ] Create visual component
+- [x] Implement Reverb component with ConvolverNode
+- [x] Create or load impulse response files
+- [x] Add room size parameter (or IR selection)
+- [x] Add damping parameter (optional)
+- [x] Add mix parameter (dry/wet 0 - 100%)
+- [x] Create UI controls
+- [x] Create visual component
 
 ### Distortion Effect
 - [ ] Implement Distortion component with WaveShaperNode

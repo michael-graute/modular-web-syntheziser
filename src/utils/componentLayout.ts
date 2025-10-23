@@ -65,12 +65,20 @@ function getControlLayout(type: ComponentType): ControlLayout {
         sliderHeight: 80,
       };
 
+    case ComponentType.REVERB:
+      return {
+        numKnobs: 3, // roomSize, decay, mix
+      };
+
+    case ComponentType.DELAY:
+      return {
+        numKnobs: 3, // time, feedback, mix
+      };
+
     case ComponentType.KEYBOARD_INPUT:
     case ComponentType.LFO:
     case ComponentType.NOISE:
     case ComponentType.FILTER_ENVELOPE:
-    case ComponentType.DELAY:
-    case ComponentType.REVERB:
     case ComponentType.DISTORTION:
     default:
       return {}; // No controls or minimal controls
@@ -194,6 +202,11 @@ export function calculateComponentWidth(type: ComponentType): number {
   // Oscillator and Filter need more width for 2 knobs side by side
   if (controlLayout.numKnobs && controlLayout.numKnobs >= 2) {
     width = 150;
+  }
+
+  // Reverb needs more width for 3 knobs side by side
+  if (controlLayout.numKnobs && controlLayout.numKnobs >= 3) {
+    width = 180;
   }
 
   // ADSR needs more width for 4 sliders side by side

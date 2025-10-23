@@ -372,6 +372,106 @@ export class CanvasComponent {
       }
     }
 
+    // Delay-specific controls
+    if (this.type === ComponentType.DELAY) {
+      const timeParam = this.synthComponent.getParameter('time');
+      const feedbackParam = this.synthComponent.getParameter('feedback');
+      const mixParam = this.synthComponent.getParameter('mix');
+
+      // Calculate Y position below port labels
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      // Knobs for delay parameters
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 10;
+      const knobSize = 40;
+      const numKnobs = 3;
+      const totalSpacing = this.width - 20;
+      const spacing = (totalSpacing - (numKnobs * knobSize)) / (numKnobs + 1);
+
+      if (timeParam) {
+        const knob = new Knob(
+          this.position.x + 10 + spacing,
+          knobY,
+          knobSize,
+          timeParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (feedbackParam) {
+        const knob = new Knob(
+          this.position.x + 10 + spacing * 2 + knobSize,
+          knobY,
+          knobSize,
+          feedbackParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (mixParam) {
+        const knob = new Knob(
+          this.position.x + 10 + spacing * 3 + knobSize * 2,
+          knobY,
+          knobSize,
+          mixParam
+        );
+        this.controls.push(knob);
+      }
+    }
+
+    // Reverb-specific controls
+    if (this.type === ComponentType.REVERB) {
+      const roomSizeParam = this.synthComponent.getParameter('roomSize');
+      const decayParam = this.synthComponent.getParameter('decay');
+      const mixParam = this.synthComponent.getParameter('mix');
+
+      // Calculate Y position below port labels
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      // Knobs for reverb parameters
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 10;
+      const knobSize = 40;
+      const numKnobs = 3;
+      const totalSpacing = this.width - 20;
+      const spacing = (totalSpacing - (numKnobs * knobSize)) / (numKnobs + 1);
+
+      if (roomSizeParam) {
+        const knob = new Knob(
+          this.position.x + 10 + spacing,
+          knobY,
+          knobSize,
+          roomSizeParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (decayParam) {
+        const knob = new Knob(
+          this.position.x + 10 + spacing * 2 + knobSize,
+          knobY,
+          knobSize,
+          decayParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (mixParam) {
+        const knob = new Knob(
+          this.position.x + 10 + spacing * 3 + knobSize * 2,
+          knobY,
+          knobSize,
+          mixParam
+        );
+        this.controls.push(knob);
+      }
+    }
+
     // Oscilloscope-specific controls
     if (this.type === ComponentType.OSCILLOSCOPE) {
       const displayModeParam = this.synthComponent.getParameter('displayMode');
