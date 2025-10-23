@@ -65,7 +65,7 @@ The synthesizer uses three types of signals, color-coded for easy identification
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd ai-testing
+cd modular-web-synthersizer
 
 # Install dependencies
 npm install
