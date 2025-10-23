@@ -467,6 +467,12 @@ export class Canvas {
    * Remove a component from the canvas
    */
   removeComponent(id: string): void {
+    // Find component and cleanup before removing
+    const component = this.components.find((c) => c.id === id);
+    if (component) {
+      component.cleanup();
+    }
+
     this.components = this.components.filter((c) => c.id !== id);
     this.selectionManager.deselect(id);
     this.connectionManager.unregisterComponent(id);

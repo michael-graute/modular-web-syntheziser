@@ -30,6 +30,7 @@ export enum ComponentType {
   MIXER = 'mixer',
   KEYBOARD_INPUT = 'keyboard-input',
   MASTER_OUTPUT = 'master-output',
+  OSCILLOSCOPE = 'oscilloscope',
 }
 
 /**

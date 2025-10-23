@@ -10,6 +10,7 @@ import { Filter } from './processors/Filter';
 import { ADSREnvelope } from './processors/ADSREnvelope';
 import { KeyboardInput } from './utilities/KeyboardInput';
 import { MasterOutput } from './utilities/MasterOutput';
+import { Oscilloscope } from './analyzers/Oscilloscope';
 import { calculateComponentDimensions } from '../utils/componentLayout';
 
 /**
@@ -71,6 +72,16 @@ export function registerAllComponents(): void {
     'Utilities',
     (id, position) => new MasterOutput(id, position),
     calculateComponentDimensions(ComponentType.MASTER_OUTPUT)
+  );
+
+  // Analyzers
+  componentRegistry.register(
+    ComponentType.OSCILLOSCOPE,
+    'Oscilloscope',
+    'Real-time waveform and spectrum analyzer',
+    'Analyzers',
+    (id, position) => new Oscilloscope(id, position),
+    calculateComponentDimensions(ComponentType.OSCILLOSCOPE)
   );
 
   console.log(`✅ Registered ${componentRegistry.getCount()} components`);

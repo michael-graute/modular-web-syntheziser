@@ -23,12 +23,14 @@ export class Sidebar {
   private processorsList: HTMLElement | null;
   private effectsList: HTMLElement | null;
   private utilitiesList: HTMLElement | null;
+  private analyzersList: HTMLElement | null;
 
   constructor() {
     this.generatorsList = document.getElementById('generators-list');
     this.processorsList = document.getElementById('processors-list');
     this.effectsList = document.getElementById('effects-list');
     this.utilitiesList = document.getElementById('utilities-list');
+    this.analyzersList = document.getElementById('analyzers-list');
   }
 
   /**
@@ -58,6 +60,9 @@ export class Sidebar {
           break;
         case 'Utilities':
           this.utilitiesList?.appendChild(item);
+          break;
+        case 'Analyzers':
+          this.analyzersList?.appendChild(item);
           break;
       }
     });
@@ -123,6 +128,7 @@ export class Sidebar {
       [ComponentType.MIXER]: '▤',
       [ComponentType.KEYBOARD_INPUT]: '⌨',
       [ComponentType.MASTER_OUTPUT]: '♫',
+      [ComponentType.OSCILLOSCOPE]: '◰',
     };
     return icons[type] || '□';
   }

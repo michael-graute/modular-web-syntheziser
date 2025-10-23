@@ -14,6 +14,8 @@ interface ControlLayout {
   numKnobs?: number;
   numSliders?: number;
   sliderHeight?: number;
+  hasDisplayArea?: boolean;
+  displayHeight?: number;
 }
 
 /**
@@ -35,7 +37,7 @@ function getControlLayout(type: ComponentType): ControlLayout {
 
     case ComponentType.VCA:
       return {
-        numKnobs: 1, // gain
+        numKnobs: 0, // gain
       };
 
     case ComponentType.ADSR_ENVELOPE:
@@ -44,8 +46,20 @@ function getControlLayout(type: ComponentType): ControlLayout {
         sliderHeight: 80,
       };
 
-    case ComponentType.KEYBOARD_INPUT:
     case ComponentType.MASTER_OUTPUT:
+      return {
+        numKnobs: 2, // volume, limiter
+      };
+
+    case ComponentType.OSCILLOSCOPE:
+      return {
+        hasDropdown: true,
+        numKnobs: 2, // timeScale, gain
+        hasDisplayArea: true,
+        displayHeight: 150,
+      };
+
+    case ComponentType.KEYBOARD_INPUT:
     case ComponentType.LFO:
     case ComponentType.NOISE:
     case ComponentType.FILTER_ENVELOPE:
@@ -145,8 +159,14 @@ export function calculateComponentHeight(type: ComponentType): number {
     height += 12; // value text below (includes padding)
   }
 
+  if (controlLayout.hasDisplayArea) {
+    height += 10; // spacing above display
+    height += (controlLayout.displayHeight || 150); // display area height
+    height += 10; // spacing below display
+  }
+
   // If no controls, ensure minimum height for visual balance
-  if (!controlLayout.hasDropdown && !controlLayout.numKnobs && !controlLayout.numSliders) {
+  if (!controlLayout.hasDropdown && !controlLayout.numKnobs && !controlLayout.numSliders && !controlLayout.hasDisplayArea) {
     // Ensure component is at least a reasonable size even without controls
     const minHeightWithoutControls: number = COMPONENT.HEADER_HEIGHT + portAreaHeight + 20;
     if (height < 100) {
@@ -174,6 +194,11 @@ export function calculateComponentWidth(type: ComponentType): number {
   // ADSR needs more width for 4 sliders side by side
   if (controlLayout.numSliders && controlLayout.numSliders >= 4) {
     width = 160;
+  }
+
+  // Oscilloscope needs more width for display area
+  if (controlLayout.hasDisplayArea) {
+    width = 220;
   }
 
   return width;

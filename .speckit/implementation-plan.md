@@ -311,6 +311,18 @@ Render     Sound Output
 
 **Deliverable**: Full subtractive synth (Osc → Filter → VCA → Out) with envelope
 
+6. **Oscilloscope Component (Analysis)**
+   - Implement Oscilloscope with AnalyserNode
+   - Pass-through audio routing (input → analyser → output)
+   - Real-time waveform visualization (time-domain)
+   - Real-time spectrum visualization (frequency-domain FFT)
+   - Display modes: Waveform, Spectrum, Both
+   - Parameters: timeScale, fftSize, displayMode, gain
+   - Embedded canvas display for visualization
+   - Animation loop with requestAnimationFrame (60fps)
+
+**Enhanced Deliverable**: Full subtractive synth with real-time audio analysis capability
+
 ### Phase 4: Patch Management (Week 4)
 **Goal**: Save and load synthesizer patches
 

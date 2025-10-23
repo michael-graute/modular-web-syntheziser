@@ -8,6 +8,8 @@ import type { SynthComponent } from '../components/base/SynthComponent';
 import { Knob } from './controls/Knob';
 import { Dropdown, DropdownOption } from './controls/Dropdown';
 import { Slider } from './controls/Slider';
+import { OscilloscopeDisplay } from './displays/OscilloscopeDisplay';
+import type { Oscilloscope } from '../components/analyzers/Oscilloscope';
 
 type Control = Knob | Dropdown | Slider;
 
@@ -23,6 +25,7 @@ export class CanvasComponent {
   isSelected: boolean;
   synthComponent: SynthComponent | null;
   private controls: Control[] = [];
+  private oscilloscopeDisplay: OscilloscopeDisplay | null = null;
 
   constructor(
     id: string,
@@ -248,6 +251,119 @@ export class CanvasComponent {
         this.controls.push(slider);
       }
     }
+
+    // Master Output-specific controls
+    if (this.type === ComponentType.MASTER_OUTPUT) {
+      const volumeParam = this.synthComponent.getParameter('volume');
+      const limiterParam = this.synthComponent.getParameter('limiter');
+
+      // Calculate Y position below port labels
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      // Knobs for volume and limiter
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 10;
+      const knobSize = 40;
+      const spacing = (this.width - 20 - knobSize * 2) / 3;
+
+      if (volumeParam) {
+        const knob = new Knob(
+          this.position.x + 10 + spacing,
+          knobY,
+          knobSize,
+          volumeParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (limiterParam) {
+        const knob = new Knob(
+          this.position.x + 10 + spacing * 2 + knobSize,
+          knobY,
+          knobSize,
+          limiterParam
+        );
+        this.controls.push(knob);
+      }
+    }
+
+    // Oscilloscope-specific controls
+    if (this.type === ComponentType.OSCILLOSCOPE) {
+      const displayModeParam = this.synthComponent.getParameter('displayMode');
+      const timeScaleParam = this.synthComponent.getParameter('timeScale');
+      const gainParam = this.synthComponent.getParameter('gain');
+
+      // Calculate Y position below port labels
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      // Dropdown for display mode
+      if (displayModeParam) {
+        const options: DropdownOption[] = [
+          { value: 0, label: 'Waveform' },
+          { value: 1, label: 'Spectrum' },
+          { value: 2, label: 'Both' },
+        ];
+        const dropdown = new Dropdown(
+          this.position.x + 10,
+          this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 5,
+          this.width - 20,
+          24,
+          displayModeParam,
+          options,
+          'Display'
+        );
+        this.controls.push(dropdown);
+      }
+
+      // Knobs for time scale and gain - positioned below dropdown
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 5 + 24 + 10;
+      const knobSize = 40;
+      const spacing = (this.width - 20 - knobSize * 2) / 3;
+
+      if (timeScaleParam) {
+        const knob = new Knob(
+          this.position.x + 10 + spacing,
+          knobY,
+          knobSize,
+          timeScaleParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (gainParam) {
+        const knob = new Knob(
+          this.position.x + 10 + spacing * 2 + knobSize,
+          knobY,
+          knobSize,
+          gainParam
+        );
+        this.controls.push(knob);
+      }
+
+      // Create embedded oscilloscope display
+      const displayY = knobY + 40 + 12 + 10;
+      const displayWidth = this.width - 20;
+      const displayHeight = 150;
+
+      this.oscilloscopeDisplay = new OscilloscopeDisplay(
+        this.position.x + 10,
+        displayY,
+        displayWidth,
+        displayHeight,
+        this.synthComponent as Oscilloscope
+      );
+
+      // Add canvas to DOM (will be positioned absolutely)
+      const canvasElement = document.getElementById('synth-canvas');
+      if (canvasElement && canvasElement.parentElement) {
+        canvasElement.parentElement.appendChild(this.oscilloscopeDisplay.getCanvas());
+      }
+    }
   }
 
   /**
@@ -284,6 +400,12 @@ export class CanvasComponent {
    * Update control positions after component moves
    */
   private updateControlPositions(): void {
+    // Clean up oscilloscope display before recreating controls
+    if (this.oscilloscopeDisplay) {
+      this.oscilloscopeDisplay.destroy();
+      this.oscilloscopeDisplay = null;
+    }
+
     // Recreate controls at new position
     this.createControls();
   }
@@ -448,6 +570,16 @@ export class CanvasComponent {
   }
 
   /**
+   * Cleanup when component is removed
+   */
+  cleanup(): void {
+    if (this.oscilloscopeDisplay) {
+      this.oscilloscopeDisplay.destroy();
+      this.oscilloscopeDisplay = null;
+    }
+  }
+
+  /**
    * Render parameter values
    */
   private renderParameters(ctx: CanvasRenderingContext2D): void {
@@ -554,6 +686,7 @@ export class CanvasComponent {
       [ComponentType.MIXER]: 'Mixer',
       [ComponentType.KEYBOARD_INPUT]: 'Keyboard',
       [ComponentType.MASTER_OUTPUT]: 'Master Out',
+      [ComponentType.OSCILLOSCOPE]: 'Scope',
     };
     return names[this.type] || 'Component';
   }

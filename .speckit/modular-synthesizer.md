@@ -150,6 +150,34 @@ A browser-based modular synthesizer application that allows users to create cust
   - System audio output
 - **Special**: Only one master output allowed per patch
 
+#### Oscilloscope (Analyzer)
+- **Purpose**: Real-time waveform and frequency spectrum visualization for audio signal analysis
+- **Parameters**:
+  - Time Scale (10ms - 1000ms) - Time window for waveform display
+  - FFT Size (512, 1024, 2048, 4096, 8192) - Resolution for spectrum analysis
+  - Display Mode (Waveform, Spectrum, Both) - Visualization mode selector
+  - Gain (0.1 - 10.0) - Visual amplitude scaling
+- **Inputs**:
+  - Audio In (pass-through)
+- **Outputs**:
+  - Audio Out (unchanged signal)
+- **Display**:
+  - Embedded canvas display (200px × 150px)
+  - 60fps real-time rendering
+  - Waveform mode: Time-domain oscilloscope view with grid
+  - Spectrum mode: Frequency-domain FFT spectrum as bar graph
+  - Both mode: Split view showing waveform and spectrum
+- **Features**:
+  - Non-destructive audio pass-through
+  - Grid lines and axis markers
+  - Color-coded visualization (green waveform, blue spectrum)
+  - Freeze display option
+- **Technical**:
+  - Uses Web Audio API AnalyserNode
+  - Animation loop with requestAnimationFrame
+  - Configurable FFT size for frequency resolution
+  - Visual gain for amplitude scaling
+
 ### 3. Connection System
 **Purpose**: Route audio and control signals between components
 
@@ -394,9 +422,8 @@ Row 2 (black keys): W E   T Y U   O P
 - Audio file import (samples)
 - Sequencer/arpeggiator
 - Preset browser with categories
-- Waveform visualizers
-- Oscilloscope component
-- Spectrum analyzer
+- Additional analyzer components (XY mode, waterfall display)
+- Peak hold and measurement features for oscilloscope
 - Additional filter types (comb, formant)
 - Granular synthesis
 - Recording/export to WAV

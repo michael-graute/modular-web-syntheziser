@@ -170,6 +170,86 @@ Gate signals from Keyboard components use a hybrid approach:
 ### Enhanced Canvas
 - [x] Implement component deletion (Delete key)
 
+### Check Oscillator-Keyboard Connection
+- [x] The oscillator frequency should be connected to the keyboard frequency CV
+- [x] The frequency of teh oscillator should be the same as the frequency of the keyboard
+
+### Oscilloscope Component
+
+#### Core Component Implementation
+- [x] Add OSCILLOSCOPE to ComponentType enum in types.ts
+- [x] Create src/components/analyzers/ directory
+- [x] Create Oscilloscope.ts component class extending SynthComponent
+- [x] Add audio input port (Audio In, AUDIO type)
+- [x] Add audio output port (Audio Out, AUDIO type)
+- [x] Add timeScale parameter (10ms - 1000ms, default 50ms)
+- [x] Add fftSize parameter (512 - 8192, default 2048)
+- [x] Add displayMode parameter (0=Waveform, 1=Spectrum, 2=Both, default 0)
+- [x] Add gain parameter (0.1 - 10.0, default 1.0)
+- [x] Implement createAudioNodes() with AnalyserNode
+- [x] Implement pass-through routing: inputGain → analyser → output
+- [x] Configure FFT size and smoothing on analyser
+- [x] Allocate Float32Array for waveform data
+- [x] Allocate Uint8Array for spectrum data
+- [x] Implement getWaveformData() method
+- [x] Implement getSpectrumData() method
+- [x] Implement updateAudioParameter() for dynamic changes
+- [x] Implement destroyAudioNodes() with proper cleanup
+
+#### Visual Display Implementation
+- [x] Create src/canvas/displays/ directory
+- [x] Create OscilloscopeDisplay.ts display renderer class
+- [x] Create embedded canvas element (200px × 150px)
+- [x] Implement startAnimation() with requestAnimationFrame loop
+- [x] Implement render() method with mode switching
+- [x] Implement renderWaveform() for time-domain display
+- [x] Draw waveform as green line graph
+- [x] Implement renderSpectrum() for frequency-domain display
+- [x] Draw spectrum as blue bar graph
+- [x] Implement both mode with split view (waveform top, spectrum bottom)
+- [x] Add grid lines to display
+- [ ] Add axis markers and labels
+- [ ] Implement freeze display functionality
+- [x] Implement destroy() method to cancel animation frame
+- [x] Apply gain parameter to visual amplitude
+
+#### Canvas Component Integration
+- [x] Update componentLayout.ts with Oscilloscope layout
+- [x] Add OSCILLOSCOPE case to getControlLayout() (1 dropdown, 2 knobs, display area)
+- [x] Calculate component dimensions (220px width, ~280px height)
+- [x] Update CanvasComponent.ts createControls() method
+- [x] Add OSCILLOSCOPE case for control creation
+- [x] Create dropdown for Display Mode (Waveform/Spectrum/Both)
+- [x] Create knob for Time Scale parameter
+- [x] Create knob for Gain parameter
+- [x] Instantiate OscilloscopeDisplay renderer
+- [x] Position display canvas below controls
+- [x] Update control positions on component move
+- [x] Clean up display renderer on component destruction
+
+#### Component Registration
+- [x] Import Oscilloscope class in registerComponents.ts
+- [x] Register Oscilloscope with ComponentRegistry
+- [x] Set category as 'Analyzers'
+- [x] Set description as 'Real-time waveform and spectrum analyzer'
+- [x] Update Sidebar.ts to include 'Analyzers' category
+- [x] Add Oscilloscope to sidebar component list
+- [x] Verify drag-and-drop functionality
+
+#### Testing & Validation
+- [x] Build project and test basic functionality
+- [x] Test oscilloscope in patch: Oscillator → Oscilloscope → VCA → Master Out
+- [x] Verify audio passes through unmodified (no latency or coloration)
+- [x] Test waveform display mode shows correct waveform shape
+- [x] Test spectrum display mode shows frequency peaks
+- [x] Test both display mode shows split view correctly
+- [x] Test Time Scale parameter changes update display
+- [x] Test Gain parameter scales visual amplitude
+- [x] Test Display Mode dropdown switches between modes
+- [x] Verify 60fps rendering performance
+- [x] Test with multiple oscilloscopes in patch
+- [x] Verify proper cleanup on component deletion (no memory leaks)
+
 ## Phase 4: Patch Management
 
 ### Serialization
