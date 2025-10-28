@@ -253,56 +253,56 @@ Gate signals from Keyboard components use a hybrid approach:
 ## Phase 4: Patch Management
 
 ### Serialization
-- [ ] Implement PatchSerializer class
-- [ ] Serialize component data to JSON (id, type, position, parameters)
-- [ ] Serialize connection data to JSON (source, destination)
-- [ ] Serialize metadata (name, version, created, modified)
-- [ ] Add serialization methods to all component types
+- [x] Implement PatchSerializer class
+- [x] Serialize component data to JSON (id, type, position, parameters)
+- [x] Serialize connection data to JSON (source, destination)
+- [x] Serialize metadata (name, version, created, modified)
+- [x] Add serialization methods to all component types
 
 ### Storage
-- [ ] Implement PatchStorage class with localStorage
-- [ ] Implement save patch with custom name
-- [ ] Implement load patch by name
-- [ ] Implement list all saved patches
-- [ ] Implement delete patch
-- [ ] Add storage quota management
-- [ ] Add error handling for quota exceeded
+- [x] Implement PatchStorage class with localStorage
+- [x] Implement save patch with custom name
+- [x] Implement load patch by name
+- [x] Implement list all saved patches
+- [x] Implement delete patch
+- [x] Add storage quota management
+- [x] Add error handling for quota exceeded
 
 ### Deserialization
-- [ ] Parse JSON patch data
-- [ ] Recreate components from serialized data
-- [ ] Recreate audio nodes for each component
-- [ ] Recreate visual components on canvas
-- [ ] Recreate connections between components
-- [ ] Restore all parameter values
+- [x] Parse JSON patch data
+- [x] Recreate components from serialized data
+- [x] Recreate audio nodes for each component
+- [x] Recreate visual components on canvas
+- [x] Recreate connections between components
+- [x] Restore all parameter values
 
 ### UI Integration
-- [ ] Implement Modal base class
-- [ ] Implement save modal UI (input for patch name)
-- [ ] Implement load modal UI (list of patches)
-- [ ] Implement patch browser with patch list
-- [ ] Show current patch name in top bar
-- [ ] Add export patch to JSON file
-- [ ] Add import patch from JSON file
-- [ ] Add file input for import
+- [x] Implement Modal base class
+- [x] Implement save modal UI (input for patch name)
+- [x] Implement load modal UI (list of patches)
+- [x] Implement patch browser with patch list
+- [x] Show current patch name in top bar
+- [x] Add export patch to JSON file
+- [x] Add import patch from JSON file
+- [x] Add file input for import
 
 ### State Management
-- [ ] Track unsaved changes flag
-- [ ] Warn user before losing unsaved changes
-- [ ] Implement "New Patch" action (clear canvas)
-- [ ] Implement "Save" action (overwrite existing)
-- [ ] Implement "Save As" action (save with new name)
-- [ ] Update patch modified timestamp on changes
+- [x] Track unsaved changes flag
+- [x] Warn user before losing unsaved changes
+- [x] Implement "New Patch" action (clear canvas)
+- [x] Implement "Save" action (overwrite existing)
+- [x] Implement "Save As" action (save with new name)
+- [x] Update patch modified timestamp on changes
 
 ## Phase 5: Modulation & LFO
 
 ### LFO Component
-- [ ] Implement LFO component with OscillatorNode
-- [ ] Add waveform selector (sine, square, sawtooth, triangle, random)
-- [ ] Add rate parameter (0.01Hz - 20Hz)
-- [ ] Add depth/amplitude parameter (0 - 100%)
-- [ ] Create UI controls for LFO
-- [ ] Implement modulation output
+- [x] Implement LFO component with OscillatorNode
+- [x] Add waveform selector (sine, square, sawtooth, triangle, random)
+- [x] Add rate parameter (0.01Hz - 20Hz)
+- [x] Add depth/amplitude parameter (0 - 100%)
+- [x] Create UI controls for LFO
+- [x] Implement modulation output
 - [ ] Add tempo sync option (optional)
 
 ### Filter Envelope
@@ -514,73 +514,76 @@ Gate signals from Keyboard components use a hybrid approach:
 ## Phase 9: Step Sequencer Component
 
 ### Core Sequencer Component
-- [ ] Create SequencerStep data structure (active, note, velocity, gateLength)
-- [ ] Create StepSequencer component class extending SynthComponent
-- [ ] Add STEP_SEQUENCER to ComponentType enum
-- [ ] Create CV/Gate output nodes (frequency, gate, velocity)
-- [ ] Add output ports (frequency CV, gate, velocity CV)
-- [ ] Add input port for arpeggiator mode (gate input)
-- [ ] Initialize 16-step array with default values
-- [ ] Register component in component registry and sidebar
+- [x] Create SequencerStep data structure (active, note, velocity, gateLength)
+- [x] Create StepSequencer component class extending SynthComponent
+- [x] Add STEP_SEQUENCER to ComponentType enum
+- [x] Create CV/Gate output nodes (frequency, gate, velocity)
+- [x] Add output ports (frequency CV, gate, velocity CV)
+- [x] Add input port for arpeggiator mode (gate input)
+- [x] Add frequency input port for arpeggiator mode
+- [x] Add velocity input port for arpeggiator mode
+- [x] Initialize 16-step array with default values
+- [x] Register component in component registry and sidebar
 
 ### Timing Engine
-- [ ] Implement MIDI to frequency conversion utility
-- [ ] Create clock interval calculation (BPM to seconds)
-- [ ] Implement note division to step interval conversion
-- [ ] Create gate length calculation logic
-- [ ] Implement lookahead scheduling system (100ms window)
-- [ ] Create scheduleNextSteps() method with lookahead
-- [ ] Implement scheduleStep() for individual step timing
-- [ ] Add step advancement logic (wrap at 16)
+- [x] Implement MIDI to frequency conversion utility
+- [x] Create clock interval calculation (BPM to seconds)
+- [x] Implement note division to step interval conversion
+- [x] Create gate length calculation logic
+- [x] Implement lookahead scheduling system (100ms window)
+- [x] Create scheduleNextSteps() method with lookahead
+- [x] Implement scheduleStep() for individual step timing
+- [x] Add step advancement logic (wrap at 16)
 - [ ] Test timing accuracy at various BPMs
 
 ### Sequencer Parameters
-- [ ] Add BPM parameter (30-300, default 120)
-- [ ] Add note division parameter (whole to 1/32 note)
-- [ ] Add mode parameter (sequencer/arpeggiator)
-- [ ] Implement parameter update handlers
+- [x] Add BPM parameter (30-300, default 120)
+- [x] Add note division parameter (whole to 1/32 note)
+- [x] Add mode parameter (sequencer/arpeggiator)
+- [x] Implement parameter update handlers
 - [ ] Add tempo change smoothing
 
 ### Transport Controls
-- [ ] Implement start() method
-- [ ] Implement stop() method
-- [ ] Implement reset() method (jump to step 1)
-- [ ] Add isPlaying state tracking
-- [ ] Create scheduling interval management
-- [ ] Handle cleanup on component destruction
+- [x] Implement start() method
+- [x] Implement stop() method
+- [x] Implement reset() method (jump to step 1)
+- [x] Add isPlaying state tracking
+- [x] Create scheduling interval management
+- [x] Handle cleanup on component destruction
 
 ### Sequencer Display UI
-- [ ] Create SequencerDisplay class
-- [ ] Implement 16-step grid rendering
-- [ ] Add current step indicator with animation
-- [ ] Implement step click/toggle functionality
-- [ ] Add visual distinction for active/inactive steps
-- [ ] Add velocity bar visualization per step
+- [x] Create SequencerDisplay class
+- [x] Implement 16-step grid rendering
+- [x] Add current step indicator with animation
+- [x] Implement step click/toggle functionality
+- [x] Add visual distinction for active/inactive steps
+- [x] Add velocity bar visualization per step
 - [ ] Add note pitch visualization (color or position)
-- [ ] Integrate SequencerDisplay with CanvasComponent
+- [x] Integrate SequencerDisplay with CanvasComponent
 
 ### Step Editor UI
-- [ ] Create step editor panel UI
-- [ ] Add note selector (dropdown with note names C0-C8)
-- [ ] Add velocity slider (0-100%)
+- [x] Create step editor panel UI
+- [ ] Add Octave selector (1-8)
+- [ ] Add Note/Pitch selector (dropdown, note-name selection when in standalone mode, pitch selection (half-note steps 0-11) when in arpeggiator mode)
+- [ ] Add velocity knob (0-100%)
 - [ ] Add gate length dropdown (Tied, 1/1, 1/2, 1/4, 1/8, 1/16)
 - [ ] Implement step parameter update logic
-- [ ] Add visual feedback for selected step
-- [ ] Handle step editor show/hide on step selection
+- [x] Add visual feedback for selected step
+- [x] Handle step editor show/hide on step selection
 
 ### Component Layout & Visual Integration
-- [ ] Add SequencerDisplay to component layout config
-- [ ] Set component dimensions (300x250px)
-- [ ] Add display area configuration (280x180px)
-- [ ] Add transport control buttons to UI
-- [ ] Create play/stop button with state indicator
-- [ ] Create reset button
-- [ ] Add mode toggle switch UI
-- [ ] Add BPM and note division controls
+- [x] Add SequencerDisplay to component layout config
+- [x] Set component dimensions (316x250px - adjusted for 16 steps)
+- [x] Add display area configuration (296x180px)
+- [x] Add transport control buttons to UI
+- [x] Create play/stop button with state indicator
+- [x] Create reset button
+- [x] Add mode auto-detection (via keyboard connection - removed manual mode knob)
+- [x] Add BPM and note division controls
 
 ### CV/Gate Output Integration
-- [ ] Implement gate target registration (like KeyboardInput)
-- [ ] Create triggerGateTargets() method
+- [x] Implement gate target registration (like KeyboardInput)
+- [x] Create triggerGateTargets() method
 - [ ] Test CV output with oscillators
 - [ ] Test gate output with ADSR envelopes
 - [ ] Verify velocity CV modulation works

@@ -13,11 +13,143 @@ import { KeyboardController } from './keyboard/KeyboardController';
 import { NoteMapper } from './keyboard/NoteMapper';
 import { Sidebar } from './ui/Sidebar';
 import { eventBus } from './core/EventBus';
+import { patchManager } from './patch/PatchManager';
+import { SaveModal } from './ui/SaveModal';
+import { LoadModal } from './ui/LoadModal';
 
 console.log('🎹 Modular Synth - Initializing...');
 
 let canvas: Canvas | null = null;
 let keyboardController: KeyboardController | null = null;
+let saveModal: SaveModal | null = null;
+let loadModal: LoadModal | null = null;
+
+/**
+ * Setup patch management UI and event handlers
+ */
+function setupPatchManagement(): void {
+  // Create modals
+  saveModal = new SaveModal();
+  loadModal = new LoadModal();
+
+  // Get UI elements
+  const patchNameInput = document.getElementById('patch-name') as HTMLInputElement;
+  const btnNew = document.getElementById('btn-new');
+  const btnSave = document.getElementById('btn-save');
+  const btnLoad = document.getElementById('btn-load');
+  const btnExport = document.getElementById('btn-export');
+  const btnImport = document.getElementById('btn-import');
+
+  // Hidden file input for import
+  const importFileInput = document.createElement('input');
+  importFileInput.type = 'file';
+  importFileInput.accept = '.json';
+  importFileInput.style.display = 'none';
+  document.body.appendChild(importFileInput);
+
+  // Update patch name display
+  const updatePatchName = () => {
+    const currentPatch = patchManager.getCurrentPatch();
+    if (patchNameInput) {
+      patchNameInput.value = currentPatch?.name || 'Untitled';
+      // Show unsaved indicator
+      if (patchManager.hasUnsavedChanges()) {
+        patchNameInput.value += ' *';
+      }
+    }
+  };
+
+  // Listen for patch events
+  eventBus.on(EventType.PATCH_SAVED, updatePatchName);
+  eventBus.on(EventType.PATCH_LOADED, updatePatchName);
+  eventBus.on(EventType.PATCH_CLEARED, updatePatchName);
+
+  // New button
+  if (btnNew) {
+    btnNew.addEventListener('click', () => {
+      patchManager.newPatch('Untitled');
+      updatePatchName();
+    });
+  }
+
+  // Save button
+  if (btnSave) {
+    btnSave.addEventListener('click', () => {
+      const currentPatch = patchManager.getCurrentPatch();
+      if (currentPatch) {
+        // Already has a name, just save
+        patchManager.save();
+        updatePatchName();
+      } else {
+        // No name yet, show save modal
+        saveModal?.openWithName('Untitled');
+      }
+    });
+  }
+
+  // Save modal callback
+  saveModal?.onSave((name: string) => {
+    patchManager.save(name);
+    updatePatchName();
+  });
+
+  // Load button
+  if (btnLoad) {
+    btnLoad.addEventListener('click', () => {
+      loadModal?.open();
+    });
+  }
+
+  // Load modal callback
+  loadModal?.onLoad(async (name: string) => {
+    await patchManager.load(name);
+    updatePatchName();
+  });
+
+  // Load modal delete callback
+  loadModal?.onDelete((name: string) => {
+    patchManager.deletePatch(name);
+  });
+
+  // Export button
+  if (btnExport) {
+    btnExport.addEventListener('click', () => {
+      patchManager.exportToFile();
+    });
+  }
+
+  // Import button
+  if (btnImport) {
+    btnImport.addEventListener('click', () => {
+      importFileInput.click();
+    });
+  }
+
+  // Import file handler
+  importFileInput.addEventListener('change', async (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (file) {
+      await patchManager.importFromFile(file);
+      updatePatchName();
+      // Reset input so same file can be selected again
+      importFileInput.value = '';
+    }
+  });
+
+  // Update patch name on input change
+  if (patchNameInput) {
+    patchNameInput.addEventListener('change', () => {
+      const name = patchNameInput.value.trim();
+      if (name && name !== 'Untitled' && name !== 'Untitled *') {
+        // Save with new name
+        patchManager.save(name);
+        updatePatchName();
+      }
+    });
+  }
+
+  console.log('✅ Phase 4 Tasks 3-4 complete: Patch management UI integrated');
+}
 
 /**
  * Initialize the application
@@ -65,10 +197,16 @@ async function init(): Promise<void> {
     canvas.start();
     console.log('✅ Phase 1 Task 3 complete: Canvas system initialized');
 
+    // Set canvas for patch manager
+    patchManager.setCanvas(canvas);
+
     // Listen for component add requests from drag-and-drop
     eventBus.on(EventType.COMPONENT_ADD_REQUESTED, (data: any) => {
       handleComponentAdd(data.componentType, data.position);
     });
+
+    // Setup patch management UI
+    setupPatchManagement();
 
     // Test components removed - canvas starts empty
     // Users can now drag components from the sidebar

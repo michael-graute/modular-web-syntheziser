@@ -129,6 +129,7 @@ export class Sidebar {
       [ComponentType.KEYBOARD_INPUT]: '⌨',
       [ComponentType.MASTER_OUTPUT]: '♫',
       [ComponentType.OSCILLOSCOPE]: '◰',
+      [ComponentType.STEP_SEQUENCER]: '▦',
     };
     return icons[type] || '□';
   }

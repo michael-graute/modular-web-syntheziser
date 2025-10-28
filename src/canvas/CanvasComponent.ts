@@ -9,7 +9,9 @@ import { Knob } from './controls/Knob';
 import { Dropdown, DropdownOption } from './controls/Dropdown';
 import { Slider } from './controls/Slider';
 import { OscilloscopeDisplay } from './displays/OscilloscopeDisplay';
+import { SequencerDisplay } from './displays/SequencerDisplay';
 import type { Oscilloscope } from '../components/analyzers/Oscilloscope';
+import type { StepSequencer } from '../components/utilities/StepSequencer';
 
 type Control = Knob | Dropdown | Slider;
 
@@ -26,6 +28,7 @@ export class CanvasComponent {
   synthComponent: SynthComponent | null;
   private controls: Control[] = [];
   private oscilloscopeDisplay: OscilloscopeDisplay | null = null;
+  private sequencerDisplay: SequencerDisplay | null = null;
 
   constructor(
     id: string,
@@ -472,6 +475,63 @@ export class CanvasComponent {
       }
     }
 
+    // LFO-specific controls
+    if (this.type === ComponentType.LFO) {
+      const waveformParam = this.synthComponent.getParameter('waveform');
+      const rateParam = this.synthComponent.getParameter('rate');
+      const depthParam = this.synthComponent.getParameter('depth');
+
+      // Calculate Y position below port labels
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      if (waveformParam) {
+        const options: DropdownOption[] = [
+          { value: 0, label: 'Sine' },
+          { value: 1, label: 'Square' },
+          { value: 2, label: 'Sawtooth' },
+          { value: 3, label: 'Triangle' },
+        ];
+        const dropdown = new Dropdown(
+          this.position.x + 10,
+          this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 5,
+          this.width - 20,
+          24,
+          waveformParam,
+          options,
+          'Waveform'
+        );
+        this.controls.push(dropdown);
+      }
+
+      // Knobs for rate and depth - positioned below dropdown
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 5 + 24 + 10;
+      const knobSize = 40;
+      const spacing = (this.width - 20 - knobSize * 2) / 3;
+
+      if (rateParam) {
+        const knob = new Knob(
+          this.position.x + 10 + spacing,
+          knobY,
+          knobSize,
+          rateParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (depthParam) {
+        const knob = new Knob(
+          this.position.x + 10 + spacing * 2 + knobSize,
+          knobY,
+          knobSize,
+          depthParam
+        );
+        this.controls.push(knob);
+      }
+    }
+
     // Oscilloscope-specific controls
     if (this.type === ComponentType.OSCILLOSCOPE) {
       const displayModeParam = this.synthComponent.getParameter('displayMode');
@@ -547,6 +607,64 @@ export class CanvasComponent {
         canvasElement.parentElement.appendChild(this.oscilloscopeDisplay.getCanvas());
       }
     }
+
+    // StepSequencer-specific controls
+    if (this.type === ComponentType.STEP_SEQUENCER) {
+      const bpmParam = this.synthComponent.getParameter('bpm');
+      const noteValueParam = this.synthComponent.getParameter('noteValue');
+
+      // Calculate Y position below port labels
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      // Knobs for BPM and note division (mode auto-detected from keyboard connection)
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 10;
+      const knobSize = 40;
+      const numKnobs = 2;
+      const totalSpacing = this.width - 20;
+      const spacing = (totalSpacing - (numKnobs * knobSize)) / (numKnobs + 1);
+
+      if (bpmParam) {
+        const knob = new Knob(
+          this.position.x + 10 + spacing,
+          knobY,
+          knobSize,
+          bpmParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (noteValueParam) {
+        const knob = new Knob(
+          this.position.x + 10 + spacing * 2 + knobSize,
+          knobY,
+          knobSize,
+          noteValueParam
+        );
+        this.controls.push(knob);
+      }
+
+      // Create embedded sequencer display
+      const displayY = knobY + 40 + 12 + 10;
+      const displayWidth = this.width - 20;
+      const displayHeight = 160; // Increased to fully show buttons, grid, and step editor
+
+      this.sequencerDisplay = new SequencerDisplay(
+        this.position.x + 10,
+        displayY,
+        displayWidth,
+        displayHeight,
+        this.synthComponent as StepSequencer
+      );
+
+      // Add canvas to DOM (will be positioned absolutely)
+      const canvasElement = document.getElementById('synth-canvas');
+      if (canvasElement && canvasElement.parentElement) {
+        canvasElement.parentElement.appendChild(this.sequencerDisplay.getCanvas());
+      }
+    }
   }
 
   /**
@@ -587,6 +705,12 @@ export class CanvasComponent {
     if (this.oscilloscopeDisplay) {
       this.oscilloscopeDisplay.destroy();
       this.oscilloscopeDisplay = null;
+    }
+
+    // Clean up sequencer display before recreating controls
+    if (this.sequencerDisplay) {
+      this.sequencerDisplay.destroy();
+      this.sequencerDisplay = null;
     }
 
     // Recreate controls at new position
@@ -763,6 +887,10 @@ export class CanvasComponent {
       this.oscilloscopeDisplay.destroy();
       this.oscilloscopeDisplay = null;
     }
+    if (this.sequencerDisplay) {
+      this.sequencerDisplay.destroy();
+      this.sequencerDisplay = null;
+    }
   }
 
   /**
@@ -771,6 +899,9 @@ export class CanvasComponent {
   updateViewportTransform(zoom: number, panX: number, panY: number): void {
     if (this.oscilloscopeDisplay) {
       this.oscilloscopeDisplay.updateViewportTransform(zoom, panX, panY);
+    }
+    if (this.sequencerDisplay) {
+      this.sequencerDisplay.updateViewportTransform(zoom, panX, panY);
     }
   }
 
@@ -882,6 +1013,7 @@ export class CanvasComponent {
       [ComponentType.KEYBOARD_INPUT]: 'Keyboard',
       [ComponentType.MASTER_OUTPUT]: 'Master Out',
       [ComponentType.OSCILLOSCOPE]: 'Scope',
+      [ComponentType.STEP_SEQUENCER]: 'Sequencer',
     };
     return names[this.type] || 'Component';
   }

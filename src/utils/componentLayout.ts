@@ -75,8 +75,20 @@ function getControlLayout(type: ComponentType): ControlLayout {
         numKnobs: 3, // time, feedback, mix
       };
 
-    case ComponentType.KEYBOARD_INPUT:
+    case ComponentType.STEP_SEQUENCER:
+      return {
+        numKnobs: 2, // bpm, noteValue (mode auto-detected from keyboard connection)
+        hasDisplayArea: true,
+        displayHeight: 200, // buttons (24) + gap (5) + margin (5) + grid (40) + gap (10) + editor (60) + margin (5) + extra padding (51)
+      };
+
     case ComponentType.LFO:
+      return {
+        hasDropdown: true,
+        numKnobs: 2, // rate, depth
+      };
+
+    case ComponentType.KEYBOARD_INPUT:
     case ComponentType.NOISE:
     case ComponentType.FILTER_ENVELOPE:
     case ComponentType.DISTORTION:
@@ -128,6 +140,12 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
 
     case ComponentType.MIXER:
       return { inputs: 4, outputs: 1 }; // 4 channels in / audio out
+
+    case ComponentType.STEP_SEQUENCER:
+      return { inputs: 3, outputs: 3 }; // arpeggiate gate, frequency, velocity in / frequency, gate, velocity out
+
+    case ComponentType.OSCILLOSCOPE:
+      return { inputs: 1, outputs: 0 }; // audio in
 
     default:
       return { inputs: 1, outputs: 1 };
@@ -222,6 +240,11 @@ export function calculateComponentWidth(type: ComponentType): number {
   // Oscilloscope needs more width for display area
   if (controlLayout.hasDisplayArea) {
     width = 220;
+  }
+
+  // StepSequencer needs extra width for 16-step display
+  if (type === ComponentType.STEP_SEQUENCER) {
+    width = 316; // Enough for 16 steps: 16*16px + 15*2px gaps + 2*5px margins + 20px padding
   }
 
   return width;

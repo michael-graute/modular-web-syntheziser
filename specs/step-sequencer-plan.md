@@ -182,10 +182,17 @@ private scheduleStep(stepIndex: number, time: number): void {
 
 ### Integration with Keyboard
 When in arpeggiator mode:
-1. Accept gate input from KeyboardInput
-2. Use keyboard notes to populate step notes
-3. Cycle through held notes at sequencer tempo
-4. Stop when keyboard gate goes low
+1. Replace note input in step editor with pitch selector (half-note steps -11 - 11)
+2. Accept gate input from KeyboardInput
+3. Accept frequency input from KeyboardInput
+4. Accept velocity input from KeyboardInput
+5. Use keyboard frequency as base frequency
+6. Cycle through step sequencer steps as long as keyboard gate is high
+7. For each step: 
+   * raise or lower frequency by half-step according to selected pitch
+   * set velocity from keyboard velocity
+   * if step is active: play note for gate length
+8. Stop and reset when keyboard gate goes low
 
 ### Algorithm
 ```typescript
@@ -235,7 +242,7 @@ private updateArpeggiatorNotes(keyboardInput: KeyboardInput): void {
    - Per-step mini editor when clicked
 
 4. **Step Editor** (appears below grid when step selected):
-   - Note selector (piano key visualization or note name dropdown)
+   - Note/Pitch selector (dropdown, note selection when in standalone mode, pitch selection (half-note steps) when in arpeggiator mode)
    - Velocity slider (0-100%)
    - Gate length dropdown (Tied, 1/1, 1/2, 1/4, 1/8, 1/16)
 
@@ -274,7 +281,7 @@ private updateArpeggiatorNotes(keyboardInput: KeyboardInput): void {
 
 ### Phase 4: Step Editor UI
 1. Create step editor panel
-2. Add note selector (dropdown or mini keyboard)
+2. Add Note/Pitch selector (dropdown, note selection when in standalone mode, pitch selection (half-note steps) when in arpeggiator mode)
 3. Add velocity slider/editor
 4. Add gate length selector
 5. Implement step parameter updates

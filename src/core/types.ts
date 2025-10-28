@@ -31,6 +31,7 @@ export enum ComponentType {
   KEYBOARD_INPUT = 'keyboard-input',
   MASTER_OUTPUT = 'master-output',
   OSCILLOSCOPE = 'oscilloscope',
+  STEP_SEQUENCER = 'step-sequencer',
 }
 
 /**

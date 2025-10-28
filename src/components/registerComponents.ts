@@ -5,6 +5,7 @@
 import { componentRegistry } from './ComponentRegistry';
 import { ComponentType } from '../core/types';
 import { Oscillator } from './generators/Oscillator';
+import { LFO } from './generators/LFO';
 import { VCA } from './processors/VCA';
 import { Filter } from './processors/Filter';
 import { ADSREnvelope } from './processors/ADSREnvelope';
@@ -14,6 +15,7 @@ import { Mixer } from './utilities/Mixer';
 import { Delay } from './effects/Delay';
 import { Reverb } from './effects/Reverb';
 import { Oscilloscope } from './analyzers/Oscilloscope';
+import { StepSequencer } from './utilities/StepSequencer';
 import { calculateComponentDimensions } from '../utils/componentLayout';
 
 /**
@@ -28,6 +30,15 @@ export function registerAllComponents(): void {
     'Generators',
     (id, position) => new Oscillator(id, position),
     calculateComponentDimensions(ComponentType.OSCILLATOR)
+  );
+
+  componentRegistry.register(
+    ComponentType.LFO,
+    'LFO',
+    'Low frequency oscillator for modulation',
+    'Generators',
+    (id, position) => new LFO(id, position),
+    calculateComponentDimensions(ComponentType.LFO)
   );
 
   // Processors
@@ -84,6 +95,15 @@ export function registerAllComponents(): void {
     'Utilities',
     (id, position) => new Mixer(id, position),
     calculateComponentDimensions(ComponentType.MIXER)
+  );
+
+  componentRegistry.register(
+    ComponentType.STEP_SEQUENCER,
+    'Sequencer',
+    '16-step sequencer with CV/Gate outputs',
+    'Utilities',
+    (id, position) => new StepSequencer(id, position),
+    calculateComponentDimensions(ComponentType.STEP_SEQUENCER)
   );
 
   // Effects
