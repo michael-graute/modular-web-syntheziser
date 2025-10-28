@@ -414,12 +414,12 @@ Gate signals from Keyboard components use a hybrid approach:
 - [ ] Improve cable rendering aesthetics
 
 ### Keyboard Enhancements
-- [ ] Add octave shift display to keyboard UI
-- [ ] Improve visual key press feedback
+- [x] Add octave shift display to keyboard UI
+- [x] Improve visual key press feedback
 - [ ] Add velocity slider control
 - [ ] Implement sustain pedal toggle (spacebar)
-- [ ] Add "panic" button (stop all notes)
-- [ ] Show currently pressed keys visually
+- [x] Add "panic" button (stop all notes)
+- [x] Show currently pressed keys visually
 
 ### Help & Onboarding
 - [ ] Create welcome modal for first-time users
