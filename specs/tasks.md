@@ -315,12 +315,12 @@ Gate signals from Keyboard components use a hybrid approach:
 - [ ] Wire to filter cutoff CV input
 
 ### CV Routing
-- [ ] Enable LFO to oscillator frequency modulation
-- [ ] Enable LFO to filter cutoff modulation
-- [ ] Enable envelope to VCA gain modulation
-- [ ] Enable envelope to filter cutoff modulation
+- [x] Enable LFO to oscillator frequency modulation
+- [x] Enable LFO to filter cutoff modulation
+- [x] Enable envelope to VCA gain modulation
+- [x] Enable envelope to filter cutoff modulation
 - [ ] Add visual indication of active modulation
-- [ ] Implement modulation depth scaling
+- [x] Implement modulation depth scaling
 
 ### Noise Generator
 - [ ] Implement NoiseGenerator component
@@ -331,10 +331,10 @@ Gate signals from Keyboard components use a hybrid approach:
 - [ ] Add to component library sidebar
 
 ### Enhanced Connection System
-- [ ] Implement color-coded cables (green=audio, blue=CV, red=gate)
-- [ ] Add connection validation by signal type
-- [ ] Support multiple connections from one output
-- [ ] Enforce single connection per input
+- [x] Implement color-coded cables (green=audio, blue=CV, red=gate)
+- [x] Add connection validation by signal type
+- [x] Support multiple connections from one output
+- [x] Enforce single connection per input
 - [ ] Add animated cable flow indicator (optional)
 - [ ] Improve cable routing algorithm
 
