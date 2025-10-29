@@ -7,8 +7,8 @@ class ParameterSamplerProcessor extends AudioWorkletProcessor {
   constructor(options) {
     super();
 
-    // SharedArrayBuffer passed from main thread
-    this.sharedBuffer = new Float32Array(options.processorOptions.sharedBuffer);
+    // SharedArrayBuffer passed from main thread - Use Int32Array for Atomics
+    this.sharedBuffer = new Int32Array(options.processorOptions.sharedBuffer);
 
     // Sampling rate: 20 Hz
     this.samplingRate = options.processorOptions.samplingRate || 20;
@@ -22,6 +22,9 @@ class ParameterSamplerProcessor extends AudioWorkletProcessor {
 
     // Listen for messages from main thread
     this.port.onmessage = (event) => this.handleMessage(event.data);
+
+    // Scaling factor for float-to-int conversion (10000 = 4 decimal places)
+    this.scaleFactor = 10000;
 
     console.log(`[ParameterSampler] Initialized with ${this.samplingRate}Hz sampling (interval: ${this.sampleInterval} samples)`);
   }
@@ -69,8 +72,11 @@ class ParameterSamplerProcessor extends AudioWorkletProcessor {
         if (parameters[parameterId] && parameters[parameterId].length > 0) {
           const value = parameters[parameterId][0]; // Get first sample
 
+          // Convert float to scaled integer for Atomics (Int32Array only)
+          const scaledValue = Math.round(value * this.scaleFactor);
+
           // Write to SharedArrayBuffer using Atomics for thread safety
-          Atomics.store(this.sharedBuffer, bufferIndex, value);
+          Atomics.store(this.sharedBuffer, bufferIndex, scaledValue);
         }
       }
     }

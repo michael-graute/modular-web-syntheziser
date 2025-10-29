@@ -16,6 +16,7 @@ import { eventBus } from './core/EventBus';
 import { patchManager } from './patch/PatchManager';
 import { SaveModal } from './ui/SaveModal';
 import { LoadModal } from './ui/LoadModal';
+import { ModulationVisualizer } from './visualization';
 
 console.log('🎹 Modular Synth - Initializing...');
 
@@ -23,6 +24,7 @@ let canvas: Canvas | null = null;
 let keyboardController: KeyboardController | null = null;
 let saveModal: SaveModal | null = null;
 let loadModal: LoadModal | null = null;
+let modulationVisualizer: ModulationVisualizer | null = null;
 
 /**
  * Setup patch management UI and event handlers
@@ -182,6 +184,9 @@ async function init(): Promise<void> {
     await audioEngine.init();
     console.log('✅ Phase 1 Task 4 complete: Audio engine initialized');
 
+    // Initialize modulation visualizer
+    await initializeModulationVisualizer();
+
     // Setup click handler to resume audio context (Chrome autoplay policy)
     setupAudioResume();
   } catch (error) {
@@ -285,6 +290,33 @@ async function init(): Promise<void> {
 }
 
 /**
+ * Initialize modulation visualizer
+ */
+async function initializeModulationVisualizer(): Promise<void> {
+  try {
+    modulationVisualizer = new ModulationVisualizer();
+
+    await modulationVisualizer.initialize({
+      audioContext: audioEngine.getContext(),
+      samplingRate: 20, // 20 Hz sampling
+      targetFPS: 60, // 60 FPS rendering
+      interpolationEnabled: true,
+      fadeDuration: 300, // 300ms fade
+      updateThreshold: 0.001, // Minimum change threshold
+      maxParameters: 256, // Max tracked parameters (Int32Array)
+    });
+
+    // Start the visualizer
+    modulationVisualizer.start();
+
+    console.log('✅ ModulationVisualizer initialized and started');
+  } catch (error) {
+    console.error('Failed to initialize ModulationVisualizer:', error);
+    throw error;
+  }
+}
+
+/**
  * Handle component addition from drag-and-drop
  */
 function handleComponentAdd(componentType: string, position: { x: number; y: number}): void {
@@ -317,10 +349,41 @@ function handleComponentAdd(componentType: string, position: { x: number; y: num
     audioComponent.activate();
     visualComponent.setSynthComponent(audioComponent);
     console.log(`✨ Created ${audioComponent.name} at (${Math.round(position.x)}, ${Math.round(position.y)})`);
+
+    // Track all parameters with modulation visualizer
+    trackComponentParameters(visualComponent);
   }
 
   // Add to canvas
   canvas.addComponent(visualComponent);
+}
+
+/**
+ * Track all parameters of a component with modulation visualizer
+ */
+function trackComponentParameters(visualComponent: CanvasComponent): void {
+  if (!modulationVisualizer) return;
+
+  const audioComponent = visualComponent.getSynthComponent();
+  if (!audioComponent) return;
+
+  // Get all controls from the visual component
+  const controls = visualComponent.getControls();
+  if (!controls) return;
+
+  // Track each control that has a parameter
+  controls.forEach((control: any) => {
+    try {
+      const parameter = control.getParameter();
+      if (parameter && parameter.id) {
+        modulationVisualizer!.trackParameter(parameter.id, control);
+        console.log(`✓ Tracking parameter "${parameter.name}" (${parameter.id})`);
+      }
+    } catch (error) {
+      // Control doesn't have a parameter (e.g., buttons without parameters)
+      // This is expected and not an error
+    }
+  });
 }
 
 /**

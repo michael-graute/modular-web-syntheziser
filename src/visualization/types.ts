@@ -5,6 +5,9 @@
 import { Parameter } from '../components/base/Parameter';
 import { Connection } from '../core/Connection';
 
+// Re-export types
+export type { Connection };
+
 // ============================================================================
 // Core Interfaces
 // ============================================================================
@@ -173,23 +176,22 @@ export interface IVisualUpdateScheduler {
 export interface ModulationState {
   readonly parameterId: string;
   baseValue: number;
-  modulatedValue: number;
+  currentValue: number;
   normalizedValue: number;
   isModulated: boolean;
-  modulationSources: string[];
-  lastUpdateTimestamp: number;
 }
 
 /**
  * Configuration for modulation visualization behavior
  */
 export interface VisualizationConfig {
-  samplingRate: number;          // Default: 20 Hz
-  renderRate: number;             // Default: 60 FPS
-  interpolationEnabled: boolean;  // Default: true
-  offscreenPauseEnabled: boolean; // Default: true
-  transitionDuration: number;     // Default: 100 ms
-  maxTrackedParameters: number;   // Default: 32
+  audioContext: AudioContext;
+  samplingRate?: number;          // Default: 20 Hz
+  targetFPS?: number;             // Default: 60 FPS
+  interpolationEnabled?: boolean;  // Default: true
+  fadeDuration?: number;          // Default: 300 ms
+  updateThreshold?: number;       // Minimum change to trigger update
+  maxParameters?: number;         // Default: 256
 }
 
 /**
@@ -233,7 +235,7 @@ export interface CVConnectionState {
  */
 export interface VisualizationHandle {
   readonly parameterId: string;
-  dispose(): void;
+  untrack: () => void;
 }
 
 /**

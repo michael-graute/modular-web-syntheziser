@@ -64,6 +64,17 @@ export class CanvasComponent {
   }
 
   /**
+   * Get all UI controls (knobs, sliders, buttons)
+   */
+  getControls(): (Knob | Slider | Button | Dropdown)[] {
+    const allControls: (Knob | Slider | Button | Dropdown)[] = [...this.controls];
+    if (this.bypassButton) {
+      allControls.push(this.bypassButton);
+    }
+    return allControls;
+  }
+
+  /**
    * Create UI controls based on component type
    */
   private createControls(): void {

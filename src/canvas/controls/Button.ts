@@ -20,7 +20,6 @@ export class Button implements IVisualizableControl {
   // Visualization properties
   private controlId: string;
   private visible: boolean = true;
-  private visualValue: number | null = null;
   private parameter: Parameter | null = null; // Optional parameter for modulation
 
   constructor(
@@ -49,8 +48,9 @@ export class Button implements IVisualizableControl {
     return this.controlId;
   }
 
-  setVisualValue(normalizedValue: number): void {
-    this.visualValue = Math.max(0, Math.min(1, normalizedValue));
+  setVisualValue(_normalizedValue: number): void {
+    // Buttons don't use visual values for now
+    // Future: Could use for pulsing/flashing effects
   }
 
   isVisible(): boolean {
