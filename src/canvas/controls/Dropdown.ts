@@ -4,13 +4,14 @@
  */
 
 import { Parameter } from '../../components/base/Parameter';
+import { IVisualizableControl } from '../../visualization/types';
 
 export interface DropdownOption {
   value: number;
   label: string;
 }
 
-export class Dropdown {
+export class Dropdown implements IVisualizableControl {
   private x: number;
   private y: number;
   private width: number;
@@ -19,6 +20,11 @@ export class Dropdown {
   private options: DropdownOption[];
   private label: string;
   private isOpen: boolean = false;
+
+  // Visualization properties
+  private controlId: string;
+  private visible: boolean = true;
+  private visualValue: number | null = null;
 
   constructor(
     x: number,
@@ -36,12 +42,39 @@ export class Dropdown {
     this.parameter = parameter;
     this.options = options;
     this.label = label;
+    this.controlId = `dropdown-${parameter.id}-${Date.now()}`;
+  }
+
+  // IVisualizableControl implementation
+  getControlId(): string {
+    return this.controlId;
+  }
+
+  setVisualValue(normalizedValue: number): void {
+    // Store the modulated normalized value
+    this.visualValue = Math.max(0, Math.min(1, normalizedValue));
+  }
+
+  isVisible(): boolean {
+    return this.visible;
+  }
+
+  setVisibility(visible: boolean): void {
+    this.visible = visible;
+  }
+
+  getParameter(): Parameter {
+    return this.parameter;
   }
 
   /**
    * Render the dropdown
    */
   render(ctx: CanvasRenderingContext2D): void {
+    if (!this.visible) {
+      return;
+    }
+
     // Draw label above
     ctx.fillStyle = '#808080';
     ctx.font = '10px -apple-system, sans-serif';
@@ -56,8 +89,17 @@ export class Dropdown {
     ctx.lineWidth = 1;
     ctx.strokeRect(this.x, this.y, this.width, this.height);
 
-    // Get current selected option
-    const currentValue = Math.round(this.parameter.getValue());
+    // Get current value (use visualValue if available from modulation)
+    let currentValue: number;
+    if (this.visualValue !== null) {
+      // Convert normalized visual value back to parameter range
+      currentValue = Math.round(
+        this.parameter.min + this.visualValue * (this.parameter.max - this.parameter.min)
+      );
+    } else {
+      currentValue = Math.round(this.parameter.getValue());
+    }
+
     const currentOption = this.options.find(opt => opt.value === currentValue);
     const displayText = currentOption ? currentOption.label : '???';
 
@@ -197,12 +239,6 @@ export class Dropdown {
     return this.onMouseDown(x, y);
   }
 
-  /**
-   * Get parameter
-   */
-  getParameter(): Parameter {
-    return this.parameter;
-  }
 
   /**
    * Get bounds
