@@ -193,6 +193,63 @@ const hasOtherConnections = Array.from(this.connections.values()).some(
 
 ---
 
+---
+
+## Issue 5: Visualization Stops Working After Moving Components
+
+### Problem
+When an oscillator (or any component) was moved on the canvas **before** establishing CV connections, the knob animation would not work after connecting an LFO. If the component was not moved, the visualization worked perfectly.
+
+### Root Cause
+When a component is moved, `CanvasComponent.updateControlPositions()` calls `createControls()`, which **recreates all control objects** (Knobs, Sliders, etc.) at their new positions. The old control objects are destroyed.
+
+However, the ModulationVisualizer still held references to the **old control objects**. When it called `setVisualValue()` on the old knob, that knob was no longer being rendered by the canvas - it was orphaned.
+
+**Evidence from logs:**
+- ✅ `[ModViz SAMPLE]` logs showed sampling was working
+- ✅ `[Knob] setVisualValue(...)` logs showed values were being set
+- ❌ `[Knob RENDER]` logs showed render was NOT being called
+- After disconnection, `[Knob RENDER CALLED]` appeared again (for the new knob)
+
+### Solution
+Implemented a **controls recreated event system**:
+
+1. **Added `CONTROLS_RECREATED` event** to `EventType` enum
+2. **Emit event** in `CanvasComponent.updateControlPositions()` after controls are recreated
+3. **Listen for event** in `main.ts` and re-track all parameters with new control references
+4. **Update control reference** in `ModulationVisualizer.trackParameter()` when re-tracking
+
+```typescript
+// In CanvasComponent.ts - emit event after recreating controls
+this.createControls();
+eventBus.emit(EventType.CONTROLS_RECREATED, {
+  componentId: this.id,
+  component: this,
+});
+
+// In main.ts - listen and re-track
+eventBus.on(EventType.CONTROLS_RECREATED, (data: any) => {
+  if (modulationVisualizer && data.component) {
+    trackComponentParameters(data.component);
+  }
+});
+
+// In ModulationVisualizer.ts - update control reference if already tracked
+if (this.trackedParameters.has(parameterId)) {
+  const existingTracking = this.trackedParameters.get(parameterId)!;
+  existingTracking.control = control;  // Update to new control
+  return {...};
+}
+```
+
+### Files Modified
+- `src/canvas/CanvasComponent.ts` - Emit CONTROLS_RECREATED event
+- `src/core/types.ts` - Added CONTROLS_RECREATED to EventType enum
+- `src/main.ts` - Listen for event and re-track parameters
+- `src/visualization/ModulationVisualizer.ts` - Update control reference when re-tracking
+
+---
+
 ## Key Learnings
 
 1. **Visual feedback needs to be scaled appropriately** - Parameters with very large ranges need visual amplification to make CV modulation visible, even when the absolute modulation amount is small.

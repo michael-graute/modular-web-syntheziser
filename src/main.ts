@@ -322,6 +322,14 @@ async function initializeModulationVisualizer(): Promise<void> {
       }
     });
 
+    // Listen for controls recreated event (when components are moved)
+    eventBus.on(EventType.CONTROLS_RECREATED, (data: any) => {
+      if (modulationVisualizer && data.component) {
+        // Re-track all parameters with their new control references
+        trackComponentParameters(data.component);
+      }
+    });
+
     console.log('✅ ModulationVisualizer initialized and started');
   } catch (error) {
     console.error('Failed to initialize ModulationVisualizer:', error);

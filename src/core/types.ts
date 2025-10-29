@@ -130,6 +130,7 @@ export enum EventType {
   COMPONENT_MOVED = 'component:moved',
   COMPONENT_SELECTED = 'component:selected',
   COMPONENT_DESELECTED = 'component:deselected',
+  CONTROLS_RECREATED = 'controls:recreated',
   PARAMETER_CHANGED = 'parameter:changed',
   CONNECTION_ADDED = 'connection:added',
   CONNECTION_REMOVED = 'connection:removed',

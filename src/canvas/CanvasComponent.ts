@@ -13,6 +13,8 @@ import { OscilloscopeDisplay } from './displays/OscilloscopeDisplay';
 import { SequencerDisplay } from './displays/SequencerDisplay';
 import type { Oscilloscope } from '../components/analyzers/Oscilloscope';
 import type { StepSequencer } from '../components/utilities/StepSequencer';
+import { eventBus } from '../core/EventBus';
+import { EventType } from '../core/types';
 
 type Control = Knob | Dropdown | Slider;
 
@@ -728,6 +730,12 @@ export class CanvasComponent {
 
     // Recreate controls at new position
     this.createControls();
+
+    // Emit event so ModulationVisualizer can re-register the new controls
+    eventBus.emit(EventType.CONTROLS_RECREATED, {
+      componentId: this.id,
+      component: this,
+    });
 
     // Note: The viewport transform will be reapplied by Canvas.updateComponentViewportTransforms()
     // which is called during drag operations and after snapping to grid

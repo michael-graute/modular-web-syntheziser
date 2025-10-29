@@ -112,9 +112,11 @@ export class ModulationVisualizer implements IModulationVisualizer {
       throw new Error('ModulationVisualizer not initialized');
     }
 
-    // Check if already tracked
+    // Check if already tracked - if so, just update the control reference
     if (this.trackedParameters.has(parameterId)) {
-      console.warn(`Parameter "${parameterId}" already tracked`);
+      const existingTracking = this.trackedParameters.get(parameterId)!;
+      existingTracking.control = control;
+      console.log(`✓ Updated control reference for "${parameterId}"`);
       return {
         parameterId,
         untrack: () => this.untrackParameter(parameterId),
@@ -490,7 +492,6 @@ export class ModulationVisualizer implements IModulationVisualizer {
 
         // Take the first sample (all samples in a small buffer are roughly the same at 20Hz)
         const cvValue = dataArray[0] || 0;
-
 
         // Get base value from AudioParam (not Parameter object) for accurate modulation display
         const audioParam = tracking.parameter.getAudioParam();

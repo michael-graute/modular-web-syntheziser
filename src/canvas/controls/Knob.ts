@@ -75,7 +75,6 @@ export class Knob implements IVisualizableControl {
     const angle = -135 + (normalized * 270);
     const radians = (angle * Math.PI) / 180;
 
-
     // Draw indicator line
     const indicatorLength = radius * 0.7;
     const indicatorX = centerX + Math.sin(radians) * indicatorLength;
