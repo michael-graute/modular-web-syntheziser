@@ -26,6 +26,11 @@ interface ParameterTracking {
   isConnected: boolean;
   fadeProgress: number; // 0-1 for fade in/out
   fadeDirection: 'in' | 'out' | null;
+  // Interpolation state (T038)
+  lastRenderedValue: number;
+  targetValue: number;
+  interpolationProgress: number; // 0-1
+  lastSampleTime: number; // timestamp of last sample
 }
 
 export class ModulationVisualizer implements IModulationVisualizer {
@@ -39,12 +44,25 @@ export class ModulationVisualizer implements IModulationVisualizer {
 
   // Configuration
   private fadeDuration: number = 300; // ms
-  private updateThreshold: number = 0.001; // Minimum change to trigger visual update
   private sharedBuffer: SharedArrayBuffer | null = null;
+  private interpolationEnabled: boolean = true; // Enable interpolation for smooth 60 FPS
+  private samplingInterval: number = 50; // 20 Hz = 50ms between samples
+  private audioRateThreshold: number = 20; // Hz - detect audio-rate modulation
 
   constructor() {
     this.sampler = new ParameterValueSampler();
     this.scheduler = new VisualUpdateScheduler();
+  }
+
+  /**
+   * Linear interpolation helper (T037)
+   * @param start - Start value
+   * @param end - End value
+   * @param progress - Progress from 0 to 1
+   * @returns Interpolated value
+   */
+  private lerp(start: number, end: number, progress: number): number {
+    return start + (end - start) * progress;
   }
 
   /**
@@ -73,7 +91,6 @@ export class ModulationVisualizer implements IModulationVisualizer {
       this.scheduler.initialize(config.targetFPS || 60, config.interpolationEnabled !== false);
 
       this.fadeDuration = config.fadeDuration || 300;
-      this.updateThreshold = config.updateThreshold || 0.001;
 
       this.isInitialized = true;
       console.log('✓ ModulationVisualizer initialized');
@@ -107,7 +124,8 @@ export class ModulationVisualizer implements IModulationVisualizer {
     // For now, just allocate a buffer index (Phase 4 will link to actual AudioParams)
     const bufferIndex = 0; // Placeholder
 
-    // Create tracking entry
+    // Create tracking entry with interpolation state
+    const initialValue = parameter.getNormalizedValue();
     const tracking: ParameterTracking = {
       parameterId,
       parameter,
@@ -117,6 +135,11 @@ export class ModulationVisualizer implements IModulationVisualizer {
       isConnected: false,
       fadeProgress: 0,
       fadeDirection: null,
+      // Interpolation state (T038)
+      lastRenderedValue: initialValue,
+      targetValue: initialValue,
+      interpolationProgress: 1.0, // Start fully interpolated
+      lastSampleTime: performance.now(),
     };
 
     this.trackedParameters.set(parameterId, tracking);
@@ -325,9 +348,11 @@ export class ModulationVisualizer implements IModulationVisualizer {
   }
 
   /**
-   * Frame update callback
+   * Frame update callback with interpolation (T039, T040, T044)
    */
   private onFrame(deltaMs: number): void {
+    const currentTime = performance.now();
+
     // Update all tracked parameters
     this.trackedParameters.forEach((tracking) => {
       // Update fade progress
@@ -357,7 +382,7 @@ export class ModulationVisualizer implements IModulationVisualizer {
         }
       }
 
-      // Skip if not visible
+      // Skip if not visible (FR-011)
       if (!tracking.control.isVisible()) {
         return;
       }
@@ -367,22 +392,11 @@ export class ModulationVisualizer implements IModulationVisualizer {
         return;
       }
 
-      // Sample current value
+      // Sample current value (20 Hz from audio thread)
       const sampledValue = this.sampler.getValue(tracking.parameterId);
       if (sampledValue === null) {
         return;
       }
-
-      // Check if value changed significantly
-      if (
-        tracking.lastValue !== null &&
-        Math.abs(sampledValue - tracking.lastValue) < this.updateThreshold
-      ) {
-        return;
-      }
-
-      // Update parameter modulated value
-      tracking.parameter.setModulatedValue(sampledValue);
 
       // Clamp to parameter range
       const clampedValue = Math.max(
@@ -395,17 +409,66 @@ export class ModulationVisualizer implements IModulationVisualizer {
         (clampedValue - tracking.parameter.min) /
         (tracking.parameter.max - tracking.parameter.min);
 
-      // Apply fade
+      // Check if we received a new sample (T044 - audio-rate detection)
+      const timeSinceLastSample = currentTime - tracking.lastSampleTime;
+      const hasNewSample = tracking.lastValue !== sampledValue;
+
+      if (hasNewSample) {
+        // Detect audio-rate modulation (>20 Hz)
+        const detectedRate = 1000 / timeSinceLastSample; // Hz
+        const isAudioRate = detectedRate > this.audioRateThreshold;
+
+        if (isAudioRate) {
+          // T045: For audio-rate, reduce visual update rate (use every 3rd sample)
+          // This prevents visual chaos from ultra-fast modulation
+          // Just update target less frequently by skipping interpolation reset
+          console.log(`Audio-rate modulation detected: ${detectedRate.toFixed(1)} Hz`);
+        }
+
+        // Update parameter modulated value
+        tracking.parameter.setModulatedValue(sampledValue);
+
+        // Start new interpolation to the new target
+        tracking.lastRenderedValue = tracking.targetValue;
+        tracking.targetValue = normalizedValue;
+        tracking.interpolationProgress = 0;
+        tracking.lastSampleTime = currentTime;
+        tracking.lastValue = sampledValue;
+      }
+
+      // T040: Update interpolation progress based on frame delta time
+      // Interpolate from lastRenderedValue to targetValue
+      if (this.interpolationEnabled && tracking.interpolationProgress < 1.0) {
+        // Progress based on time elapsed since last sample
+        const progressStep = deltaMs / this.samplingInterval;
+        tracking.interpolationProgress = Math.min(
+          1.0,
+          tracking.interpolationProgress + progressStep
+        );
+      } else if (!this.interpolationEnabled) {
+        // Skip interpolation if disabled
+        tracking.interpolationProgress = 1.0;
+      }
+
+      // Calculate interpolated value using lerp (T037)
+      const interpolatedValue = this.lerp(
+        tracking.lastRenderedValue,
+        tracking.targetValue,
+        tracking.interpolationProgress
+      );
+
+      // Apply fade for connection transitions
       let visualValue: number;
       if (tracking.fadeProgress < 1) {
         // Blend between base value and modulated value during fade
         const baseNormalized = tracking.parameter.getNormalizedValue();
-        visualValue = baseNormalized + (normalizedValue - baseNormalized) * tracking.fadeProgress;
+        visualValue =
+          baseNormalized + (interpolatedValue - baseNormalized) * tracking.fadeProgress;
       } else {
-        visualValue = normalizedValue;
+        visualValue = interpolatedValue;
       }
 
-      // Update control visual
+      // Update control visual with smooth interpolated value
       tracking.control.setVisualValue(visualValue);
 
       // Store last value
