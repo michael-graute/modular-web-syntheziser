@@ -61,6 +61,16 @@ export class Oscillator extends SynthComponent {
     this.oscillator.frequency.value = this.getParameter('frequency')?.getValue() || 0;
     this.oscillator.detune.value = this.getParameter('detune')?.getValue() || 0;
 
+    // Link AudioParams to Parameters for CV visualization
+    const frequencyParam = this.getParameter('frequency');
+    const detuneParam = this.getParameter('detune');
+    if (frequencyParam) {
+      frequencyParam.linkAudioParam(this.oscillator.frequency);
+    }
+    if (detuneParam) {
+      detuneParam.linkAudioParam(this.oscillator.detune);
+    }
+
     // Start oscillator
     this.oscillator.start();
 

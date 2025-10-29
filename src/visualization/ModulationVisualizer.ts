@@ -48,6 +48,7 @@ export class ModulationVisualizer implements IModulationVisualizer {
   private interpolationEnabled: boolean = true; // Enable interpolation for smooth 60 FPS
   private samplingInterval: number = 50; // 20 Hz = 50ms between samples
   private audioRateThreshold: number = 20; // Hz - detect audio-rate modulation
+  private audioContext: AudioContext | null = null;
 
   constructor() {
     this.sampler = new ParameterValueSampler();
@@ -75,6 +76,9 @@ export class ModulationVisualizer implements IModulationVisualizer {
     }
 
     try {
+      // Store audio context
+      this.audioContext = config.audioContext;
+
       // Create shared buffer (allocate space for max parameters)
       // Use Int32Array for Atomics support
       const maxParameters = config.maxParameters || 256;
@@ -120,9 +124,19 @@ export class ModulationVisualizer implements IModulationVisualizer {
     // Get parameter from control
     const parameter = control.getParameter();
 
-    // TODO: Register with sampler when AudioParam linkage is implemented
-    // For now, just allocate a buffer index (Phase 4 will link to actual AudioParams)
-    const bufferIndex = 0; // Placeholder
+    // Get AudioParam for sampling
+    const audioParam = parameter.getAudioParam();
+    if (!audioParam) {
+      console.warn(
+        `Parameter "${parameterId}" has no linked AudioParam - visualization will not work`
+      );
+      // Still track it, but it won't update
+    }
+
+    // Register with sampler
+    const bufferIndex = audioParam
+      ? this.sampler.registerParameter(parameterId, audioParam)
+      : 0;
 
     // Create tracking entry with interpolation state
     const initialValue = parameter.getNormalizedValue();
@@ -174,18 +188,56 @@ export class ModulationVisualizer implements IModulationVisualizer {
   /**
    * Handle connection created event
    */
-  onConnectionCreated(connection: Connection): void {
+  onConnectionCreated(data: any): void {
+    const connection = data.connection;
+    const sourceComponent = data.sourceComponent;
+
     // Store connection
     this.connections.set(connection.id, connection);
 
     // For CV connections, targetPortId is the parameter ID
-    const parameterId = connection.targetPortId;
+    // Some components use a "_cv" suffix for CV input ports (e.g., "cutoff_cv")
+    // Try the exact port ID first, then try without "_cv" suffix
+    let parameterId = connection.targetPortId;
+    let tracking = this.trackedParameters.get(parameterId);
 
-    // Find tracked parameter
-    const tracking = this.trackedParameters.get(parameterId);
+    if (!tracking && parameterId.endsWith('_cv')) {
+      // Try without the "_cv" suffix
+      const baseParameterId = parameterId.slice(0, -3);
+      tracking = this.trackedParameters.get(baseParameterId);
+      if (tracking) {
+        parameterId = baseParameterId;
+      }
+    }
+
     if (!tracking) {
+      console.warn(`[ModViz] Parameter "${connection.targetPortId}" not tracked! Cannot visualize.`);
       return;
     }
+
+    // Get the CV source output node
+    const cvSourceNode = sourceComponent.getOutputNodeByPort(connection.sourcePortId);
+    if (!cvSourceNode) {
+      console.error(`[ModViz] Could not get CV source node for ${connection.sourceComponentId}:${connection.sourcePortId}`);
+      return;
+    }
+
+    // Create an AnalyserNode to sample the CV signal
+    if (!this.audioContext) {
+      console.error(`[ModViz] Audio context not available`);
+      return;
+    }
+    const analyserNode = this.audioContext.createAnalyser();
+    analyserNode.fftSize = 32; // Minimum size for fast analysis
+    const dataArray = new Float32Array(analyserNode.fftSize);
+
+    // Connect CV source to analyser (in parallel with AudioParam connection)
+    cvSourceNode.connect(analyserNode);
+
+    // Store analyser info with tracking
+    (tracking as any).cvAnalyser = analyserNode;
+    (tracking as any).cvDataArray = dataArray;
+    (tracking as any).cvConnectionId = connection.id;
 
     // Mark as connected and start fade-in
     tracking.isConnected = true;
@@ -206,7 +258,7 @@ export class ModulationVisualizer implements IModulationVisualizer {
       direction: 'in',
     });
 
-    console.log(`✓ Connection created: ${connection.sourceComponentId} → ${parameterId}`);
+    console.log(`✓ Connection created with CV analyser: ${connection.sourceComponentId} → ${parameterId}`);
   }
 
   /**
@@ -219,17 +271,50 @@ export class ModulationVisualizer implements IModulationVisualizer {
       return;
     }
 
-    const parameterId = connection.targetPortId;
+    // Apply the same mapping logic as in onConnectionCreated
+    // Try the exact port ID first, then try without "_cv" suffix
+    let parameterId = connection.targetPortId;
+    let tracking = this.trackedParameters.get(parameterId);
 
-    // Find tracked parameter
-    const tracking = this.trackedParameters.get(parameterId);
+    if (!tracking && parameterId.endsWith('_cv')) {
+      // Try without the "_cv" suffix
+      const baseParameterId = parameterId.slice(0, -3);
+      tracking = this.trackedParameters.get(baseParameterId);
+      if (tracking) {
+        parameterId = baseParameterId;
+      }
+    }
+
     if (tracking) {
       // Check if parameter has other connections
+      // Need to check both the mapped parameter ID and the original port ID
       const hasOtherConnections = Array.from(this.connections.values()).some(
-        (conn) => conn.id !== connectionId && conn.targetPortId === parameterId
+        (conn) => {
+          if (conn.id === connectionId) return false;
+
+          // Map the connection's target port ID the same way
+          let otherParameterId = conn.targetPortId;
+          if (!this.trackedParameters.has(otherParameterId) && otherParameterId.endsWith('_cv')) {
+            otherParameterId = otherParameterId.slice(0, -3);
+          }
+
+          return otherParameterId === parameterId;
+        }
       );
 
       if (!hasOtherConnections) {
+        // Disconnect and cleanup analyser
+        if ((tracking as any).cvAnalyser) {
+          try {
+            ((tracking as any).cvAnalyser as AnalyserNode).disconnect();
+          } catch (e) {
+            // Already disconnected
+          }
+          delete (tracking as any).cvAnalyser;
+          delete (tracking as any).cvDataArray;
+          delete (tracking as any).cvConnectionId;
+        }
+
         // Start fade-out
         tracking.fadeDirection = 'out';
         tracking.fadeProgress = 1;
@@ -392,26 +477,65 @@ export class ModulationVisualizer implements IModulationVisualizer {
         return;
       }
 
-      // Sample current value (20 Hz from audio thread)
-      const sampledValue = this.sampler.getValue(tracking.parameterId);
-      if (sampledValue === null) {
-        return;
+      // Sample CV modulation value if available
+      let modulatedValue: number;
+
+      if ((tracking as any).cvAnalyser && (tracking as any).cvDataArray) {
+        // Sample from CV AnalyserNode
+        const analyser = (tracking as any).cvAnalyser as AnalyserNode;
+        const dataArray = (tracking as any).cvDataArray as Float32Array;
+
+        // Get time domain data (actual waveform values)
+        analyser.getFloatTimeDomainData(dataArray as Float32Array<ArrayBuffer>);
+
+        // Take the first sample (all samples in a small buffer are roughly the same at 20Hz)
+        const cvValue = dataArray[0] || 0;
+
+
+        // Get base value from AudioParam (not Parameter object) for accurate modulation display
+        const audioParam = tracking.parameter.getAudioParam();
+        const baseValue = audioParam ? audioParam.value : tracking.parameter.baseValue;
+        modulatedValue = baseValue + cvValue;
+
+      } else {
+        // No CV connection, use base parameter value
+        modulatedValue = tracking.parameter.getValue();
       }
 
-      // Clamp to parameter range
+      // Clamp to parameter range FIRST
       const clampedValue = Math.max(
         tracking.parameter.min,
-        Math.min(tracking.parameter.max, sampledValue)
+        Math.min(tracking.parameter.max, modulatedValue)
       );
 
-      // Calculate normalized value
-      const normalizedValue =
-        (clampedValue - tracking.parameter.min) /
-        (tracking.parameter.max - tracking.parameter.min);
+      // Calculate normalized value (0 to 1)
+      // Handle case where min === max to avoid division by zero
+      const range = tracking.parameter.max - tracking.parameter.min;
+      let normalizedValue = range > 0
+        ? (clampedValue - tracking.parameter.min) / range
+        : 0.5;
+
+      // VISUAL ENHANCEMENT: For parameters with very large ranges (>1000),
+      // apply a "zoom" factor to make CV modulation more visible
+      // This is purely for visual feedback - it doesn't affect the actual audio
+      if (range > 1000 && (tracking as any).cvAnalyser) {
+        // Get the base parameter value (where the knob was manually set)
+        const baseNormalized = (tracking.parameter.baseValue - tracking.parameter.min) / range;
+
+        // Calculate the modulation delta from base
+        const modulationDelta = normalizedValue - baseNormalized;
+
+        // Amplify the visual modulation by 20x for better visibility
+        const amplifiedDelta = modulationDelta * 20;
+
+        // Apply amplified modulation, clamped to 0-1 range
+        normalizedValue = Math.max(0, Math.min(1, baseNormalized + amplifiedDelta));
+
+      }
 
       // Check if we received a new sample (T044 - audio-rate detection)
       const timeSinceLastSample = currentTime - tracking.lastSampleTime;
-      const hasNewSample = tracking.lastValue !== sampledValue;
+      const hasNewSample = tracking.lastValue !== modulatedValue;
 
       if (hasNewSample) {
         // Detect audio-rate modulation (>20 Hz)
@@ -421,19 +545,17 @@ export class ModulationVisualizer implements IModulationVisualizer {
         if (isAudioRate) {
           // T045: For audio-rate, reduce visual update rate (use every 3rd sample)
           // This prevents visual chaos from ultra-fast modulation
-          // Just update target less frequently by skipping interpolation reset
-          console.log(`Audio-rate modulation detected: ${detectedRate.toFixed(1)} Hz`);
         }
 
         // Update parameter modulated value
-        tracking.parameter.setModulatedValue(sampledValue);
+        tracking.parameter.setModulatedValue(modulatedValue);
 
         // Start new interpolation to the new target
         tracking.lastRenderedValue = tracking.targetValue;
         tracking.targetValue = normalizedValue;
         tracking.interpolationProgress = 0;
         tracking.lastSampleTime = currentTime;
-        tracking.lastValue = sampledValue;
+        tracking.lastValue = modulatedValue;
       }
 
       // T040: Update interpolation progress based on frame delta time
@@ -470,9 +592,6 @@ export class ModulationVisualizer implements IModulationVisualizer {
 
       // Update control visual with smooth interpolated value
       tracking.control.setVisualValue(visualValue);
-
-      // Store last value
-      tracking.lastValue = sampledValue;
 
       // Emit change event
       eventBus.emit(ModulationEventType.PARAMETER_VALUE_CHANGED, {

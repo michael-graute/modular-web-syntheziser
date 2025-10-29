@@ -19,6 +19,7 @@ export class Parameter {
   isModulated: boolean = false;
   modulatedValue: number = 0;
   baseValue: number = 0;
+  audioParam: AudioParam | null = null; // Link to Web Audio API AudioParam for sampling
 
   constructor(
     id: string,
@@ -105,6 +106,21 @@ export class Parameter {
    */
   private clamp(value: number): number {
     return Math.max(this.min, Math.min(this.max, value));
+  }
+
+  /**
+   * Link this parameter to a Web Audio API AudioParam
+   * This enables realtime CV visualization sampling
+   */
+  linkAudioParam(audioParam: AudioParam): void {
+    this.audioParam = audioParam;
+  }
+
+  /**
+   * Get linked AudioParam
+   */
+  getAudioParam(): AudioParam | null {
+    return this.audioParam;
   }
 
   /**

@@ -309,6 +309,19 @@ async function initializeModulationVisualizer(): Promise<void> {
     // Start the visualizer
     modulationVisualizer.start();
 
+    // Listen for connection lifecycle events
+    eventBus.on(EventType.CONNECTION_ADDED, (data: any) => {
+      if (modulationVisualizer) {
+        modulationVisualizer.onConnectionCreated(data);
+      }
+    });
+
+    eventBus.on(EventType.CONNECTION_REMOVED, (data: any) => {
+      if (modulationVisualizer) {
+        modulationVisualizer.onConnectionDestroyed(data);
+      }
+    });
+
     console.log('✅ ModulationVisualizer initialized and started');
   } catch (error) {
     console.error('Failed to initialize ModulationVisualizer:', error);

@@ -286,6 +286,15 @@ export abstract class SynthComponent {
   }
 
   /**
+   * Get input node for a specific port (override in subclasses if needed)
+   */
+  protected getInputNodeByPort(_portId: string): AudioNode | null {
+    // Default implementation returns the main input node
+    // Subclasses can override to return port-specific nodes
+    return this.getInputNode();
+  }
+
+  /**
    * Get AudioParam for a specific input port (override in subclasses for CV inputs)
    */
   protected getAudioParamForInput(_inputId: string): AudioParam | null {
@@ -297,30 +306,62 @@ export abstract class SynthComponent {
   /**
    * Disconnect from another component
    */
-  disconnectFrom(target: SynthComponent): void {
-    const outputNode = this.getOutputNode();
-    const inputNode = target.getInputNode();
-
-    if (!outputNode || !inputNode) {
-      return;
-    }
-
+  disconnectFrom(target: SynthComponent, outputId?: string, inputId?: string): void {
     try {
-      outputNode.disconnect(inputNode);
+      // If port IDs provided, disconnect specific connection
+      if (outputId && inputId) {
+        const outputNode = this.getOutputNodeByPort(outputId);
+        const outputPort = this.outputs.get(outputId);
+        const inputPort = target.inputs.get(inputId);
 
-      // If this was a gate connection to ADSR, unregister
-      if (target.type === 'adsr-envelope') {
-        const unregisterMethod = (this as any).unregisterGateTarget;
-        if (unregisterMethod && typeof unregisterMethod === 'function') {
-          unregisterMethod.call(this, target);
+        if (!outputNode || !outputPort || !inputPort) {
+          console.warn(`Cannot disconnect: port not found (${outputId} -> ${inputId})`);
+          return;
+        }
+
+        // For CV/Gate connections to AudioParams, disconnect from the AudioParam
+        if (outputPort.type === 'cv' || outputPort.type === 'gate') {
+          const targetParam = target.getAudioParamForInput(inputId);
+
+          if (targetParam) {
+            outputNode.disconnect(targetParam);
+            console.log(`✓ Disconnected ${this.name}:${outputPort.name} from ${target.name}:${inputPort.name} (AudioParam)`);
+          }
+
+          // If this was a gate connection to ADSR, unregister
+          if (outputPort.type === 'gate' && target.type === 'adsr-envelope') {
+            const unregisterMethod = (this as any).unregisterGateTarget;
+            if (unregisterMethod && typeof unregisterMethod === 'function') {
+              unregisterMethod.call(this, target);
+            }
+          }
+        } else {
+          // For audio connections, disconnect from input node
+          const inputNode = target.getInputNodeByPort(inputId);
+          if (inputNode) {
+            outputNode.disconnect(inputNode);
+            console.log(`✓ Disconnected ${this.name}:${outputPort.name} from ${target.name}:${inputPort.name} (Audio)`);
+          }
+        }
+
+        // Update port connection state
+        outputPort.disconnect();
+        inputPort.disconnect();
+      } else {
+        // Fallback: disconnect all (legacy behavior)
+        const outputNode = this.getOutputNode();
+        const inputNode = target.getInputNode();
+
+        if (outputNode && inputNode) {
+          outputNode.disconnect(inputNode);
+
+          // Update port connections
+          this.outputs.forEach((port) => port.disconnect());
+          target.inputs.forEach((port) => port.disconnect());
+
+          console.log(`Disconnected ${this.name} from ${target.name} (all connections)`);
         }
       }
-
-      // Update port connections
-      this.outputs.forEach((port) => port.disconnect());
-      target.inputs.forEach((port) => port.disconnect());
-
-      console.log(`Disconnected ${this.name} from ${target.name}`);
     } catch (error) {
       console.error(`Failed to disconnect components:`, error);
     }

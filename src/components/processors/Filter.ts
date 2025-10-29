@@ -67,6 +67,16 @@ export class Filter extends SynthComponent {
     this.filterNode.frequency.value = this.getParameter('cutoff')?.getValue() || 1000;
     this.filterNode.Q.value = this.getParameter('resonance')?.getValue() || 1;
 
+    // Link AudioParams to Parameters for CV visualization
+    const cutoffParam = this.getParameter('cutoff');
+    const resonanceParam = this.getParameter('resonance');
+    if (cutoffParam) {
+      cutoffParam.linkAudioParam(this.filterNode.frequency);
+    }
+    if (resonanceParam) {
+      resonanceParam.linkAudioParam(this.filterNode.Q);
+    }
+
     // Connect: input -> filter -> output
     this.inputGain.connect(this.filterNode);
     this.filterNode.connect(this.outputGain);

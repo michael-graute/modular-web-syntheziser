@@ -5,6 +5,8 @@
 import { Connection } from '../core/Connection';
 import { CanvasConnection } from './Connection';
 import { CanvasComponent } from './CanvasComponent';
+import { eventBus } from '../core/EventBus';
+import { EventType, SignalType } from '../core/types';
 
 /**
  * Manages all connections in the patch
@@ -138,6 +140,15 @@ export class ConnectionManager {
       `✅ Connected ${sourceComponent.type}:${sourcePort.name} -> ${targetComponent.type}:${targetPort.name}`
     );
 
+    // Notify ModulationVisualizer about CV connections for realtime visualization
+    if (sourcePort.type === SignalType.CV) {
+      eventBus.emit(EventType.CONNECTION_ADDED, {
+        connection,
+        sourceComponent: sourceComponent.synthComponent,
+        targetComponent: targetComponent.synthComponent,
+      });
+    }
+
     return { success: true, connectionId };
   }
 
@@ -154,18 +165,25 @@ export class ConnectionManager {
     const sourceComponent = this.components.get(connection.sourceComponentId);
     const targetComponent = this.components.get(connection.targetComponentId);
 
-    // Disconnect audio nodes
+    // Disconnect audio nodes with specific port IDs
     if (
       sourceComponent?.synthComponent &&
       targetComponent?.synthComponent
     ) {
       try {
         sourceComponent.synthComponent.disconnectFrom(
-          targetComponent.synthComponent
+          targetComponent.synthComponent,
+          connection.sourcePortId,
+          connection.targetPortId
         );
       } catch (error) {
         console.error('Failed to disconnect audio nodes:', error);
       }
+    }
+
+    // Notify ModulationVisualizer about CV connection removal
+    if (connection.signalType === SignalType.CV) {
+      eventBus.emit(EventType.CONNECTION_REMOVED, connectionId);
     }
 
     // Remove connections
