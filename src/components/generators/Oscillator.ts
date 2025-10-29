@@ -58,7 +58,7 @@ export class Oscillator extends SynthComponent {
     const waveformIndex = Math.round(this.getParameter('waveform')?.getValue() || 0);
     this.oscillator.type = WAVEFORM_TYPES[waveformIndex] || 'sine';
 
-    this.oscillator.frequency.value = this.getParameter('frequency')?.getValue() || 440;
+    this.oscillator.frequency.value = this.getParameter('frequency')?.getValue() || 0;
     this.oscillator.detune.value = this.getParameter('detune')?.getValue() || 0;
 
     // Start oscillator

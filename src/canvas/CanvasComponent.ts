@@ -90,10 +90,10 @@ export class CanvasComponent {
           { value: 3, label: 'Triangle' },
         ];
         const dropdown = new Dropdown(
-          this.position.x + 10,
-          this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 5,
-          this.width - 20,
-          24,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
+          this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP,
+          this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2,
+          COMPONENT.DROPDOWN_HEIGHT,
           waveformParam,
           options,
           'Waveform'
@@ -102,13 +102,13 @@ export class CanvasComponent {
       }
 
       // Knobs for frequency and detune - positioned below dropdown
-      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 5 + 24 + 10;
-      const knobSize = 40;
-      const spacing = (this.width - 20 - knobSize * 2) / 3;
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const spacing = (this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2 - knobSize * 2) / 3;
 
       if (frequencyParam) {
         const knob = new Knob(
-          this.position.x + 10 + spacing,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing,
           knobY,
           knobSize,
           frequencyParam
@@ -118,7 +118,7 @@ export class CanvasComponent {
 
       if (detuneParam) {
         const knob = new Knob(
-          this.position.x + 10 + spacing * 2 + knobSize,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 2 + knobSize,
           knobY,
           knobSize,
           detuneParam
@@ -148,10 +148,10 @@ export class CanvasComponent {
           { value: 3, label: 'Notch' },
         ];
         const dropdown = new Dropdown(
-          this.position.x + 10,
-          this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 5,
-          this.width - 20,
-          24,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
+          this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP,
+          this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2,
+          COMPONENT.DROPDOWN_HEIGHT,
           typeParam,
           options,
           'Type'
@@ -160,13 +160,13 @@ export class CanvasComponent {
       }
 
       // Knobs for cutoff and resonance - positioned below dropdown
-      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 5 + 24 + 10;
-      const knobSize = 40;
-      const spacing = (this.width - 20 - knobSize * 2) / 3;
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const spacing = (this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2 - knobSize * 2) / 3;
 
       if (cutoffParam) {
         const knob = new Knob(
-          this.position.x + 10 + spacing,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing,
           knobY,
           knobSize,
           cutoffParam
@@ -176,7 +176,7 @@ export class CanvasComponent {
 
       if (resonanceParam) {
         const knob = new Knob(
-          this.position.x + 10 + spacing * 2 + knobSize,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 2 + knobSize,
           knobY,
           knobSize,
           resonanceParam
@@ -199,16 +199,16 @@ export class CanvasComponent {
       const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
 
       // Create 4 vertical sliders for ADSR
-      const sliderStartY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 10;
-      const sliderHeight = 80;
-      const sliderWidth = 20;
+      const sliderStartY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const sliderHeight = COMPONENT.SLIDER_HEIGHT;
+      const sliderWidth = COMPONENT.SLIDER_WIDTH;
       const numSliders = 4;
-      const totalSpacing = this.width - 20;
+      const totalSpacing = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
       const spacing = (totalSpacing - (numSliders * sliderWidth)) / (numSliders + 1);
 
       if (attackParam) {
         const slider = new Slider(
-          this.position.x + 10 + spacing,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing,
           sliderStartY,
           sliderWidth,
           sliderHeight,
@@ -220,7 +220,7 @@ export class CanvasComponent {
 
       if (decayParam) {
         const slider = new Slider(
-          this.position.x + 10 + spacing * 2 + sliderWidth,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 2 + sliderWidth,
           sliderStartY,
           sliderWidth,
           sliderHeight,
@@ -232,7 +232,7 @@ export class CanvasComponent {
 
       if (sustainParam) {
         const slider = new Slider(
-          this.position.x + 10 + spacing * 3 + sliderWidth * 2,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 3 + sliderWidth * 2,
           sliderStartY,
           sliderWidth,
           sliderHeight,
@@ -244,7 +244,7 @@ export class CanvasComponent {
 
       if (releaseParam) {
         const slider = new Slider(
-          this.position.x + 10 + spacing * 4 + sliderWidth * 3,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 4 + sliderWidth * 3,
           sliderStartY,
           sliderWidth,
           sliderHeight,
@@ -267,13 +267,13 @@ export class CanvasComponent {
       const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
 
       // Knobs for volume and limiter
-      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 10;
-      const knobSize = 40;
-      const spacing = (this.width - 20 - knobSize * 2) / 3;
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const spacing = (this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2 - knobSize * 2) / 3;
 
       if (volumeParam) {
         const knob = new Knob(
-          this.position.x + 10 + spacing,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing,
           knobY,
           knobSize,
           volumeParam
@@ -283,7 +283,7 @@ export class CanvasComponent {
 
       if (limiterParam) {
         const knob = new Knob(
-          this.position.x + 10 + spacing * 2 + knobSize,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 2 + knobSize,
           knobY,
           knobSize,
           limiterParam
@@ -307,16 +307,16 @@ export class CanvasComponent {
       const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
 
       // Create 5 vertical sliders for Mixer (4 channels + master)
-      const sliderStartY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 10;
-      const sliderHeight = 80;
-      const sliderWidth = 20;
+      const sliderStartY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const sliderHeight = COMPONENT.SLIDER_HEIGHT;
+      const sliderWidth = COMPONENT.SLIDER_WIDTH;
       const numSliders = 5;
-      const totalSpacing = this.width - 20;
+      const totalSpacing = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
       const spacing = (totalSpacing - (numSliders * sliderWidth)) / (numSliders + 1);
 
       if (gain1Param) {
         const slider = new Slider(
-          this.position.x + 10 + spacing,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing,
           sliderStartY,
           sliderWidth,
           sliderHeight,
@@ -328,7 +328,7 @@ export class CanvasComponent {
 
       if (gain2Param) {
         const slider = new Slider(
-          this.position.x + 10 + spacing * 2 + sliderWidth,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 2 + sliderWidth,
           sliderStartY,
           sliderWidth,
           sliderHeight,
@@ -340,7 +340,7 @@ export class CanvasComponent {
 
       if (gain3Param) {
         const slider = new Slider(
-          this.position.x + 10 + spacing * 3 + sliderWidth * 2,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 3 + sliderWidth * 2,
           sliderStartY,
           sliderWidth,
           sliderHeight,
@@ -352,7 +352,7 @@ export class CanvasComponent {
 
       if (gain4Param) {
         const slider = new Slider(
-          this.position.x + 10 + spacing * 4 + sliderWidth * 3,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 4 + sliderWidth * 3,
           sliderStartY,
           sliderWidth,
           sliderHeight,
@@ -364,7 +364,7 @@ export class CanvasComponent {
 
       if (masterParam) {
         const slider = new Slider(
-          this.position.x + 10 + spacing * 5 + sliderWidth * 4,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 5 + sliderWidth * 4,
           sliderStartY,
           sliderWidth,
           sliderHeight,
@@ -388,15 +388,15 @@ export class CanvasComponent {
       const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
 
       // Knobs for delay parameters
-      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 10;
-      const knobSize = 40;
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const knobSize = COMPONENT.KNOB_SIZE;
       const numKnobs = 3;
-      const totalSpacing = this.width - 20;
+      const totalSpacing = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
       const spacing = (totalSpacing - (numKnobs * knobSize)) / (numKnobs + 1);
 
       if (timeParam) {
         const knob = new Knob(
-          this.position.x + 10 + spacing,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing,
           knobY,
           knobSize,
           timeParam
@@ -406,7 +406,7 @@ export class CanvasComponent {
 
       if (feedbackParam) {
         const knob = new Knob(
-          this.position.x + 10 + spacing * 2 + knobSize,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 2 + knobSize,
           knobY,
           knobSize,
           feedbackParam
@@ -416,7 +416,7 @@ export class CanvasComponent {
 
       if (mixParam) {
         const knob = new Knob(
-          this.position.x + 10 + spacing * 3 + knobSize * 2,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 3 + knobSize * 2,
           knobY,
           knobSize,
           mixParam
@@ -438,15 +438,15 @@ export class CanvasComponent {
       const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
 
       // Knobs for reverb parameters
-      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 10;
-      const knobSize = 40;
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const knobSize = COMPONENT.KNOB_SIZE;
       const numKnobs = 3;
-      const totalSpacing = this.width - 20;
+      const totalSpacing = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
       const spacing = (totalSpacing - (numKnobs * knobSize)) / (numKnobs + 1);
 
       if (roomSizeParam) {
         const knob = new Knob(
-          this.position.x + 10 + spacing,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing,
           knobY,
           knobSize,
           roomSizeParam
@@ -456,7 +456,7 @@ export class CanvasComponent {
 
       if (decayParam) {
         const knob = new Knob(
-          this.position.x + 10 + spacing * 2 + knobSize,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 2 + knobSize,
           knobY,
           knobSize,
           decayParam
@@ -466,7 +466,7 @@ export class CanvasComponent {
 
       if (mixParam) {
         const knob = new Knob(
-          this.position.x + 10 + spacing * 3 + knobSize * 2,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 3 + knobSize * 2,
           knobY,
           knobSize,
           mixParam
@@ -495,10 +495,10 @@ export class CanvasComponent {
           { value: 3, label: 'Triangle' },
         ];
         const dropdown = new Dropdown(
-          this.position.x + 10,
-          this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 5,
-          this.width - 20,
-          24,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
+          this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP,
+          this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2,
+          COMPONENT.DROPDOWN_HEIGHT,
           waveformParam,
           options,
           'Waveform'
@@ -507,13 +507,13 @@ export class CanvasComponent {
       }
 
       // Knobs for rate and depth - positioned below dropdown
-      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 5 + 24 + 10;
-      const knobSize = 40;
-      const spacing = (this.width - 20 - knobSize * 2) / 3;
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const spacing = (this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2 - knobSize * 2) / 3;
 
       if (rateParam) {
         const knob = new Knob(
-          this.position.x + 10 + spacing,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing,
           knobY,
           knobSize,
           rateParam
@@ -523,7 +523,7 @@ export class CanvasComponent {
 
       if (depthParam) {
         const knob = new Knob(
-          this.position.x + 10 + spacing * 2 + knobSize,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 2 + knobSize,
           knobY,
           knobSize,
           depthParam
@@ -552,10 +552,10 @@ export class CanvasComponent {
           { value: 2, label: 'Both' },
         ];
         const dropdown = new Dropdown(
-          this.position.x + 10,
-          this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 5,
-          this.width - 20,
-          24,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
+          this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP,
+          this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2,
+          COMPONENT.DROPDOWN_HEIGHT,
           displayModeParam,
           options,
           'Display'
@@ -564,13 +564,13 @@ export class CanvasComponent {
       }
 
       // Knobs for time scale and gain - positioned below dropdown
-      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 5 + 24 + 10;
-      const knobSize = 40;
-      const spacing = (this.width - 20 - knobSize * 2) / 3;
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const spacing = (this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2 - knobSize * 2) / 3;
 
       if (timeScaleParam) {
         const knob = new Knob(
-          this.position.x + 10 + spacing,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing,
           knobY,
           knobSize,
           timeScaleParam
@@ -580,7 +580,7 @@ export class CanvasComponent {
 
       if (gainParam) {
         const knob = new Knob(
-          this.position.x + 10 + spacing * 2 + knobSize,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 2 + knobSize,
           knobY,
           knobSize,
           gainParam
@@ -589,12 +589,12 @@ export class CanvasComponent {
       }
 
       // Create embedded oscilloscope display
-      const displayY = knobY + 40 + 12 + 10;
-      const displayWidth = this.width - 20;
+      const displayY = knobY + 40 + 12 + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const displayWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
       const displayHeight = 150;
 
       this.oscilloscopeDisplay = new OscilloscopeDisplay(
-        this.position.x + 10,
+        this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
         displayY,
         displayWidth,
         displayHeight,
@@ -620,15 +620,15 @@ export class CanvasComponent {
       const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
 
       // Knobs for BPM and note division (mode auto-detected from keyboard connection)
-      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + 10;
-      const knobSize = 40;
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const knobSize = COMPONENT.KNOB_SIZE;
       const numKnobs = 2;
-      const totalSpacing = this.width - 20;
+      const totalSpacing = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
       const spacing = (totalSpacing - (numKnobs * knobSize)) / (numKnobs + 1);
 
       if (bpmParam) {
         const knob = new Knob(
-          this.position.x + 10 + spacing,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing,
           knobY,
           knobSize,
           bpmParam
@@ -638,7 +638,7 @@ export class CanvasComponent {
 
       if (noteValueParam) {
         const knob = new Knob(
-          this.position.x + 10 + spacing * 2 + knobSize,
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 2 + knobSize,
           knobY,
           knobSize,
           noteValueParam
@@ -647,12 +647,12 @@ export class CanvasComponent {
       }
 
       // Create embedded sequencer display
-      const displayY = knobY + 40 + 12 + 10;
-      const displayWidth = this.width - 20;
+      const displayY = knobY + 40 + 12 + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const displayWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
       const displayHeight = 160; // Increased to fully show buttons, grid, and step editor
 
       this.sequencerDisplay = new SequencerDisplay(
-        this.position.x + 10,
+        this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
         displayY,
         displayWidth,
         displayHeight,
@@ -799,6 +799,17 @@ export class CanvasComponent {
   }
 
   /**
+   * Render dropdown menus on top (separate pass for z-index)
+   */
+  renderDropdownMenus(ctx: CanvasRenderingContext2D): void {
+    this.controls.forEach(control => {
+      if (control instanceof Dropdown) {
+        control.renderMenu(ctx);
+      }
+    });
+  }
+
+  /**
    * Render input and output ports
    */
   private renderPorts(ctx: CanvasRenderingContext2D): void {
@@ -820,7 +831,8 @@ export class CanvasComponent {
       ctx.fillStyle = '#b0b0b0';
       ctx.font = '10px -apple-system, sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(port.name, x + portPadding, portY + portSize / 2);
+      ctx.textBaseline = 'middle';
+      ctx.fillText(port.name, x + portPadding, portY);
     });
 
     // Render output ports on the right
@@ -835,7 +847,8 @@ export class CanvasComponent {
       ctx.fillStyle = '#b0b0b0';
       ctx.font = '10px -apple-system, sans-serif';
       ctx.textAlign = 'right';
-      ctx.fillText(port.name, x + this.width - portPadding, portY + portSize / 2);
+      ctx.textBaseline = 'middle';
+      ctx.fillText(port.name, x + this.width - portPadding, portY);
     });
   }
 
@@ -1029,7 +1042,7 @@ export class CanvasComponent {
           return true;
         }
       } else if (control instanceof Dropdown) {
-        if (control.onClick(x, y)) {
+        if (control.onMouseDown(x, y)) {
           // Update audio parameter when dropdown changes
           if (this.synthComponent) {
             const param = control.getParameter();
@@ -1096,13 +1109,22 @@ export class CanvasComponent {
       if (control instanceof Knob && control.containsPoint(x, y)) {
         return true;
       }
-      if (control instanceof Dropdown && control.containsPoint(x, y)) {
-        return true;
+      if (control instanceof Dropdown) {
+        if (control.containsPoint(x, y) || control.containsMenuPoint(x, y)) {
+          return true;
+        }
       }
       if (control instanceof Slider && control.containsPoint(x, y)) {
         return true;
       }
     }
     return false;
+  }
+
+  /**
+   * Get all dropdown controls
+   */
+  getDropdownControls(): Dropdown[] {
+    return this.controls.filter(control => control instanceof Dropdown) as Dropdown[];
   }
 }

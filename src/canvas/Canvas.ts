@@ -171,6 +171,27 @@ export class Canvas {
 
     this.lastMousePos = { x: screenX, y: screenY };
 
+    // Check all open dropdowns first - they need priority for menu interaction
+    for (const component of this.components) {
+      const dropdowns = component.getDropdownControls();
+      for (const dropdown of dropdowns) {
+        if (dropdown.isDropdownOpen()) {
+          // Let the dropdown handle the click (menu item, button, or outside click)
+          if (dropdown.onMouseDown(worldPos.x, worldPos.y)) {
+            // Dropdown handled it (selected an item or toggled)
+            if (component.synthComponent) {
+              const param = dropdown.getParameter();
+              component.synthComponent.setParameterValue(param.id, param.getValue());
+            }
+            return; // Don't process any other interactions
+          } else {
+            // Dropdown didn't handle it (clicked outside) - it closed itself
+            // Continue processing the click for other interactions
+          }
+        }
+      }
+    }
+
     // Check if clicking on a connection for deletion
     const clickedConnectionId = this.connectionManager.getConnectionAt(
       worldPos.x,
@@ -189,9 +210,15 @@ export class Canvas {
     if (clickedComponent) {
       // Check if clicking on a control first
       if (clickedComponent.handleControlMouseDown(worldPos.x, worldPos.y)) {
-        this.interactionMode = InteractionMode.DRAGGING; // Reuse DRAGGING mode for control interaction
-        this.draggedComponents = [clickedComponent.id];
-        this.dragStartPos = { ...worldPos }; // Set drag start so handleMouseMove works
+        // Don't set DRAGGING mode for dropdowns - they handle their own state
+        const dropdowns = clickedComponent.getDropdownControls();
+        const clickedDropdown = dropdowns.find(d => d.containsPoint(worldPos.x, worldPos.y));
+        if (!clickedDropdown) {
+          // Only set DRAGGING mode for knobs and sliders
+          this.interactionMode = InteractionMode.DRAGGING;
+          this.draggedComponents = [clickedComponent.id];
+          this.dragStartPos = { ...worldPos };
+        }
         return;
       }
 
@@ -624,6 +651,9 @@ export class Canvas {
     ) {
       this.renderConnectionPreview();
     }
+
+    // Render dropdown menus on top (after all other components for proper z-index)
+    this.components.forEach((component) => component.renderDropdownMenus(this.ctx));
 
     // Restore context state
     this.ctx.restore();

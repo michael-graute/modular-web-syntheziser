@@ -14,7 +14,7 @@ export const CANVAS = {
 } as const;
 
 /**
- * Component dimensions
+ * Component dimensions and layout
  */
 export const COMPONENT = {
   MIN_WIDTH: 120,
@@ -23,6 +23,15 @@ export const COMPONENT = {
   PORT_SIZE: 12,
   PORT_PADDING: 8,
   PADDING: 16,
+  // Control layout margins
+  CONTROL_MARGIN_HORIZONTAL: 10, // Left/right margin for controls
+  CONTROL_MARGIN_TOP: 5, // Top margin after port area
+  CONTROL_SPACING_VERTICAL: 15, // Vertical spacing between controls
+  // Control dimensions
+  KNOB_SIZE: 40, // Diameter of knob controls
+  DROPDOWN_HEIGHT: 24, // Height of dropdown controls
+  SLIDER_WIDTH: 20, // Width of vertical sliders
+  SLIDER_HEIGHT: 80, // Height of vertical sliders
 } as const;
 
 /**
