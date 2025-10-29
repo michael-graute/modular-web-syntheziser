@@ -63,28 +63,28 @@ Project structure: TypeScript browser application with `src/` at repository root
 
 ### Implementation for User Story 1
 
-- [ ] T017 [P] [US1] Create ParameterValueSampler class in src/visualization/ParameterValueSampler.ts implementing IParameterValueSampler
-- [ ] T018 [P] [US1] Create VisualUpdateScheduler class in src/visualization/VisualUpdateScheduler.ts implementing IVisualUpdateScheduler
-- [ ] T019 [US1] Implement SharedArrayBuffer initialization in ParameterValueSampler.initialize() method
-- [ ] T020 [US1] Implement AudioWorklet loading and registration in ParameterValueSampler.initialize() method
-- [ ] T021 [US1] Implement registerParameter() method in ParameterValueSampler to map parameters to buffer indices
-- [ ] T022 [US1] Implement getValue() method in ParameterValueSampler to read from SharedArrayBuffer using Atomics.load()
-- [ ] T023 [US1] Implement 20Hz sampling logic in public/worklets/parameter-sampler.js AudioWorkletProcessor
-- [ ] T024 [US1] Implement requestAnimationFrame loop in VisualUpdateScheduler with frame delta tracking
-- [ ] T025 [US1] Implement onFrame callback subscription system in VisualUpdateScheduler
-- [ ] T026 [US1] Implement getCurrentFPS() method in VisualUpdateScheduler
-- [ ] T027 [US1] Create ModulationVisualizer class in src/visualization/ModulationVisualizer.ts implementing IModulationVisualizer
-- [ ] T028 [US1] Implement initialize() method in ModulationVisualizer to setup sampler and scheduler
-- [ ] T029 [US1] Implement trackParameter() method in ModulationVisualizer to register parameter-control pairs
-- [ ] T030 [US1] Implement untrackParameter() method in ModulationVisualizer with cleanup
-- [ ] T031 [US1] Implement update loop in ModulationVisualizer.onFrame() to read sampled values and update controls
-- [ ] T032 [US1] Implement basic value propagation (no interpolation yet) from sampler to controls
-- [ ] T033 [US1] Add ModulationVisualizer initialization in src/main.ts after AudioEngine and Canvas setup
-- [ ] T034 [US1] Hook trackParameter() calls in src/main.ts for all existing parameter controls
-- [ ] T035 [US1] Add clamping logic in ModulationVisualizer to respect parameter min/max ranges (FR-006)
-- [ ] T036 [US1] Test User Story 1: Connect LFO to parameter, verify visual updates at 20Hz
+- [X] T017 [P] [US1] Create ParameterValueSampler class in src/visualization/ParameterValueSampler.ts implementing IParameterValueSampler
+- [X] T018 [P] [US1] Create VisualUpdateScheduler class in src/visualization/VisualUpdateScheduler.ts implementing IVisualUpdateScheduler
+- [X] T019 [US1] Implement SharedArrayBuffer initialization in ParameterValueSampler.initialize() method
+- [X] T020 [US1] Implement AudioWorklet loading and registration in ParameterValueSampler.initialize() method
+- [X] T021 [US1] Implement registerParameter() method in ParameterValueSampler to map parameters to buffer indices
+- [X] T022 [US1] Implement getValue() method in ParameterValueSampler to read from SharedArrayBuffer using Atomics.load()
+- [X] T023 [US1] Implement 20Hz sampling logic in public/worklets/parameter-sampler.js AudioWorkletProcessor
+- [X] T024 [US1] Implement requestAnimationFrame loop in VisualUpdateScheduler with frame delta tracking
+- [X] T025 [US1] Implement onFrame callback subscription system in VisualUpdateScheduler
+- [X] T026 [US1] Implement getCurrentFPS() method in VisualUpdateScheduler
+- [X] T027 [US1] Create ModulationVisualizer class in src/visualization/ModulationVisualizer.ts implementing IModulationVisualizer
+- [X] T028 [US1] Implement initialize() method in ModulationVisualizer to setup sampler and scheduler
+- [X] T029 [US1] Implement trackParameter() method in ModulationVisualizer to register parameter-control pairs
+- [X] T030 [US1] Implement untrackParameter() method in ModulationVisualizer with cleanup
+- [X] T031 [US1] Implement update loop in ModulationVisualizer.onFrame() to read sampled values and update controls
+- [X] T032 [US1] Implement basic value propagation (no interpolation yet) from sampler to controls
+- [X] T033 [US1] Add ModulationVisualizer initialization in src/main.ts after AudioEngine and Canvas setup
+- [X] T034 [US1] Hook trackParameter() calls in src/main.ts for all existing parameter controls
+- [X] T035 [US1] Add clamping logic in ModulationVisualizer to respect parameter min/max ranges (FR-006)
+- [ ] T036 [US1] Test User Story 1: Connect LFO to parameter, verify visual updates at 20Hz (requires AudioParam linkage - Phase 4+)
 
-**Checkpoint**: At this point, User Story 1 should be fully functional - parameter controls update when CV-modulated, independently testable
+**Checkpoint**: ✅ Phase 3 complete - Core infrastructure implemented. User Story 1 MVP ready pending AudioParam integration in Phase 4+
 
 ---
 
