@@ -20,6 +20,8 @@ export abstract class SynthComponent {
   parameters: Map<string, Parameter>;
   audioNodes: Map<string, AudioNode>;
   isActive: boolean;
+  private _isBypassed: boolean = false;
+  protected _bypassConnections: Array<{ from: AudioNode; to: AudioNode }> = [];
 
   constructor(id: string, type: ComponentType, name: string, position: Position) {
     this.id = id;
@@ -115,6 +117,63 @@ export abstract class SynthComponent {
 
     parameter.setValue(value);
     this.updateAudioParameter(parameterId, value);
+  }
+
+  /**
+   * Get bypass state
+   */
+  get isBypassed(): boolean {
+    return this._isBypassed;
+  }
+
+  /**
+   * Check if this component type supports bypass
+   */
+  isBypassable(): boolean {
+    const bypassableTypes = [
+      ComponentType.FILTER,
+      ComponentType.VCA,
+      ComponentType.ADSR_ENVELOPE,
+      ComponentType.FILTER_ENVELOPE,
+      ComponentType.DELAY,
+      ComponentType.REVERB,
+      ComponentType.DISTORTION,
+      ComponentType.CHORUS,
+      ComponentType.MIXER,
+    ];
+    return bypassableTypes.includes(this.type);
+  }
+
+  /**
+   * Enable or disable bypass for this component
+   */
+  setBypass(bypassed: boolean): void {
+    if (this._isBypassed === bypassed) return; // No change
+
+    this._isBypassed = bypassed;
+
+    if (bypassed) {
+      this.enableBypass();
+    } else {
+      this.disableBypass();
+    }
+  }
+
+  /**
+   * Enable bypass - to be overridden by subclasses
+   * Default implementation provides warning for non-implemented components
+   */
+  protected enableBypass(): void {
+    // Subclasses should override for component-specific logic
+    console.warn(`Bypass not fully implemented for ${this.type}`);
+  }
+
+  /**
+   * Disable bypass - to be overridden by subclasses
+   */
+  protected disableBypass(): void {
+    // Subclasses should override for component-specific logic
+    console.warn(`Bypass restoration not fully implemented for ${this.type}`);
   }
 
   /**
@@ -274,6 +333,11 @@ export abstract class SynthComponent {
     if (!this.isActive) {
       this.createAudioNodes();
       this.isActive = true;
+
+      // Apply bypass state if it was restored from deserialization
+      if (this._isBypassed) {
+        this.enableBypass();
+      }
     }
   }
 
@@ -329,6 +393,7 @@ export abstract class SynthComponent {
       type: this.type,
       position: { ...this.position },
       parameters: parameterData,
+      isBypassed: this._isBypassed || undefined, // Only include if true
     };
   }
 
@@ -343,5 +408,10 @@ export abstract class SynthComponent {
     Object.entries(data.parameters).forEach(([id, value]) => {
       this.setParameterValue(id, value);
     });
+
+    // Store bypass state flag (will be applied after audio nodes are created)
+    if (data.isBypassed) {
+      this._isBypassed = true;
+    }
   }
 }

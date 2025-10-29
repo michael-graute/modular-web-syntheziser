@@ -203,4 +203,62 @@ export class Delay extends SynthComponent {
   getDelayTimeParam(): AudioParam | null {
     return this.delayNode ? this.delayNode.delayTime : null;
   }
+
+  /**
+   * Enable bypass - connect input directly to output
+   */
+  protected override enableBypass(): void {
+    if (!this.inputGain || !this.outputGain) {
+      return;
+    }
+
+    // Store original connections for restoration
+    this._bypassConnections = [
+      { from: this.inputGain, to: this.dryGain! },
+      { from: this.inputGain, to: this.delayNode! },
+      { from: this.dryGain!, to: this.outputGain },
+      { from: this.delayNode!, to: this.feedbackGain! },
+      { from: this.feedbackGain!, to: this.delayNode! },
+      { from: this.delayNode!, to: this.wetGain! },
+      { from: this.wetGain!, to: this.outputGain },
+    ];
+
+    // Disconnect all processing nodes
+    this.inputGain.disconnect();
+    this.delayNode?.disconnect();
+    this.feedbackGain?.disconnect();
+    this.dryGain?.disconnect();
+    this.wetGain?.disconnect();
+
+    // Connect input directly to output
+    this.inputGain.connect(this.outputGain);
+
+    console.log(`Delay ${this.id} bypassed`);
+  }
+
+  /**
+   * Disable bypass - restore original audio graph
+   */
+  protected override disableBypass(): void {
+    if (!this.inputGain || !this.outputGain) {
+      return;
+    }
+
+    // Disconnect bypass path
+    this.inputGain.disconnect();
+
+    // Restore original connections
+    this._bypassConnections.forEach(({ from, to }) => {
+      try {
+        from.connect(to);
+      } catch (error) {
+        console.error(`Error restoring connection:`, error);
+      }
+    });
+
+    // Clear stored connections
+    this._bypassConnections = [];
+
+    console.log(`Delay ${this.id} restored`);
+  }
 }

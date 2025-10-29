@@ -10,6 +10,7 @@ import { audioEngine } from '../../core/AudioEngine';
  * Mixer component for combining multiple audio sources
  */
 export class Mixer extends SynthComponent {
+  private inputGains: GainNode[];
   private channelGains: GainNode[];
   private outputGain: GainNode | null;
   private readonly numChannels: number = 4;
@@ -17,6 +18,7 @@ export class Mixer extends SynthComponent {
   constructor(id: string, position: Position) {
     super(id, ComponentType.MIXER, 'Mixer', position);
 
+    this.inputGains = [];
     this.channelGains = [];
     this.outputGain = null;
 
@@ -51,19 +53,28 @@ export class Mixer extends SynthComponent {
     this.outputGain = ctx.createGain();
     this.outputGain.gain.value = this.getParameter('master')?.getValue() || 0.75;
 
-    // Create gain node for each channel
+    // Create input and channel gain nodes for each channel
+    this.inputGains = [];
     this.channelGains = [];
     for (let i = 0; i < this.numChannels; i++) {
+      // Create input gain for bypass routing
+      const inputGain = ctx.createGain();
+      inputGain.gain.value = 1.0;
+
+      // Create channel gain for volume control
       const channelGain = ctx.createGain();
       const gainValue = this.getParameter(`gain${i + 1}`)?.getValue() || 0.75;
       channelGain.gain.value = gainValue;
 
-      // Connect channel to output
+      // Connect: input -> channel gain -> output
+      inputGain.connect(channelGain);
       channelGain.connect(this.outputGain);
 
+      this.inputGains.push(inputGain);
       this.channelGains.push(channelGain);
 
       // Register with audio engine
+      this.registerAudioNode(`inputGain${i + 1}`, inputGain);
       this.registerAudioNode(`channelGain${i + 1}`, channelGain);
     }
 
@@ -77,6 +88,12 @@ export class Mixer extends SynthComponent {
    * Destroy audio nodes
    */
   destroyAudioNodes(): void {
+    // Disconnect all input gains
+    this.inputGains.forEach((gain) => {
+      gain.disconnect();
+    });
+    this.inputGains = [];
+
     // Disconnect all channel gains
     this.channelGains.forEach((gain) => {
       gain.disconnect();
@@ -118,14 +135,14 @@ export class Mixer extends SynthComponent {
   getInputNode(portId?: string): AudioNode | null {
     if (!portId) {
       // Default to first channel if no port specified
-      return this.channelGains[0] || null;
+      return this.inputGains[0] || null;
     }
 
     // Extract channel number from portId (e.g., "input1" -> 0)
     if (portId.startsWith('input')) {
       const channelIndex = parseInt(portId.replace('input', '')) - 1;
-      if (channelIndex >= 0 && channelIndex < this.channelGains.length) {
-        return this.channelGains[channelIndex] || null;
+      if (channelIndex >= 0 && channelIndex < this.inputGains.length) {
+        return this.inputGains[channelIndex] || null;
       }
     }
 
@@ -144,5 +161,56 @@ export class Mixer extends SynthComponent {
    */
   getNumChannels(): number {
     return this.numChannels;
+  }
+
+  /**
+   * Enable bypass - connect all inputs directly to output
+   */
+  protected override enableBypass(): void {
+    if (!this.outputGain || this.inputGains.length === 0 || this.channelGains.length === 0) {
+      return;
+    }
+
+    // Store original connections for restoration
+    this._bypassConnections = [];
+    for (let i = 0; i < this.numChannels; i++) {
+      this._bypassConnections.push({ from: this.inputGains[i]!, to: this.channelGains[i]! });
+      this._bypassConnections.push({ from: this.channelGains[i]!, to: this.outputGain });
+    }
+
+    // Disconnect all processing
+    this.inputGains.forEach(inputGain => inputGain.disconnect());
+    this.channelGains.forEach(channelGain => channelGain.disconnect());
+
+    // Connect all inputs directly to output
+    this.inputGains.forEach(inputGain => inputGain.connect(this.outputGain!));
+
+    console.log(`Mixer ${this.id} bypassed`);
+  }
+
+  /**
+   * Disable bypass - restore original audio graph
+   */
+  protected override disableBypass(): void {
+    if (!this.outputGain || this.inputGains.length === 0) {
+      return;
+    }
+
+    // Disconnect bypass paths
+    this.inputGains.forEach(inputGain => inputGain.disconnect());
+
+    // Restore original connections
+    this._bypassConnections.forEach(({ from, to }) => {
+      try {
+        from.connect(to);
+      } catch (error) {
+        console.error(`Error restoring connection:`, error);
+      }
+    });
+
+    // Clear stored connections
+    this._bypassConnections = [];
+
+    console.log(`Mixer ${this.id} restored`);
   }
 }

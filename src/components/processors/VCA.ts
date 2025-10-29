@@ -11,7 +11,9 @@ import { AUDIO } from '../../utils/constants';
  * VCA component for amplitude control
  */
 export class VCA extends SynthComponent {
+  private inputGain: GainNode | null;
   private gainNode: GainNode | null;
+  private outputGain: GainNode | null;
 
   constructor(id: string, position: Position) {
     super(id, ComponentType.VCA, 'VCA', position);
@@ -24,7 +26,9 @@ export class VCA extends SynthComponent {
     // Add parameters (default to 0 so oscillator is silent until keyboard triggers)
     this.addParameter('gain', 'Gain', 0, AUDIO.MIN_GAIN, AUDIO.MAX_GAIN, 0.01, '');
 
+    this.inputGain = null;
     this.gainNode = null;
+    this.outputGain = null;
   }
 
   /**
@@ -37,12 +41,25 @@ export class VCA extends SynthComponent {
 
     const ctx = audioEngine.getContext();
 
-    // Create gain node
+    // Create input and output gain nodes for bypass routing
+    this.inputGain = ctx.createGain();
+    this.inputGain.gain.value = 1.0;
+
+    this.outputGain = ctx.createGain();
+    this.outputGain.gain.value = 1.0;
+
+    // Create main gain node (VCA control)
     this.gainNode = ctx.createGain();
     this.gainNode.gain.value = this.getParameter('gain')?.getValue() || 0;
 
+    // Connect: input -> gainNode (VCA) -> output
+    this.inputGain.connect(this.gainNode);
+    this.gainNode.connect(this.outputGain);
+
     // Register with audio engine
+    this.registerAudioNode('inputGain', this.inputGain);
     this.registerAudioNode('gain', this.gainNode);
+    this.registerAudioNode('outputGain', this.outputGain);
 
     console.log(`VCA ${this.id} created`);
   }
@@ -54,6 +71,16 @@ export class VCA extends SynthComponent {
     if (this.gainNode) {
       this.gainNode.disconnect();
       this.gainNode = null;
+    }
+
+    if (this.inputGain) {
+      this.inputGain.disconnect();
+      this.inputGain = null;
+    }
+
+    if (this.outputGain) {
+      this.outputGain.disconnect();
+      this.outputGain = null;
     }
 
     console.log(`VCA ${this.id} destroyed`);
@@ -81,14 +108,14 @@ export class VCA extends SynthComponent {
    * Get input node for connections
    */
   getInputNode(): AudioNode | null {
-    return this.gainNode;
+    return this.inputGain;
   }
 
   /**
    * Get output node for connections
    */
   getOutputNode(): AudioNode | null {
-    return this.gainNode;
+    return this.outputGain;
   }
 
   /**
@@ -106,5 +133,55 @@ export class VCA extends SynthComponent {
       return this.getGainParam();
     }
     return null;
+  }
+
+  /**
+   * Enable bypass - connect input directly to output
+   */
+  protected override enableBypass(): void {
+    if (!this.inputGain || !this.outputGain || !this.gainNode) {
+      return;
+    }
+
+    // Store original connections for restoration
+    this._bypassConnections = [
+      { from: this.inputGain, to: this.gainNode },
+      { from: this.gainNode, to: this.outputGain },
+    ];
+
+    // Disconnect VCA gain node
+    this.inputGain.disconnect();
+    this.gainNode.disconnect();
+
+    // Connect input directly to output
+    this.inputGain.connect(this.outputGain);
+
+    console.log(`VCA ${this.id} bypassed`);
+  }
+
+  /**
+   * Disable bypass - restore original audio graph
+   */
+  protected override disableBypass(): void {
+    if (!this.inputGain || !this.outputGain) {
+      return;
+    }
+
+    // Disconnect bypass path
+    this.inputGain.disconnect();
+
+    // Restore original connections
+    this._bypassConnections.forEach(({ from, to }) => {
+      try {
+        from.connect(to);
+      } catch (error) {
+        console.error(`Error restoring connection:`, error);
+      }
+    });
+
+    // Clear stored connections
+    this._bypassConnections = [];
+
+    console.log(`VCA ${this.id} restored`);
   }
 }

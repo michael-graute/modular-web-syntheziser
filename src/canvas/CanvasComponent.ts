@@ -8,6 +8,7 @@ import type { SynthComponent } from '../components/base/SynthComponent';
 import { Knob } from './controls/Knob';
 import { Dropdown, DropdownOption } from './controls/Dropdown';
 import { Slider } from './controls/Slider';
+import { Button } from './controls/Button';
 import { OscilloscopeDisplay } from './displays/OscilloscopeDisplay';
 import { SequencerDisplay } from './displays/SequencerDisplay';
 import type { Oscilloscope } from '../components/analyzers/Oscilloscope';
@@ -27,6 +28,7 @@ export class CanvasComponent {
   isSelected: boolean;
   synthComponent: SynthComponent | null;
   private controls: Control[] = [];
+  private bypassButton: Button | null = null;
   private oscilloscopeDisplay: OscilloscopeDisplay | null = null;
   private sequencerDisplay: SequencerDisplay | null = null;
 
@@ -741,6 +743,11 @@ export class CanvasComponent {
     // Save context state
     ctx.save();
 
+    // Apply dimming if bypassed
+    if (this.synthComponent?.isBypassed) {
+      ctx.globalAlpha = COMPONENT.BYPASSED_OPACITY;
+    }
+
     // Draw component background
     ctx.fillStyle = '#2a2a2a';
     ctx.fillRect(x, y, this.width, this.height);
@@ -772,6 +779,11 @@ export class CanvasComponent {
       x + 8,
       y + COMPONENT.HEADER_HEIGHT / 2
     );
+
+    // Draw bypass button in header (for bypassable components)
+    if (this.synthComponent?.isBypassable()) {
+      this.renderBypassButton(ctx);
+    }
 
     // Draw ports if synth component is linked
     if (this.synthComponent) {
@@ -807,6 +819,48 @@ export class CanvasComponent {
         control.renderMenu(ctx);
       }
     });
+  }
+
+  /**
+   * Render bypass button in component header
+   */
+  private renderBypassButton(ctx: CanvasRenderingContext2D): void {
+    if (!this.synthComponent) return;
+
+    const buttonSize = COMPONENT.BYPASS_BUTTON_SIZE;
+    const buttonX = this.position.x + this.width - buttonSize - COMPONENT.BYPASS_BUTTON_MARGIN;
+    const buttonY = this.position.y + (COMPONENT.HEADER_HEIGHT - buttonSize) / 2;
+
+    // Create button if it doesn't exist
+    if (!this.bypassButton) {
+      this.bypassButton = new Button(
+        buttonX,
+        buttonY,
+        buttonSize,
+        buttonSize,
+        '⚡',
+        () => this.toggleBypass(),
+        () => !this.synthComponent!.isBypassed // Active when NOT bypassed
+      );
+    }
+
+    // Update button position (in case component moved)
+    this.bypassButton.updatePosition(buttonX, buttonY);
+
+    // Render button
+    this.bypassButton.render(ctx);
+  }
+
+  /**
+   * Toggle bypass state
+   */
+  private toggleBypass(): void {
+    if (!this.synthComponent) return;
+
+    const newState = !this.synthComponent.isBypassed;
+    this.synthComponent.setBypass(newState);
+
+    console.log(`${this.synthComponent.type} bypass: ${newState}`);
   }
 
   /**
@@ -1036,6 +1090,11 @@ export class CanvasComponent {
    * Returns true if a control handled the event
    */
   handleControlMouseDown(x: number, y: number): boolean {
+    // Check bypass button first
+    if (this.bypassButton?.handleMouseDown(x, y)) {
+      return true;
+    }
+
     for (const control of this.controls) {
       if (control instanceof Knob) {
         if (control.onMouseDown(x, y)) {
@@ -1091,7 +1150,12 @@ export class CanvasComponent {
   /**
    * Handle mouse up on controls
    */
-  handleControlMouseUp(): void {
+  handleControlMouseUp(x: number, y: number): void {
+    // Check bypass button first
+    if (this.bypassButton?.handleMouseUp(x, y)) {
+      return;
+    }
+
     for (const control of this.controls) {
       if (control instanceof Knob) {
         control.onMouseUp();

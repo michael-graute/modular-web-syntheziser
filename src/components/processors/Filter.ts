@@ -16,7 +16,9 @@ const FILTER_TYPE_LIST: BiquadFilterType[] = ['lowpass', 'highpass', 'bandpass',
  * Filter component for audio processing
  */
 export class Filter extends SynthComponent {
+  private inputGain: GainNode | null;
   private filterNode: BiquadFilterNode | null;
+  private outputGain: GainNode | null;
 
   constructor(id: string, position: Position) {
     super(id, ComponentType.FILTER, 'Filter', position);
@@ -33,7 +35,9 @@ export class Filter extends SynthComponent {
     this.addParameter('cutoff', 'Cutoff', 1000, AUDIO.MIN_FREQUENCY, AUDIO.MAX_FREQUENCY, 1, 'Hz');
     this.addParameter('resonance', 'Resonance', 1, AUDIO.MIN_Q, AUDIO.MAX_Q, 0.01, '');
 
+    this.inputGain = null;
     this.filterNode = null;
+    this.outputGain = null;
   }
 
   /**
@@ -46,6 +50,13 @@ export class Filter extends SynthComponent {
 
     const ctx = audioEngine.getContext();
 
+    // Create input and output gain nodes for bypass routing
+    this.inputGain = ctx.createGain();
+    this.inputGain.gain.value = 1.0;
+
+    this.outputGain = ctx.createGain();
+    this.outputGain.gain.value = 1.0;
+
     // Create filter node
     this.filterNode = ctx.createBiquadFilter();
 
@@ -56,8 +67,14 @@ export class Filter extends SynthComponent {
     this.filterNode.frequency.value = this.getParameter('cutoff')?.getValue() || 1000;
     this.filterNode.Q.value = this.getParameter('resonance')?.getValue() || 1;
 
+    // Connect: input -> filter -> output
+    this.inputGain.connect(this.filterNode);
+    this.filterNode.connect(this.outputGain);
+
     // Register with audio engine
+    this.registerAudioNode('inputGain', this.inputGain);
     this.registerAudioNode('filter', this.filterNode);
+    this.registerAudioNode('outputGain', this.outputGain);
 
     console.log(`Filter ${this.id} created with type: ${this.filterNode.type}`);
   }
@@ -69,6 +86,16 @@ export class Filter extends SynthComponent {
     if (this.filterNode) {
       this.filterNode.disconnect();
       this.filterNode = null;
+    }
+
+    if (this.inputGain) {
+      this.inputGain.disconnect();
+      this.inputGain = null;
+    }
+
+    if (this.outputGain) {
+      this.outputGain.disconnect();
+      this.outputGain = null;
     }
 
     console.log(`Filter ${this.id} destroyed`);
@@ -104,14 +131,14 @@ export class Filter extends SynthComponent {
    * Get input node for connections
    */
   getInputNode(): AudioNode | null {
-    return this.filterNode;
+    return this.inputGain;
   }
 
   /**
    * Get output node for connections
    */
   getOutputNode(): AudioNode | null {
-    return this.filterNode;
+    return this.outputGain;
   }
 
   /**
@@ -148,5 +175,55 @@ export class Filter extends SynthComponent {
       default:
         return null;
     }
+  }
+
+  /**
+   * Enable bypass - connect input directly to output
+   */
+  protected override enableBypass(): void {
+    if (!this.inputGain || !this.outputGain || !this.filterNode) {
+      return;
+    }
+
+    // Store original connections for restoration
+    this._bypassConnections = [
+      { from: this.inputGain, to: this.filterNode },
+      { from: this.filterNode, to: this.outputGain },
+    ];
+
+    // Disconnect filter
+    this.inputGain.disconnect();
+    this.filterNode.disconnect();
+
+    // Connect input directly to output
+    this.inputGain.connect(this.outputGain);
+
+    console.log(`Filter ${this.id} bypassed`);
+  }
+
+  /**
+   * Disable bypass - restore original audio graph
+   */
+  protected override disableBypass(): void {
+    if (!this.inputGain || !this.outputGain) {
+      return;
+    }
+
+    // Disconnect bypass path
+    this.inputGain.disconnect();
+
+    // Restore original connections
+    this._bypassConnections.forEach(({ from, to }) => {
+      try {
+        from.connect(to);
+      } catch (error) {
+        console.error(`Error restoring connection:`, error);
+      }
+    });
+
+    // Clear stored connections
+    this._bypassConnections = [];
+
+    console.log(`Filter ${this.id} restored`);
   }
 }

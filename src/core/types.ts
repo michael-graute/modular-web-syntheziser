@@ -85,6 +85,7 @@ export interface ComponentData {
   type: ComponentType;
   position: Position;
   parameters: Record<string, number>;
+  isBypassed?: boolean;
 }
 
 /**

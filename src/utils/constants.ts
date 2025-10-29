@@ -32,6 +32,11 @@ export const COMPONENT = {
   DROPDOWN_HEIGHT: 24, // Height of dropdown controls
   SLIDER_WIDTH: 20, // Width of vertical sliders
   SLIDER_HEIGHT: 80, // Height of vertical sliders
+  // Bypass button
+  BYPASS_BUTTON_SIZE: 20, // Size of bypass button in component header
+  BYPASS_BUTTON_MARGIN: 8, // Margin from right edge of component header
+  // Visual feedback
+  BYPASSED_OPACITY: 0.6, // Opacity of bypassed components
 } as const;
 
 /**

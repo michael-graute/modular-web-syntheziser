@@ -396,11 +396,17 @@ export class Canvas {
   /**
    * Handle mouse up event
    */
-  private handleMouseUp(_e: MouseEvent): void {
+  private handleMouseUp(e: MouseEvent): void {
+    // Get world coordinates for control interactions
+    const rect = this.canvas.getBoundingClientRect();
+    const screenX = e.clientX - rect.left;
+    const screenY = e.clientY - rect.top;
+    const worldPos = this.viewport.screenToWorld(screenX, screenY);
+
     if (this.interactionMode === InteractionMode.DRAGGING) {
       // Release all control mouse ups
       this.components.forEach(component => {
-        component.handleControlMouseUp();
+        component.handleControlMouseUp(worldPos.x, worldPos.y);
       });
 
       // Snap components to grid if enabled

@@ -13,6 +13,7 @@ import { ENVELOPE } from '../../utils/constants';
 export class ADSREnvelope extends SynthComponent {
   private constantSource: ConstantSourceNode | null;
   private gainNode: GainNode | null;
+  private outputGain: GainNode | null;
   private isGateOn: boolean = false;
 
   constructor(id: string, position: Position) {
@@ -30,6 +31,7 @@ export class ADSREnvelope extends SynthComponent {
 
     this.constantSource = null;
     this.gainNode = null;
+    this.outputGain = null;
   }
 
   /**
@@ -52,12 +54,18 @@ export class ADSREnvelope extends SynthComponent {
     this.gainNode = ctx.createGain();
     this.gainNode.gain.value = 0; // Start at 0
 
-    // Connect constant source through gain node
+    // Create output gain for bypass routing
+    this.outputGain = ctx.createGain();
+    this.outputGain.gain.value = 1.0;
+
+    // Connect: constant -> envelope gain -> output gain
     this.constantSource.connect(this.gainNode);
+    this.gainNode.connect(this.outputGain);
 
     // Register with audio engine
     this.registerAudioNode('constantSource', this.constantSource);
     this.registerAudioNode('envelope', this.gainNode);
+    this.registerAudioNode('outputGain', this.outputGain);
 
     console.log(`ADSR Envelope ${this.id} created`);
   }
@@ -75,6 +83,11 @@ export class ADSREnvelope extends SynthComponent {
     if (this.gainNode) {
       this.gainNode.disconnect();
       this.gainNode = null;
+    }
+
+    if (this.outputGain) {
+      this.outputGain.disconnect();
+      this.outputGain = null;
     }
 
     this.isGateOn = false;
@@ -102,7 +115,7 @@ export class ADSREnvelope extends SynthComponent {
    * Get output node for connections
    */
   getOutputNode(): AudioNode | null {
-    return this.gainNode;
+    return this.outputGain;
   }
 
   /**
@@ -202,6 +215,50 @@ export class ADSREnvelope extends SynthComponent {
    * ADSR outputs CV signal from the envelope gainNode
    */
   protected override getOutputNodeByPort(_portId: string): AudioNode | null {
-    return this.gainNode;
+    return this.outputGain;
+  }
+
+  /**
+   * Enable bypass - set envelope output to zero (no modulation)
+   */
+  protected override enableBypass(): void {
+    if (!this.gainNode || !this.outputGain) {
+      return;
+    }
+
+    // Store original connections for restoration
+    this._bypassConnections = [
+      { from: this.gainNode, to: this.outputGain },
+    ];
+
+    // Disconnect envelope from output
+    this.gainNode.disconnect();
+
+    // Output gain remains connected but receives no input (outputs silence/zero CV)
+
+    console.log(`ADSR Envelope ${this.id} bypassed`);
+  }
+
+  /**
+   * Disable bypass - restore envelope output
+   */
+  protected override disableBypass(): void {
+    if (!this.gainNode || !this.outputGain) {
+      return;
+    }
+
+    // Restore original connections
+    this._bypassConnections.forEach(({ from, to }) => {
+      try {
+        from.connect(to);
+      } catch (error) {
+        console.error(`Error restoring connection:`, error);
+      }
+    });
+
+    // Clear stored connections
+    this._bypassConnections = [];
+
+    console.log(`ADSR Envelope ${this.id} restored`);
   }
 }
