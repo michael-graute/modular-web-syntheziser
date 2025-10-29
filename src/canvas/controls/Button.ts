@@ -3,7 +3,10 @@
  * Clickable button for triggering actions
  */
 
-export class Button {
+import { Parameter } from '../../components/base/Parameter';
+import { IVisualizableControl } from '../../visualization/types';
+
+export class Button implements IVisualizableControl {
   private x: number;
   private y: number;
   private width: number;
@@ -14,6 +17,12 @@ export class Button {
   private isHovered: boolean = false;
   private state?: () => boolean; // Optional state function for toggle buttons
 
+  // Visualization properties
+  private controlId: string;
+  private visible: boolean = true;
+  private visualValue: number | null = null;
+  private parameter: Parameter | null = null; // Optional parameter for modulation
+
   constructor(
     x: number,
     y: number,
@@ -21,7 +30,8 @@ export class Button {
     height: number,
     label: string,
     onClick: () => void,
-    state?: () => boolean
+    state?: () => boolean,
+    parameter?: Parameter
   ) {
     this.x = x;
     this.y = y;
@@ -30,12 +40,42 @@ export class Button {
     this.label = label;
     this.onClick = onClick;
     this.state = state;
+    this.parameter = parameter || null;
+    this.controlId = `button-${label}-${Date.now()}`;
+  }
+
+  // IVisualizableControl implementation
+  getControlId(): string {
+    return this.controlId;
+  }
+
+  setVisualValue(normalizedValue: number): void {
+    this.visualValue = Math.max(0, Math.min(1, normalizedValue));
+  }
+
+  isVisible(): boolean {
+    return this.visible;
+  }
+
+  setVisibility(visible: boolean): void {
+    this.visible = visible;
+  }
+
+  getParameter(): Parameter {
+    if (!this.parameter) {
+      throw new Error('Button does not have an associated parameter');
+    }
+    return this.parameter;
   }
 
   /**
    * Render the button
    */
   render(ctx: CanvasRenderingContext2D): void {
+    if (!this.visible) {
+      return;
+    }
+
     const isActive = this.state ? this.state() : false;
 
     // Draw button background

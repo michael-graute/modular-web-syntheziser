@@ -15,6 +15,11 @@ export class Parameter {
   unit: string;
   defaultValue: number;
 
+  // Modulation visualization properties
+  isModulated: boolean = false;
+  modulatedValue: number = 0;
+  baseValue: number = 0;
+
   constructor(
     id: string,
     name: string,
@@ -32,6 +37,10 @@ export class Parameter {
     this.max = max;
     this.step = step;
     this.unit = unit;
+
+    // Initialize modulation properties
+    this.baseValue = defaultValue;
+    this.modulatedValue = defaultValue;
   }
 
   /**
@@ -39,6 +48,10 @@ export class Parameter {
    */
   setValue(value: number): void {
     this.value = this.clamp(value);
+    // Update base value when user manually adjusts parameter
+    if (!this.isModulated) {
+      this.baseValue = this.value;
+    }
   }
 
   /**
@@ -56,6 +69,20 @@ export class Parameter {
       return 0;
     }
     return (this.value - this.min) / (this.max - this.min);
+  }
+
+  /**
+   * Get modulated value (returns modulatedValue if modulated, otherwise value)
+   */
+  getModulatedValue(): number {
+    return this.isModulated ? this.modulatedValue : this.value;
+  }
+
+  /**
+   * Set modulated value (called by visualization system)
+   */
+  setModulatedValue(value: number): void {
+    this.modulatedValue = this.clamp(value);
   }
 
   /**

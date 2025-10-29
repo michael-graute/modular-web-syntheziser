@@ -4,8 +4,9 @@
  */
 
 import { Parameter } from '../../components/base/Parameter';
+import { IVisualizableControl } from '../../visualization/types';
 
-export class Slider {
+export class Slider implements IVisualizableControl {
   private x: number;
   private y: number;
   private width: number;
@@ -13,6 +14,11 @@ export class Slider {
   private parameter: Parameter;
   private isDragging: boolean = false;
   private orientation: 'horizontal' | 'vertical';
+
+  // Visualization properties
+  private controlId: string;
+  private visible: boolean = true;
+  private visualValue: number | null = null;
 
   constructor(
     x: number,
@@ -28,13 +34,35 @@ export class Slider {
     this.height = height;
     this.parameter = parameter;
     this.orientation = orientation;
+    this.controlId = `slider-${parameter.id}-${Date.now()}`;
+  }
+
+  // IVisualizableControl implementation
+  getControlId(): string {
+    return this.controlId;
+  }
+
+  setVisualValue(normalizedValue: number): void {
+    this.visualValue = Math.max(0, Math.min(1, normalizedValue));
+  }
+
+  isVisible(): boolean {
+    return this.visible;
+  }
+
+  setVisibility(visible: boolean): void {
+    this.visible = visible;
   }
 
   /**
    * Render the slider
    */
   render(ctx: CanvasRenderingContext2D): void {
-    const normalized = this.parameter.getNormalizedValue();
+    if (!this.visible) {
+      return;
+    }
+
+    const normalized = this.visualValue !== null ? this.visualValue : this.parameter.getNormalizedValue();
 
     if (this.orientation === 'vertical') {
       this.renderVertical(ctx, normalized);

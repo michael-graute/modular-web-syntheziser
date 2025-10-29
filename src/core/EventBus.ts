@@ -4,6 +4,10 @@
  */
 
 import { EventType } from './types';
+import { ModulationEventType } from '../visualization/types';
+
+// Export modulation events for convenience
+export { ModulationEventType };
 
 type EventCallback = (data?: unknown) => void;
 

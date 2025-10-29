@@ -4,8 +4,9 @@
  */
 
 import { Parameter } from '../../components/base/Parameter';
+import { IVisualizableControl } from '../../visualization/types';
 
-export class Knob {
+export class Knob implements IVisualizableControl {
   private x: number;
   private y: number;
   private size: number;
@@ -14,17 +15,46 @@ export class Knob {
   private dragStartY: number = 0;
   private dragStartValue: number = 0;
 
+  // Visualization properties
+  private controlId: string;
+  private visible: boolean = true;
+  private visualValue: number | null = null; // For modulation visualization
+
   constructor(x: number, y: number, size: number, parameter: Parameter) {
     this.x = x;
     this.y = y;
     this.size = size;
     this.parameter = parameter;
+    this.controlId = `knob-${parameter.id}-${Date.now()}`;
+  }
+
+  // IVisualizableControl implementation
+  getControlId(): string {
+    return this.controlId;
+  }
+
+  setVisualValue(normalizedValue: number): void {
+    // Store the modulation-driven value
+    this.visualValue = Math.max(0, Math.min(1, normalizedValue));
+  }
+
+  isVisible(): boolean {
+    return this.visible;
+  }
+
+  setVisibility(visible: boolean): void {
+    this.visible = visible;
   }
 
   /**
    * Render the knob
    */
   render(ctx: CanvasRenderingContext2D): void {
+    // Skip rendering if not visible (off-screen optimization)
+    if (!this.visible) {
+      return;
+    }
+
     const centerX = this.x + this.size / 2;
     const centerY = this.y + this.size / 2;
     const radius = this.size / 2 - 4;
@@ -39,8 +69,9 @@ export class Knob {
     ctx.stroke();
 
     // Calculate rotation angle based on parameter value
+    // Use visualValue if available (from modulation), otherwise use parameter value
     // Range: -135 degrees to +135 degrees (270 degree rotation)
-    const normalized = this.parameter.getNormalizedValue();
+    const normalized = this.visualValue !== null ? this.visualValue : this.parameter.getNormalizedValue();
     const angle = -135 + (normalized * 270);
     const radians = (angle * Math.PI) / 180;
 
