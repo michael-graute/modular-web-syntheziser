@@ -296,6 +296,12 @@ export class PatchManager {
       // Add to canvas
       this.canvas.addComponent(canvasComponent);
 
+      // Emit component added event for ModulationVisualizer tracking
+      // This ensures CV visualization works when loading patches
+      eventBus.emit(EventType.COMPONENT_ADDED, {
+        component: canvasComponent,
+      });
+
       return canvasComponent;
     } catch (error) {
       console.error('Error recreating component:', error);

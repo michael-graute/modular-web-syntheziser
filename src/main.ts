@@ -210,6 +210,13 @@ async function init(): Promise<void> {
       handleComponentAdd(data.componentType, data.position);
     });
 
+    // Listen for components being added (e.g., during patch load)
+    eventBus.on(EventType.COMPONENT_ADDED, (data: any) => {
+      if (data.component) {
+        trackComponentParameters(data.component);
+      }
+    });
+
     // Setup patch management UI
     setupPatchManagement();
 
@@ -370,13 +377,15 @@ function handleComponentAdd(componentType: string, position: { x: number; y: num
     audioComponent.activate();
     visualComponent.setSynthComponent(audioComponent);
     console.log(`✨ Created ${audioComponent.name} at (${Math.round(position.x)}, ${Math.round(position.y)})`);
-
-    // Track all parameters with modulation visualizer
-    trackComponentParameters(visualComponent);
   }
 
   // Add to canvas
   canvas.addComponent(visualComponent);
+
+  // Emit component added event for ModulationVisualizer tracking
+  eventBus.emit(EventType.COMPONENT_ADDED, {
+    component: visualComponent,
+  });
 }
 
 /**

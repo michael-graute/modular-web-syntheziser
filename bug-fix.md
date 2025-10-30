@@ -346,6 +346,81 @@ Now each component's parameters are tracked independently, and CV connections co
 
 ---
 
+## Issue 7: CV Visualization Not Working After Patch Load
+
+### Problem
+When a saved patch is loaded from internal storage:
+- Audio connections work correctly
+- CV modulation functions correctly (LFO modulates oscillator parameters)
+- But CV visualization does not work (knobs don't animate)
+
+### Root Cause
+When components are added via drag-and-drop, `handleComponentAdd()` calls `trackComponentParameters()` to register parameters with the `ModulationVisualizer`. However, when a patch is loaded, `PatchManager.recreateComponent()` creates and adds components but does not track their parameters.
+
+**Evidence:**
+```typescript
+// In handleComponentAdd() - main.ts:382 (original)
+trackComponentParameters(visualComponent);
+
+// In recreateComponent() - PatchManager.ts:297 (original)
+this.canvas.addComponent(canvasComponent);
+// Missing: No parameter tracking!
+```
+
+The ModulationVisualizer needs to know about all parameters to track them for CV visualization. Without this registration:
+- Parameters are not in `trackedParameters` Map
+- When connections are created, `onConnectionCreated()` can't find the parameter
+- No AnalyserNode is created to sample CV signals
+- Result: No visualization despite functional modulation
+
+### Solution
+Implemented a consistent event-based approach for parameter tracking:
+
+**Step 1: Emit COMPONENT_ADDED event when components are created**
+
+In `handleComponentAdd()`:
+```typescript
+canvas.addComponent(visualComponent);
+
+// Emit event for parameter tracking
+eventBus.emit(EventType.COMPONENT_ADDED, {
+  component: visualComponent,
+});
+```
+
+In `PatchManager.recreateComponent()`:
+```typescript
+this.canvas.addComponent(canvasComponent);
+
+// Emit event for parameter tracking
+eventBus.emit(EventType.COMPONENT_ADDED, {
+  component: canvasComponent,
+});
+```
+
+**Step 2: Listen for COMPONENT_ADDED events and track parameters**
+
+In `main.ts` initialization:
+```typescript
+// Listen for components being added (e.g., during patch load)
+eventBus.on(EventType.COMPONENT_ADDED, (data: any) => {
+  if (data.component) {
+    trackComponentParameters(data.component);
+  }
+});
+```
+
+This ensures parameter tracking happens consistently for:
+- Components added via drag-and-drop
+- Components loaded from saved patches
+- Any future component creation paths
+
+### Files Modified
+- `src/main.ts` - Added COMPONENT_ADDED event listener, emit event in `handleComponentAdd()`
+- `src/patch/PatchManager.ts` - Emit COMPONENT_ADDED event in `recreateComponent()`
+
+---
+
 ## Key Learnings
 
 1. **Visual feedback needs to be scaled appropriately** - Parameters with very large ranges need visual amplification to make CV modulation visible, even when the absolute modulation amount is small.
@@ -359,3 +434,5 @@ Now each component's parameters are tracked independently, and CV connections co
 5. **Connection lifecycle is critical** - When tracking audio connections, ensure that both creation and destruction paths handle ID mapping, and that checks for "other connections" use the mapped IDs consistently.
 
 6. **Unique identifiers are essential** - When tracking resources in a Map or similar data structure, ensure that keys are globally unique. Simple IDs like "frequency" will collide when multiple instances exist. Always include instance identifiers (like component IDs) to make keys unique across the system.
+
+7. **Event-driven initialization is robust** - When a system needs to react to object creation (like tracking parameters), use events rather than direct function calls. This ensures the initialization happens consistently across all creation paths (user interaction, patch loading, undo/redo, etc.) without code duplication.
