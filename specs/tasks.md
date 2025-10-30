@@ -359,22 +359,22 @@ Gate signals from Keyboard components use a hybrid approach:
 - [x] Create visual component
 
 ### Distortion Effect
-- [ ] Implement Distortion component with WaveShaperNode
-- [ ] Generate distortion curves based on drive
-- [ ] Add drive parameter (0 - 100%)
-- [ ] Add tone control (low-pass filter)
-- [ ] Add mix parameter (dry/wet 0 - 100%)
-- [ ] Create UI controls
-- [ ] Create visual component
+- [x] Implement Distortion component with WaveShaperNode
+- [x] Generate distortion curves based on drive
+- [x] Add drive parameter (0 - 100%)
+- [x] Add tone control (low-pass filter)
+- [x] Add mix parameter (dry/wet 0 - 100%)
+- [x] Create UI controls
+- [x] Create visual component
 
 ### Chorus Effect
-- [ ] Implement Chorus component (DelayNode + LFO)
-- [ ] Create internal LFO for modulation
-- [ ] Add rate parameter (0.1Hz - 10Hz)
-- [ ] Add depth parameter (0 - 100%)
-- [ ] Add mix parameter (dry/wet 0 - 100%)
-- [ ] Create UI controls
-- [ ] Create visual component
+- [x] Implement Chorus component (DelayNode + LFO)
+- [x] Create internal LFO for modulation
+- [x] Add rate parameter (0.1Hz - 10Hz)
+- [x] Add depth parameter (0 - 100%)
+- [x] Add mix parameter (dry/wet 0 - 100%)
+- [x] Create UI controls
+- [x] Create visual component
 
 ### Mixer Component
 - [x] Implement Mixer component with multiple inputs

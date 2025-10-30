@@ -15,6 +15,8 @@ import { MasterOutput } from './utilities/MasterOutput';
 import { Mixer } from './utilities/Mixer';
 import { Delay } from './effects/Delay';
 import { Reverb } from './effects/Reverb';
+import { Distortion } from './effects/Distortion';
+import { Chorus } from './effects/Chorus';
 import { Oscilloscope } from './analyzers/Oscilloscope';
 import { StepSequencer } from './utilities/StepSequencer';
 import { calculateComponentDimensions } from '../utils/componentLayout';
@@ -133,6 +135,24 @@ export function registerAllComponents(): void {
     'Effects',
     (id, position) => new Reverb(id, position),
     calculateComponentDimensions(ComponentType.REVERB)
+  );
+
+  componentRegistry.register(
+    ComponentType.DISTORTION,
+    'Distortion',
+    'Waveshaping distortion effect',
+    'Effects',
+    (id, position) => new Distortion(id, position),
+    calculateComponentDimensions(ComponentType.DISTORTION)
+  );
+
+  componentRegistry.register(
+    ComponentType.CHORUS,
+    'Chorus',
+    'Modulated delay chorus effect',
+    'Effects',
+    (id, position) => new Chorus(id, position),
+    calculateComponentDimensions(ComponentType.CHORUS)
   );
 
   // Analyzers

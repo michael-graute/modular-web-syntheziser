@@ -490,6 +490,106 @@ export class CanvasComponent {
       }
     }
 
+    // Distortion-specific controls
+    if (this.type === ComponentType.DISTORTION) {
+      const driveParam = this.synthComponent.getParameter('drive');
+      const toneParam = this.synthComponent.getParameter('tone');
+      const mixParam = this.synthComponent.getParameter('mix');
+
+      // Calculate Y position below port labels
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      // Knobs for distortion parameters
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const numKnobs = 3;
+      const totalSpacing = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const spacing = (totalSpacing - (numKnobs * knobSize)) / (numKnobs + 1);
+
+      if (driveParam) {
+        const knob = new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing,
+          knobY,
+          knobSize,
+          driveParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (toneParam) {
+        const knob = new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 2 + knobSize,
+          knobY,
+          knobSize,
+          toneParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (mixParam) {
+        const knob = new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 3 + knobSize * 2,
+          knobY,
+          knobSize,
+          mixParam
+        );
+        this.controls.push(knob);
+      }
+    }
+
+    // Chorus-specific controls
+    if (this.type === ComponentType.CHORUS) {
+      const rateParam = this.synthComponent.getParameter('rate');
+      const depthParam = this.synthComponent.getParameter('depth');
+      const mixParam = this.synthComponent.getParameter('mix');
+
+      // Calculate Y position below port labels
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      // Knobs for chorus parameters
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const numKnobs = 3;
+      const totalSpacing = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const spacing = (totalSpacing - (numKnobs * knobSize)) / (numKnobs + 1);
+
+      if (rateParam) {
+        const knob = new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing,
+          knobY,
+          knobSize,
+          rateParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (depthParam) {
+        const knob = new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 2 + knobSize,
+          knobY,
+          knobSize,
+          depthParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (mixParam) {
+        const knob = new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 3 + knobSize * 2,
+          knobY,
+          knobSize,
+          mixParam
+        );
+        this.controls.push(knob);
+      }
+    }
+
     // LFO-specific controls
     if (this.type === ComponentType.LFO) {
       const waveformParam = this.synthComponent.getParameter('waveform');

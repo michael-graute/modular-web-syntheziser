@@ -94,9 +94,18 @@ function getControlLayout(type: ComponentType): ControlLayout {
         numKnobs: 1, // amplitude
       };
 
+    case ComponentType.DISTORTION:
+      return {
+        numKnobs: 3, // drive, tone, mix
+      };
+
+    case ComponentType.CHORUS:
+      return {
+        numKnobs: 3, // rate, depth, mix
+      };
+
     case ComponentType.KEYBOARD_INPUT:
     case ComponentType.FILTER_ENVELOPE:
-    case ComponentType.DISTORTION:
     default:
       return {}; // No controls or minimal controls
   }
@@ -141,6 +150,9 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
       return { inputs: 1, outputs: 1 }; // audio in / audio out
 
     case ComponentType.DISTORTION:
+      return { inputs: 1, outputs: 1 }; // audio in / audio out
+
+    case ComponentType.CHORUS:
       return { inputs: 1, outputs: 1 }; // audio in / audio out
 
     case ComponentType.MIXER:
