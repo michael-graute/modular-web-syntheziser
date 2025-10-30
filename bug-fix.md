@@ -250,6 +250,102 @@ if (this.trackedParameters.has(parameterId)) {
 
 ---
 
+## Issue 6: Parameter ID Collision Between Components
+
+### Problem
+When multiple components of the same type (e.g., two oscillators) were added to the canvas:
+1. First oscillator's CV visualization works correctly when connected to an LFO
+2. When a second oscillator is added (even without any connections), the first oscillator's CV visualization stops
+3. The second oscillator starts showing CV visualization with the parameters from the first oscillator, despite having no connections
+
+### Root Cause
+Parameter IDs were not unique across different components. Each oscillator had parameters with simple IDs like `"frequency"` and `"detune"`, without including the component ID to make them unique.
+
+When `trackComponentParameters()` was called:
+- **Oscillator 1** registers parameters: `"frequency"`, `"detune"`
+- **Oscillator 2** registers parameters: `"frequency"`, `"detune"` (same IDs!)
+
+The `ModulationVisualizer` stores parameter tracking in a `Map<string, ParameterTracking>` keyed by parameter ID. When the second oscillator's parameters were tracked, they **overwrote** the first oscillator's parameter entries in the map because they had identical IDs.
+
+**Evidence from code:**
+```typescript
+// main.ts:400 - Uses parameter.id directly
+modulationVisualizer!.trackParameter(parameter.id, control);
+
+// ModulationVisualizer.ts:161 - Stores in map by parameter ID
+this.trackedParameters.set(parameterId, tracking);
+```
+
+When a connection was made to the first oscillator:
+- The connection event references the first oscillator's target component ID and port ID
+- But the parameter tracking map entry for `"frequency"` now points to the **second oscillator's control**
+- Result: The second oscillator's knob animates instead of the first
+
+### Solution
+Made parameter IDs globally unique by including the component ID, and updated the connection handling to construct the full parameter ID from connection data:
+
+**Step 1: Make parameter IDs unique**
+```typescript
+// In SynthComponent.addParameter()
+const uniqueParameterId = `${this.id}:${id}`;
+const parameter = new Parameter(uniqueParameterId, name, defaultValue, min, max, step, unit);
+```
+
+This ensures that each component's parameters have unique IDs:
+- **Oscillator 1**: `"abc123-uuid:frequency"`, `"abc123-uuid:detune"`
+- **Oscillator 2**: `"def456-uuid:frequency"`, `"def456-uuid:detune"`
+
+**Step 2: Update connection handling to construct full parameter IDs**
+```typescript
+// In ModulationVisualizer.onConnectionCreated()
+// Build the full parameter ID from connection data
+let portId = connection.targetPortId;
+let parameterId = `${connection.targetComponentId}:${portId}`;
+let tracking = this.trackedParameters.get(parameterId);
+
+// Try without "_cv" suffix if needed
+if (!tracking && portId.endsWith('_cv')) {
+  const basePortId = portId.slice(0, -3);
+  parameterId = `${connection.targetComponentId}:${basePortId}`;
+  tracking = this.trackedParameters.get(parameterId);
+}
+```
+
+The same mapping logic is applied in `onConnectionDestroyed()` to ensure proper cleanup.
+
+**Step 3: Handle both simple and full parameter IDs in setParameterValue**
+
+After changing parameter IDs to be unique, external code (like UI controls) now passes full IDs like `"componentId:frequency"` to `setParameterValue()`. However:
+- Parameters are stored internally using simple IDs (`"frequency"`)
+- `updateAudioParameter()` in subclasses expects simple IDs
+
+Solution: Extract the simple ID from full IDs when needed:
+
+```typescript
+// In SynthComponent.setParameterValue()
+let simpleId = parameterId;
+if (parameterId.includes(':')) {
+  const parts = parameterId.split(':');
+  simpleId = parts[1] || parameterId;
+}
+
+const parameter = this.parameters.get(simpleId);
+// ...
+this.updateAudioParameter(simpleId, value);
+```
+
+This allows the method to accept both formats:
+- `"frequency"` - simple ID (for backward compatibility)
+- `"componentId:frequency"` - full unique ID (from UI controls)
+
+Now each component's parameters are tracked independently, and CV connections correctly modulate the intended component's parameters.
+
+### Files Modified
+- `src/components/base/SynthComponent.ts` - Added component ID prefix to parameter IDs, updated `setParameterValue()` to handle both ID formats
+- `src/visualization/ModulationVisualizer.ts` - Updated `onConnectionCreated()` and `onConnectionDestroyed()` to construct full parameter IDs from connection data
+
+---
+
 ## Key Learnings
 
 1. **Visual feedback needs to be scaled appropriately** - Parameters with very large ranges need visual amplification to make CV modulation visible, even when the absolute modulation amount is small.
@@ -261,3 +357,5 @@ if (this.trackedParameters.has(parameterId)) {
 4. **Apply mappings consistently** - If you transform IDs when creating resources (like `cutoff_cv` → `cutoff`), you must apply the same transformation when cleaning up those resources.
 
 5. **Connection lifecycle is critical** - When tracking audio connections, ensure that both creation and destruction paths handle ID mapping, and that checks for "other connections" use the mapped IDs consistently.
+
+6. **Unique identifiers are essential** - When tracking resources in a Map or similar data structure, ensure that keys are globally unique. Simple IDs like "frequency" will collide when multiple instances exist. Always include instance identifiers (like component IDs) to make keys unique across the system.

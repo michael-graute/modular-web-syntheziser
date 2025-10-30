@@ -197,23 +197,25 @@ export class ModulationVisualizer implements IModulationVisualizer {
     // Store connection
     this.connections.set(connection.id, connection);
 
-    // For CV connections, targetPortId is the parameter ID
+    // For CV connections, construct the full parameter ID from targetComponentId:targetPortId
+    // Parameters are now stored with unique IDs like "componentId:parameterName"
     // Some components use a "_cv" suffix for CV input ports (e.g., "cutoff_cv")
-    // Try the exact port ID first, then try without "_cv" suffix
-    let parameterId = connection.targetPortId;
+
+    // Build the full parameter ID
+    let portId = connection.targetPortId;
+    let parameterId = `${connection.targetComponentId}:${portId}`;
     let tracking = this.trackedParameters.get(parameterId);
 
-    if (!tracking && parameterId.endsWith('_cv')) {
-      // Try without the "_cv" suffix
-      const baseParameterId = parameterId.slice(0, -3);
-      tracking = this.trackedParameters.get(baseParameterId);
-      if (tracking) {
-        parameterId = baseParameterId;
-      }
+    // If not found and port has "_cv" suffix, try without it
+    if (!tracking && portId.endsWith('_cv')) {
+      const basePortId = portId.slice(0, -3);
+      parameterId = `${connection.targetComponentId}:${basePortId}`;
+      tracking = this.trackedParameters.get(parameterId);
     }
 
     if (!tracking) {
-      console.warn(`[ModViz] Parameter "${connection.targetPortId}" not tracked! Cannot visualize.`);
+      console.warn(`[ModViz] Parameter "${parameterId}" not tracked! Cannot visualize.`);
+      console.warn(`[ModViz] Tried: ${connection.targetComponentId}:${connection.targetPortId}`);
       return;
     }
 
@@ -274,17 +276,16 @@ export class ModulationVisualizer implements IModulationVisualizer {
     }
 
     // Apply the same mapping logic as in onConnectionCreated
-    // Try the exact port ID first, then try without "_cv" suffix
-    let parameterId = connection.targetPortId;
+    // Construct full parameter ID from targetComponentId:targetPortId
+    let portId = connection.targetPortId;
+    let parameterId = `${connection.targetComponentId}:${portId}`;
     let tracking = this.trackedParameters.get(parameterId);
 
-    if (!tracking && parameterId.endsWith('_cv')) {
-      // Try without the "_cv" suffix
-      const baseParameterId = parameterId.slice(0, -3);
-      tracking = this.trackedParameters.get(baseParameterId);
-      if (tracking) {
-        parameterId = baseParameterId;
-      }
+    // If not found and port has "_cv" suffix, try without it
+    if (!tracking && portId.endsWith('_cv')) {
+      const basePortId = portId.slice(0, -3);
+      parameterId = `${connection.targetComponentId}:${basePortId}`;
+      tracking = this.trackedParameters.get(parameterId);
     }
 
     if (tracking) {
@@ -294,10 +295,14 @@ export class ModulationVisualizer implements IModulationVisualizer {
         (conn) => {
           if (conn.id === connectionId) return false;
 
-          // Map the connection's target port ID the same way
-          let otherParameterId = conn.targetPortId;
-          if (!this.trackedParameters.has(otherParameterId) && otherParameterId.endsWith('_cv')) {
-            otherParameterId = otherParameterId.slice(0, -3);
+          // Map the connection's target using the same logic
+          let otherPortId = conn.targetPortId;
+          let otherParameterId = `${conn.targetComponentId}:${otherPortId}`;
+
+          // Try without "_cv" suffix if needed
+          if (!this.trackedParameters.has(otherParameterId) && otherPortId.endsWith('_cv')) {
+            const basePortId = otherPortId.slice(0, -3);
+            otherParameterId = `${conn.targetComponentId}:${basePortId}`;
           }
 
           return otherParameterId === parameterId;

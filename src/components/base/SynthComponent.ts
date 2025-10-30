@@ -80,7 +80,10 @@ export abstract class SynthComponent {
     step: number = 0.01,
     unit: string = ''
   ): void {
-    const parameter = new Parameter(id, name, defaultValue, min, max, step, unit);
+    // Create unique parameter ID by combining component ID with parameter ID
+    // This ensures parameters from different components don't collide
+    const uniqueParameterId = `${this.id}:${id}`;
+    const parameter = new Parameter(uniqueParameterId, name, defaultValue, min, max, step, unit);
     this.parameters.set(id, parameter);
   }
 
@@ -109,14 +112,24 @@ export abstract class SynthComponent {
    * Set a parameter value
    */
   setParameterValue(parameterId: string, value: number): void {
-    const parameter = this.parameters.get(parameterId);
+    // Parameter ID might be either simple ("frequency") or full ("componentId:frequency")
+    // Parameters are stored internally with simple IDs, so extract if needed
+    let simpleId = parameterId;
+    if (parameterId.includes(':')) {
+      // Extract the part after the colon
+      const parts = parameterId.split(':');
+      simpleId = parts[1] || parameterId;
+    }
+
+    const parameter = this.parameters.get(simpleId);
     if (!parameter) {
-      console.warn(`Parameter ${parameterId} not found on component ${this.id}`);
+      console.warn(`Parameter ${parameterId} (${simpleId}) not found on component ${this.id}`);
       return;
     }
 
     parameter.setValue(value);
-    this.updateAudioParameter(parameterId, value);
+    // Pass simple ID to updateAudioParameter since subclasses expect simple IDs
+    this.updateAudioParameter(simpleId, value);
   }
 
   /**
