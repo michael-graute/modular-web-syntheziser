@@ -323,12 +323,12 @@ Gate signals from Keyboard components use a hybrid approach:
 - [x] Implement modulation depth scaling
 
 ### Noise Generator
-- [ ] Implement NoiseGenerator component
-- [ ] Generate white noise with AudioBufferSourceNode
-- [ ] Generate pink noise (white noise + filtering)
-- [ ] Add noise type selector
-- [ ] Create visual component
-- [ ] Add to component library sidebar
+- [X] Implement NoiseGenerator component
+- [X] Generate white noise with AudioBufferSourceNode
+- [X] Generate pink noise (white noise + filtering)
+- [X] Add noise type selector
+- [X] Create visual component
+- [X] Add to component library sidebar
 
 ### Enhanced Connection System
 - [x] Implement color-coded cables (green=audio, blue=CV, red=gate)

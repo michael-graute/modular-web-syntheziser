@@ -88,8 +88,13 @@ function getControlLayout(type: ComponentType): ControlLayout {
         numKnobs: 2, // rate, depth
       };
 
-    case ComponentType.KEYBOARD_INPUT:
     case ComponentType.NOISE:
+      return {
+        hasDropdown: true,
+        numKnobs: 1, // amplitude
+      };
+
+    case ComponentType.KEYBOARD_INPUT:
     case ComponentType.FILTER_ENVELOPE:
     case ComponentType.DISTORTION:
     default:
@@ -124,7 +129,7 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
       return { inputs: 0, outputs: 1 }; // CV out
 
     case ComponentType.NOISE:
-      return { inputs: 0, outputs: 1 }; // audio out
+      return { inputs: 1, outputs: 1 }; // amplitude CV in / audio out
 
     case ComponentType.FILTER_ENVELOPE:
       return { inputs: 1, outputs: 1 }; // gate in / CV out

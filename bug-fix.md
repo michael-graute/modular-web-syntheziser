@@ -421,6 +421,187 @@ This ensures parameter tracking happens consistently for:
 
 ---
 
+## Issue 8: Noise Generator Amplitude CV Modulation Issues
+
+### Problem
+When connecting an LFO to the Noise Generator's amplitude CV input:
+1. CV always modulated from 0 upwards regardless of the base amplitude setting (knob position was ignored)
+2. CV caused on/off switching instead of smooth volume changes (tremolo sounded like a gate)
+
+### Root Cause
+The LFO outputs signals in a large range (typically 0-100 when depth is at 100%). However, the `gain.gain` AudioParam expects values in the range [0, 1]. When the LFO's large values were added directly to the gain parameter via Web Audio API's additive CV behavior:
+
+- **Without CV**: `gain.value = 0.5` (50% amplitude knob setting)
+- **With LFO CV**: `gain.value = 0.5 + LFO_output` where LFO outputs ±50
+- **Result**: `gain.value` oscillates between -49.5 and +50.5
+
+AudioParam values are clamped to valid ranges, so:
+- Negative values → 0 (silence)
+- Values > 1 → 1 (maximum volume)
+- Result: On/off switching behavior instead of smooth modulation
+
+Additionally, the base amplitude from the knob was effectively ignored because the LFO's large values dominated the parameter.
+
+### Solution
+Implemented a **CV scaler node** that sits between the CV input and the main gain parameter to scale CV signals appropriately:
+
+**Architecture:**
+```
+Audio Signal Path:
+  Noise Source → [Pink Filter] → Main Gain → Output
+
+CV Signal Path:
+  LFO → CV Scaler (×0.01) → Main Gain.gain AudioParam
+```
+
+**Implementation Details:**
+
+```typescript
+// Create main gain node for amplitude control
+this.gainNode = ctx.createGain();
+const amplitude = this.getParameter('amplitude')?.getValue() || 50;
+this.gainNode.gain.value = amplitude / 100; // Base value from knob
+
+// Create CV scaler node
+// Scales CV signals (0-100 range) down to 0-1 range
+this.cvScalerNode = ctx.createGain();
+this.cvScalerNode.gain.value = 0.01; // Scale factor: divides by 100
+
+// Connect CV scaler output to the main gain's AudioParam
+// LFO → cvScaler (×0.01) → gain.gain (adds scaled CV to base value)
+this.cvScalerNode.connect(this.gainNode.gain);
+```
+
+**How It Works:**
+- Base amplitude knob sets `gain.value = 0.5` (50%)
+- LFO outputs ±50 (oscillating between 0-100)
+- CV Scaler multiplies by 0.01: ±0.5
+- Final gain: `0.5 ± 0.5` = oscillates between 0 and 1.0
+- Result: Smooth tremolo effect from silence to full volume!
+
+**Key Methods:**
+```typescript
+override getInputNodeByPort(portId: string): AudioNode | null {
+  if (portId === 'amplitude') {
+    // CV connects to scaler node first
+    return this.cvScalerNode;
+  }
+  return null;
+}
+
+protected override getAudioParamForInput(inputId: string): AudioParam | null {
+  if (inputId === 'amplitude') {
+    // Return main gain's param (CV is pre-scaled)
+    return this.gainNode ? this.gainNode.gain : null;
+  }
+  return null;
+}
+```
+
+### Benefits of This Approach
+1. **Base amplitude is respected**: The knob sets the center point of modulation
+2. **Smooth modulation**: CV is properly scaled to the 0-1 gain range
+3. **Intuitive behavior**: Works like analog modular synths (CV adds/subtracts from base value)
+4. **CV visualization works**: The parameter tracking sees the correct AudioParam
+5. **No audio path overhead**: Scaler only processes control signals, not audio
+
+### Files Modified
+- `src/components/generators/NoiseGenerator.ts` - Added cvScalerNode for CV scaling
+
+---
+
+## Issue 9: Noise Generator Type Change Disconnects All Connections
+
+### Problem
+When changing the noise type parameter from white to pink (or vice versa) using the dropdown:
+- The noise generator would stop producing sound
+- All input and output connections would be lost
+- CV modulation connections stopped working
+- User had to manually reconnect everything to restore functionality
+
+### Root Cause
+The `updateAudioParameter` method for the `type` parameter was calling `destroyAudioNodes()` followed by `createAudioNodes()` to switch between white and pink noise:
+
+```typescript
+case 'type':
+  // OLD CODE - destroys everything
+  this.destroyAudioNodes();
+  this.createAudioNodes();
+  break;
+```
+
+When `destroyAudioNodes()` runs:
+1. Buffer source is stopped and disconnected
+2. All audio nodes disconnect from each other
+3. External connections to/from other components are broken
+4. CV connections are severed
+5. `createAudioNodes()` rebuilds internal graph, but external connections are gone
+
+**Why external connections break:**
+- External components hold references to the old audio nodes
+- When `destroyAudioNodes()` sets nodes to `null`, external references become invalid
+- New nodes created by `createAudioNodes()` are different objects
+- Web Audio API connections are lost permanently
+
+### Solution
+Implemented **hot-swapping** by reconnecting only the internal audio path without destroying nodes:
+
+```typescript
+case 'type':
+  // Switch between white and pink noise by reconnecting the audio path
+  // Don't destroy nodes - just change the routing
+  if (this.bufferSource && this.gainNode && this.pinkFilter) {
+    const noiseType = Math.round(value);
+
+    // Disconnect buffer source from current path
+    this.bufferSource.disconnect();
+
+    if (noiseType === 1) {
+      // Pink noise: source → pink filter → gain
+      this.bufferSource.connect(this.pinkFilter);
+      // Reconnect filter to gain (clear old connections first)
+      this.pinkFilter.disconnect();
+      this.pinkFilter.connect(this.gainNode);
+    } else {
+      // White noise: source → gain (bypass filter)
+      this.bufferSource.connect(this.gainNode);
+    }
+
+    console.log(`NoiseGenerator ${this.id} type changed to: ${NOISE_TYPES[noiseType]}`);
+  }
+  break;
+```
+
+### Signal Path Changes
+
+**White Noise (type = 0):**
+```
+BufferSource → GainNode → [external connections]
+```
+
+**Pink Noise (type = 1):**
+```
+BufferSource → BiquadFilter (lowpass) → GainNode → [external connections]
+```
+
+### What's Preserved
+- ✅ **Buffer source keeps running**: No audio glitches or restarts
+- ✅ **Main gain node unchanged**: External output connections maintained
+- ✅ **CV connections intact**: cvScalerNode and all CV routing preserved
+- ✅ **External audio connections**: Other components stay connected to gain node
+- ✅ **Smooth transition**: Seamless switching between noise types in real-time
+
+### Benefits
+1. **User experience**: No need to reconnect cables when changing noise type
+2. **Live performance**: Can switch noise colors during playback without interruption
+3. **Maintains modulation**: LFO and other CV sources continue working
+4. **No audio glitches**: Continuous audio stream without stops or clicks
+
+### Files Modified
+- `src/components/generators/NoiseGenerator.ts` - Replaced destroy/create with internal reconnection
+
+---
+
 ## Key Learnings
 
 1. **Visual feedback needs to be scaled appropriately** - Parameters with very large ranges need visual amplification to make CV modulation visible, even when the absolute modulation amount is small.
@@ -436,3 +617,7 @@ This ensures parameter tracking happens consistently for:
 6. **Unique identifiers are essential** - When tracking resources in a Map or similar data structure, ensure that keys are globally unique. Simple IDs like "frequency" will collide when multiple instances exist. Always include instance identifiers (like component IDs) to make keys unique across the system.
 
 7. **Event-driven initialization is robust** - When a system needs to react to object creation (like tracking parameters), use events rather than direct function calls. This ensures the initialization happens consistently across all creation paths (user interaction, patch loading, undo/redo, etc.) without code duplication.
+
+8. **CV signal scaling is critical** - Different AudioParams expect different value ranges (e.g., frequency: 20-20000 Hz, gain: 0-1). When connecting CV sources with large output ranges (like LFOs outputting 0-100) to parameters with small ranges, insert a scaling gain node to prevent clipping and on/off behavior. The scaler should connect to the AudioParam, not the audio signal path.
+
+9. **Hot-swap internal routing instead of destroying nodes** - When changing component behavior that requires different internal signal paths (like switching noise types or filter modes), reconnect audio nodes internally rather than destroying and recreating them. This preserves external connections and prevents interruptions. Only disconnect/reconnect the internal path that needs to change, leaving interface nodes (inputs/outputs) intact.

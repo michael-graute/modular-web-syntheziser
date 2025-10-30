@@ -6,6 +6,7 @@ import { componentRegistry } from './ComponentRegistry';
 import { ComponentType } from '../core/types';
 import { Oscillator } from './generators/Oscillator';
 import { LFO } from './generators/LFO';
+import { NoiseGenerator } from './generators/NoiseGenerator';
 import { VCA } from './processors/VCA';
 import { Filter } from './processors/Filter';
 import { ADSREnvelope } from './processors/ADSREnvelope';
@@ -39,6 +40,15 @@ export function registerAllComponents(): void {
     'Generators',
     (id, position) => new LFO(id, position),
     calculateComponentDimensions(ComponentType.LFO)
+  );
+
+  componentRegistry.register(
+    ComponentType.NOISE,
+    'Noise',
+    'White and pink noise generator',
+    'Generators',
+    (id, position) => new NoiseGenerator(id, position),
+    calculateComponentDimensions(ComponentType.NOISE)
   );
 
   // Processors

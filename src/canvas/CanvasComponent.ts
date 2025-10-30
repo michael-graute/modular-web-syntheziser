@@ -547,6 +547,50 @@ export class CanvasComponent {
       }
     }
 
+    // Noise Generator-specific controls
+    if (this.type === ComponentType.NOISE) {
+      const typeParam = this.synthComponent.getParameter('type');
+      const amplitudeParam = this.synthComponent.getParameter('amplitude');
+
+      // Calculate Y position below port labels
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      if (typeParam) {
+        const options: DropdownOption[] = [
+          { value: 0, label: 'White' },
+          { value: 1, label: 'Pink' },
+        ];
+        const dropdown = new Dropdown(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
+          this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP,
+          this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2,
+          COMPONENT.DROPDOWN_HEIGHT,
+          typeParam,
+          options,
+          'Type'
+        );
+        this.controls.push(dropdown);
+      }
+
+      // Knob for amplitude - positioned below dropdown (centered)
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const centerX = this.position.x + this.width / 2;
+
+      if (amplitudeParam) {
+        const knob = new Knob(
+          centerX - knobSize / 2,
+          knobY,
+          knobSize,
+          amplitudeParam
+        );
+        this.controls.push(knob);
+      }
+    }
+
     // Oscilloscope-specific controls
     if (this.type === ComponentType.OSCILLOSCOPE) {
       const displayModeParam = this.synthComponent.getParameter('displayMode');
