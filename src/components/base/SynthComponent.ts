@@ -143,7 +143,7 @@ export abstract class SynthComponent {
    * Check if this component type supports bypass
    */
   isBypassable(): boolean {
-    const bypassableTypes = [
+    const bypassableTypes: ComponentType[] = [
       ComponentType.FILTER,
       ComponentType.VCA,
       ComponentType.ADSR_ENVELOPE,
