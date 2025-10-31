@@ -16,6 +16,7 @@ import { eventBus } from './core/EventBus';
 import { patchManager } from './patch/PatchManager';
 import { SaveModal } from './ui/SaveModal';
 import { LoadModal } from './ui/LoadModal';
+import { HelpSidebar } from './ui/HelpSidebar';
 import { ModulationVisualizer } from './visualization';
 
 console.log('🎹 Modular Synth - Initializing...');
@@ -24,6 +25,7 @@ let canvas: Canvas | null = null;
 let keyboardController: KeyboardController | null = null;
 let saveModal: SaveModal | null = null;
 let loadModal: LoadModal | null = null;
+let helpSidebar: HelpSidebar | null = null;
 let modulationVisualizer: ModulationVisualizer | null = null;
 
 /**
@@ -33,6 +35,7 @@ function setupPatchManagement(): void {
   // Create modals
   saveModal = new SaveModal();
   loadModal = new LoadModal();
+  helpSidebar = new HelpSidebar();
 
   // Get UI elements
   const patchNameInput = document.getElementById('patch-name') as HTMLInputElement;
@@ -41,6 +44,7 @@ function setupPatchManagement(): void {
   const btnLoad = document.getElementById('btn-load');
   const btnExport = document.getElementById('btn-export');
   const btnImport = document.getElementById('btn-import');
+  const btnHelp = document.getElementById('btn-help');
 
   // Hidden file input for import
   const importFileInput = document.createElement('input');
@@ -137,6 +141,13 @@ function setupPatchManagement(): void {
       importFileInput.value = '';
     }
   });
+
+  // Help button
+  if (btnHelp) {
+    btnHelp.addEventListener('click', () => {
+      helpSidebar?.toggle();
+    });
+  }
 
   // Update patch name on input change
   if (patchNameInput) {
