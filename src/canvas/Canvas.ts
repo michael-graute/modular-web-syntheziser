@@ -101,6 +101,8 @@ export class Canvas {
     this.canvas.width = rect.width * dpr;
     this.canvas.height = rect.height * dpr;
 
+    // Reset transform before applying new scale to avoid cumulative scaling
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.scale(dpr, dpr);
 
     this.canvas.style.width = `${rect.width}px`;
