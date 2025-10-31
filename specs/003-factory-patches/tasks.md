@@ -26,7 +26,7 @@ Single-page application structure:
 
 **Purpose**: Create folder structure for factory patches
 
-- [ ] T001 Create factory patches directory at `/public/patches/factory/`
+- [x] T001 Create factory patches directory at `/public/patches/factory/`
 
 ---
 
@@ -36,13 +36,13 @@ Single-page application structure:
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T002 [P] Extend PatchData interface in `src/core/types.ts` to add optional `description?: string` field
-- [ ] T003 [P] Create FactoryPatchMetadata interface in `src/core/types.ts` with fields: filename, source, patch, loadedAt
-- [ ] T004 [P] Create PatchCategory type in `src/core/types.ts` as `'user' | 'factory'`
-- [ ] T005 Create FactoryPatchLoader class in `src/patch/FactoryPatchLoader.ts` with loadAll(), loadPatch(), validatePatch(), getAll(), isReady() methods
-- [ ] T006 Implement async loadAll() method in `src/patch/FactoryPatchLoader.ts` to fetch patches from `/patches/factory/` using known filenames array
-- [ ] T007 Implement validatePatch() method in `src/patch/FactoryPatchLoader.ts` to validate PatchData schema (name, version, components, connections required; description optional)
-- [ ] T008 Export singleton factoryPatchLoader instance from `src/patch/FactoryPatchLoader.ts`
+- [x] T002 [P] Extend PatchData interface in `src/core/types.ts` to add optional `description?: string` field
+- [x] T003 [P] Create FactoryPatchMetadata interface in `src/core/types.ts` with fields: filename, source, patch, loadedAt
+- [x] T004 [P] Create PatchCategory type in `src/core/types.ts` as `'user' | 'factory'`
+- [x] T005 Create FactoryPatchLoader class in `src/patch/FactoryPatchLoader.ts` with loadAll(), loadPatch(), validatePatch(), getAll(), isReady() methods
+- [x] T006 Implement async loadAll() method in `src/patch/FactoryPatchLoader.ts` to fetch patches from `/patches/factory/` using known filenames array
+- [x] T007 Implement validatePatch() method in `src/patch/FactoryPatchLoader.ts` to validate PatchData schema (name, version, components, connections required; description optional)
+- [x] T008 Export singleton factoryPatchLoader instance from `src/patch/FactoryPatchLoader.ts`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -56,27 +56,27 @@ Single-page application structure:
 
 ### Implementation for User Story 1
 
-- [ ] T009 [US1] Add `currentCategory: 'user' | 'factory'` state property to LoadModal class in `src/ui/LoadModal.ts`
-- [ ] T010 [P] [US1] Create createTabs() method in `src/ui/LoadModal.ts` to generate tab navigation UI with "My Patches" and "Factory" tabs
-- [ ] T011 [P] [US1] Create createTab() helper method in `src/ui/LoadModal.ts` to generate individual tab button with active state styling
-- [ ] T012 [US1] Create switchCategory() method in `src/ui/LoadModal.ts` to update currentCategory state and refresh patch list
-- [ ] T013 [US1] Update setupContent() method in `src/ui/LoadModal.ts` to include tabs at top of modal body
-- [ ] T014 [US1] Update refreshPatchList() method in `src/ui/LoadModal.ts` to handle both 'user' and 'factory' categories, fetching patches from factoryPatchLoader when category is 'factory'
-- [ ] T015 [US1] Import factoryPatchLoader in `src/ui/LoadModal.ts`
-- [ ] T016 [US1] Initialize factory patches on app startup in `src/main.ts` by calling factoryPatchLoader.loadAll() with try/catch for graceful degradation
-- [ ] T017 [US1] Create basic-oscillator.json in `/public/patches/factory/` with simple Oscillator → Master Output patch (include name, version, created, modified, components, connections)
-- [ ] T018 [P] [US1] Create bass-synth.json in `/public/patches/factory/` with Oscillator → Filter → Master Output patch (sawtooth oscillator, lowpass filter)
-- [ ] T019 [P] [US1] Create pad-sound.json in `/public/patches/factory/` with multiple detuned oscillators and effects
+- [x] T009 [US1] Add `currentCategory: 'user' | 'factory'` state property to LoadModal class in `src/ui/LoadModal.ts`
+- [x] T010 [P] [US1] Create createTabs() method in `src/ui/LoadModal.ts` to generate tab navigation UI with "My Patches" and "Factory" tabs
+- [x] T011 [P] [US1] Create createTab() helper method in `src/ui/LoadModal.ts` to generate individual tab button with active state styling
+- [x] T012 [US1] Create switchCategory() method in `src/ui/LoadModal.ts` to update currentCategory state and refresh patch list
+- [x] T013 [US1] Update setupContent() method in `src/ui/LoadModal.ts` to include tabs at top of modal body
+- [x] T014 [US1] Update refreshPatchList() method in `src/ui/LoadModal.ts` to handle both 'user' and 'factory' categories, fetching patches from factoryPatchLoader when category is 'factory'
+- [x] T015 [US1] Import factoryPatchLoader in `src/ui/LoadModal.ts`
+- [x] T016 [US1] Initialize factory patches on app startup in `src/main.ts` by calling factoryPatchLoader.loadAll() with try/catch for graceful degradation
+- [x] T017 [US1] Create basic-oscillator.json in `/public/patches/factory/` with simple Oscillator → Master Output patch (include name, version, created, modified, components, connections)
+- [x] T018 [P] [US1] Create bass-synth.json in `/public/patches/factory/` with Oscillator → Filter → Master Output patch (sawtooth oscillator, lowpass filter)
+- [x] T019 [P] [US1] Create pad-sound.json in `/public/patches/factory/` with multiple detuned oscillators and effects
 
 **Manual Testing Checklist for US1**:
-- [ ] Open application and verify console shows "Factory patches loaded" message
-- [ ] Open Load modal and verify two tabs appear: "My Patches" and "Factory"
-- [ ] Click "Factory" tab and verify it switches (active styling changes)
-- [ ] Verify at least 3 factory patches are listed
-- [ ] Select a factory patch and click Load
-- [ ] Verify patch loads onto canvas with all components visible
-- [ ] Verify connections are rendered correctly
-- [ ] Play keyboard and verify audio is produced according to patch design
+- [x] Open application and verify console shows "Factory patches loaded" message
+- [x] Open Load modal and verify two tabs appear: "My Patches" and "Factory"
+- [x] Click "Factory" tab and verify it switches (active styling changes)
+- [x] Verify at least 3 factory patches are listed
+- [x] Select a factory patch and click Load
+- [x] Verify patch loads onto canvas with all components visible
+- [x] Verify connections are rendered correctly
+- [x] Play keyboard and verify audio is produced according to patch design
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently - users can load and play factory patches
 

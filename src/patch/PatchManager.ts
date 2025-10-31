@@ -184,6 +184,29 @@ export class PatchManager {
   }
 
   /**
+   * Load a patch directly from PatchData (for factory patches)
+   */
+  async loadFromData(patchData: PatchData): Promise<boolean> {
+    if (!this.canvas) {
+      console.error('Canvas not set');
+      return false;
+    }
+
+    // Warn if there are unsaved changes
+    if (this.isDirty) {
+      const confirmed = confirm(
+        'You have unsaved changes. Loading a patch will discard them. Continue?'
+      );
+      if (!confirmed) {
+        return false;
+      }
+    }
+
+    // Deserialize the patch directly
+    return this.deserializePatch(patchData);
+  }
+
+  /**
    * Deserialize and recreate a patch on the canvas
    */
   private async deserializePatch(patchData: PatchData): Promise<boolean> {

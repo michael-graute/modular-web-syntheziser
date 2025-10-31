@@ -5,7 +5,7 @@
 import { isWebAudioSupported, isLocalStorageAvailable } from './utils/validators';
 import { Canvas } from './canvas/Canvas';
 import { CanvasComponent } from './canvas/CanvasComponent';
-import { ComponentType, EventType } from './core/types';
+import { ComponentType, EventType, type PatchData } from './core/types';
 import { audioEngine } from './core/AudioEngine';
 import { registerAllComponents } from './components/registerComponents';
 import { componentRegistry } from './components/ComponentRegistry';
@@ -14,6 +14,7 @@ import { NoteMapper } from './keyboard/NoteMapper';
 import { Sidebar } from './ui/Sidebar';
 import { eventBus } from './core/EventBus';
 import { patchManager } from './patch/PatchManager';
+import { factoryPatchLoader } from './patch/FactoryPatchLoader';
 import { SaveModal } from './ui/SaveModal';
 import { LoadModal } from './ui/LoadModal';
 import { HelpSidebar } from './ui/HelpSidebar';
@@ -107,8 +108,14 @@ function setupPatchManagement(): void {
   }
 
   // Load modal callback
-  loadModal?.onLoad(async (name: string) => {
-    await patchManager.load(name);
+  loadModal?.onLoad(async (name: string, patchData?: PatchData) => {
+    if (patchData) {
+      // Factory patch - load from data directly
+      await patchManager.loadFromData(patchData);
+    } else {
+      // User patch - load from localStorage
+      await patchManager.load(name);
+    }
     updatePatchName();
   });
 
@@ -180,6 +187,15 @@ async function init(): Promise<void> {
 
   console.log('✅ Browser compatibility check passed');
   console.log('✅ Phase 1 Task 1 & 2 complete: Project initialization and core systems');
+
+  // Load factory patches
+  try {
+    await factoryPatchLoader.loadAll();
+    console.log('✅ Factory patches loaded');
+  } catch (error) {
+    console.warn('⚠️  Failed to load factory patches:', error);
+    // Continue anyway - app still works without factory patches
+  }
 
   // Register all component types
   registerAllComponents();

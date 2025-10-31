@@ -96,6 +96,7 @@ export interface PatchData {
   version: string;
   created: string;
   modified: string;
+  description?: string; // Optional description for factory patches
   components: ComponentData[];
   connections: Connection[];
 }
@@ -189,4 +190,19 @@ export interface Voice {
   frequency: number;
   isActive: boolean;
   componentIds: string[];
+}
+
+/**
+ * Patch category discriminator for UI
+ */
+export type PatchCategory = 'user' | 'factory';
+
+/**
+ * Factory patch metadata wrapper
+ */
+export interface FactoryPatchMetadata {
+  filename: string;
+  source: 'factory';
+  patch: PatchData;
+  loadedAt: Date;
 }
