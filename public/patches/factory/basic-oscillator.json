@@ -1,0 +1,132 @@
+{
+  "name": "Basic Oscillator with Keyboard Support",
+  "version": "1.0.0",
+  "description": "A simple sine wave oscillator connected to the master output. Perfect for testing audio routing.",
+  "created": "2025-10-30T20:57:40.063Z",
+  "modified": "2025-10-30T20:57:40.064Z",
+  "components": [
+    {
+      "id": "4dbb6da2-90a7-44f2-8fc6-d07182c7a574",
+      "type": "oscillator",
+      "position": {
+        "x": 240,
+        "y": 60
+      },
+      "parameters": {
+        "waveform": 0,
+        "frequency": 0,
+        "detune": 0
+      }
+    },
+    {
+      "id": "c5e12283-4a0e-4e53-b6d6-cd137047f0ba",
+      "type": "keyboard-input",
+      "position": {
+        "x": 46,
+        "y": 67
+      },
+      "parameters": {}
+    },
+    {
+      "id": "fe23b571-8641-4c46-983e-8af23e33366e",
+      "type": "vca",
+      "position": {
+        "x": 440,
+        "y": 60
+      },
+      "parameters": {
+        "gain": 0
+      }
+    },
+    {
+      "id": "7baa5a59-ec6b-4f24-b66c-670e78029f3f",
+      "type": "adsr-envelope",
+      "position": {
+        "x": 240,
+        "y": 280
+      },
+      "parameters": {
+        "attack": 0.1,
+        "decay": 0.2,
+        "sustain": 0.7,
+        "release": 0.3
+      }
+    },
+    {
+      "id": "88b86274-cd2f-4fff-9720-a145b2939734",
+      "type": "oscilloscope",
+      "position": {
+        "x": 600,
+        "y": 60
+      },
+      "parameters": {
+        "timeScale": 50,
+        "fftSize": 2048,
+        "displayMode": 0,
+        "gain": 1
+      }
+    },
+    {
+      "id": "4a0116e9-8228-4e13-8a50-ded69a2d1186",
+      "type": "master-output",
+      "position": {
+        "x": 880,
+        "y": 60
+      },
+      "parameters": {
+        "volume": 0.7,
+        "limiter": 1
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "0b5299e5-cc59-49d9-baec-c273ba117a6e",
+      "sourceComponentId": "c5e12283-4a0e-4e53-b6d6-cd137047f0ba",
+      "sourcePortId": "gate",
+      "targetComponentId": "7baa5a59-ec6b-4f24-b66c-670e78029f3f",
+      "targetPortId": "gate",
+      "signalType": "gate"
+    },
+    {
+      "id": "1a7704d4-51f8-493d-99f8-83e8e5923fdd",
+      "sourceComponentId": "7baa5a59-ec6b-4f24-b66c-670e78029f3f",
+      "sourcePortId": "output",
+      "targetComponentId": "fe23b571-8641-4c46-983e-8af23e33366e",
+      "targetPortId": "cv",
+      "signalType": "cv"
+    },
+    {
+      "id": "f56e7e34-d023-463d-a51d-3d170a40b62c",
+      "sourceComponentId": "c5e12283-4a0e-4e53-b6d6-cd137047f0ba",
+      "sourcePortId": "frequency",
+      "targetComponentId": "4dbb6da2-90a7-44f2-8fc6-d07182c7a574",
+      "targetPortId": "frequency",
+      "signalType": "cv"
+    },
+    {
+      "id": "bee79804-9ddb-405b-b76f-122bfa124c41",
+      "sourceComponentId": "4dbb6da2-90a7-44f2-8fc6-d07182c7a574",
+      "sourcePortId": "output",
+      "targetComponentId": "fe23b571-8641-4c46-983e-8af23e33366e",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "5541c83b-9782-4557-9639-2978a84bb6a5",
+      "sourceComponentId": "fe23b571-8641-4c46-983e-8af23e33366e",
+      "sourcePortId": "output",
+      "targetComponentId": "88b86274-cd2f-4fff-9720-a145b2939734",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "0870caaa-503a-4f90-93d8-4acd09a89a3b",
+      "sourceComponentId": "88b86274-cd2f-4fff-9720-a145b2939734",
+      "sourcePortId": "output",
+      "targetComponentId": "4a0116e9-8228-4e13-8a50-ded69a2d1186",
+      "targetPortId": "input",
+      "signalType": "audio"
+    }
+  ]
+}

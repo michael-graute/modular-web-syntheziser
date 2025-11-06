@@ -4,16 +4,19 @@
 
 import { Modal } from './Modal';
 import { patchManager } from '../patch/PatchManager';
+import { factoryPatchLoader } from '../patch/FactoryPatchLoader';
 import type { PatchMetadata } from '../patch/PatchStorage';
+import type { PatchData } from '../core/types';
 
 /**
  * Modal for loading patches
  */
 export class LoadModal extends Modal {
   private patchList: HTMLDivElement;
-  private onLoadCallback: ((name: string) => void) | null;
+  private onLoadCallback: ((name: string, patchData?: PatchData) => void) | null;
   private onDeleteCallback: ((name: string) => void) | null;
   private fileInput: HTMLInputElement;
+  private currentCategory: 'user' | 'factory' = 'user';
 
   constructor() {
     super({
@@ -26,6 +29,73 @@ export class LoadModal extends Modal {
     this.onDeleteCallback = null;
     this.patchList = this.createPatchList();
     this.fileInput = this.createFileInput();
+    this.setupContent();
+  }
+
+  /**
+   * Create tab navigation UI
+   */
+  private createTabs(): HTMLDivElement {
+    const tabs = document.createElement('div');
+    tabs.style.cssText = `
+      display: flex;
+      gap: 2px;
+      margin-bottom: 16px;
+      border-bottom: 2px solid var(--border-color, #444);
+    `;
+
+    const userTab = this.createTab('My Patches', this.currentCategory === 'user');
+    const factoryTab = this.createTab('Factory', this.currentCategory === 'factory');
+
+    userTab.addEventListener('click', () => this.switchCategory('user'));
+    factoryTab.addEventListener('click', () => this.switchCategory('factory'));
+
+    tabs.appendChild(userTab);
+    tabs.appendChild(factoryTab);
+
+    return tabs;
+  }
+
+  /**
+   * Create individual tab button
+   */
+  private createTab(label: string, active: boolean): HTMLButtonElement {
+    const tab = document.createElement('button');
+    tab.textContent = label;
+    tab.setAttribute('role', 'tab');
+    tab.setAttribute('aria-selected', active.toString());
+    tab.style.cssText = `
+      padding: 10px 20px;
+      border: none;
+      border-bottom: 3px solid ${active ? 'var(--accent-color, #0066cc)' : 'transparent'};
+      background: ${active ? 'var(--bg-secondary, #1a1a1a)' : 'transparent'};
+      color: var(--text-primary, #ffffff);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: ${active ? '600' : '400'};
+      transition: all 0.2s;
+    `;
+
+    tab.addEventListener('mouseenter', () => {
+      if (!active) {
+        tab.style.background = 'var(--bg-hover, #252525)';
+      }
+    });
+
+    tab.addEventListener('mouseleave', () => {
+      if (!active) {
+        tab.style.background = 'transparent';
+      }
+    });
+
+    return tab;
+  }
+
+  /**
+   * Switch between user and factory patch categories
+   */
+  private switchCategory(category: 'user' | 'factory'): void {
+    this.currentCategory = category;
     this.setupContent();
   }
 
@@ -73,15 +143,23 @@ export class LoadModal extends Modal {
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
 
+    // Add tabs
+    body.appendChild(this.createTabs());
+
     // Info text
     const info = document.createElement('p');
-    info.textContent = 'Select a patch to load:';
+    info.textContent = this.currentCategory === 'user'
+      ? 'Select a patch to load:'
+      : 'Select a factory patch to load:';
     info.style.cssText = `
       margin: 0 0 12px 0;
       color: var(--text-secondary, #aaa);
     `;
 
     body.appendChild(info);
+
+    // Recreate patch list to ensure fresh container
+    this.patchList = this.createPatchList();
     body.appendChild(this.patchList);
     body.appendChild(this.fileInput);
 
@@ -90,7 +168,9 @@ export class LoadModal extends Modal {
 
     // Add buttons
     this.clearButtons();
-    this.addButton('Import File', () => this.openFileDialog(), 'secondary');
+    if (this.currentCategory === 'user') {
+      this.addButton('Import File', () => this.openFileDialog(), 'secondary');
+    }
     this.addButton('Close', () => this.close(), 'secondary');
   }
 
@@ -100,11 +180,28 @@ export class LoadModal extends Modal {
   private refreshPatchList(): void {
     this.patchList.innerHTML = '';
 
-    const patches = patchManager.listPatches();
+    let patches: PatchMetadata[];
+
+    if (this.currentCategory === 'user') {
+      patches = patchManager.listPatches();
+    } else {
+      // Load factory patches and convert to PatchMetadata format
+      const factoryPatches = factoryPatchLoader.getAll();
+      patches = factoryPatches.map((patch) => ({
+        name: patch.name,
+        created: patch.created,
+        modified: patch.modified,
+        componentCount: patch.components.length,
+        connectionCount: patch.connections.length,
+        size: JSON.stringify(patch).length, // Approximate size
+      }));
+    }
 
     if (patches.length === 0) {
       const emptyMessage = document.createElement('div');
-      emptyMessage.textContent = 'No saved patches found';
+      emptyMessage.textContent = this.currentCategory === 'user'
+        ? 'No saved patches found'
+        : 'No factory patches available';
       emptyMessage.style.cssText = `
         padding: 40px 20px;
         text-align: center;
@@ -201,35 +298,39 @@ export class LoadModal extends Modal {
       loadButton.style.background = 'var(--accent-color, #0066cc)';
     });
 
-    const deleteButton = document.createElement('button');
-    deleteButton.textContent = 'Delete';
-    deleteButton.style.cssText = `
-      padding: 6px 12px;
-      border-radius: 4px;
-      border: none;
-      background: #dc3545;
-      color: #ffffff;
-      font-size: 0.75rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.2s;
-    `;
-
-    deleteButton.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.handleDelete(patch.name);
-    });
-
-    deleteButton.addEventListener('mouseenter', () => {
-      deleteButton.style.background = '#c82333';
-    });
-
-    deleteButton.addEventListener('mouseleave', () => {
-      deleteButton.style.background = '#dc3545';
-    });
-
     actions.appendChild(loadButton);
-    actions.appendChild(deleteButton);
+
+    // Only show delete button for user patches
+    if (this.currentCategory === 'user') {
+      const deleteButton = document.createElement('button');
+      deleteButton.textContent = 'Delete';
+      deleteButton.style.cssText = `
+        padding: 6px 12px;
+        border-radius: 4px;
+        border: none;
+        background: #dc3545;
+        color: #ffffff;
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+      `;
+
+      deleteButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.handleDelete(patch.name);
+      });
+
+      deleteButton.addEventListener('mouseenter', () => {
+        deleteButton.style.background = '#c82333';
+      });
+
+      deleteButton.addEventListener('mouseleave', () => {
+        deleteButton.style.background = '#dc3545';
+      });
+
+      actions.appendChild(deleteButton);
+    }
 
     item.appendChild(info);
     item.appendChild(actions);
@@ -260,7 +361,19 @@ export class LoadModal extends Modal {
    */
   private handleLoad(name: string): void {
     if (this.onLoadCallback) {
-      this.onLoadCallback(name);
+      // For factory patches, pass both name and category
+      // The callback will determine how to load based on category
+      if (this.currentCategory === 'factory') {
+        // Find the factory patch data
+        const factoryPatches = factoryPatchLoader.getAll();
+        const patchData = factoryPatches.find(p => p.name === name);
+        if (patchData) {
+          // Call with special factory indicator
+          this.onLoadCallback(name, patchData);
+        }
+      } else {
+        this.onLoadCallback(name);
+      }
     }
     this.close();
   }
@@ -307,7 +420,7 @@ export class LoadModal extends Modal {
   /**
    * Set load callback
    */
-  onLoad(callback: (name: string) => void): void {
+  onLoad(callback: (name: string, patchData?: PatchData) => void): void {
     this.onLoadCallback = callback;
   }
 
