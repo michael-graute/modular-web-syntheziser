@@ -395,6 +395,15 @@ export class HelpSidebar {
         </li>
 
         <li style="margin-bottom: 12px;">
+          <strong style="color: var(--text-primary, #ffffff);">Load a Factory Preset:</strong>
+          Click on "Load" in the Top Menu, then select "Factory" and load a preset by clicking it.
+        </li>
+
+        <li style="margin-bottom: 12px;">
+          <strong style="color: var(--text-primary, #ffffff);">OR:</strong>
+        </li>
+
+        <li style="margin-bottom: 12px;">
           <strong style="color: var(--text-primary, #ffffff);">Add Components:</strong>
           Drag components from the left sidebar onto the canvas (e.g., Keyboard, Oscillator, Filter, Master Output).
         </li>
@@ -424,10 +433,12 @@ export class HelpSidebar {
         <h4 style="margin-top: 0; color: var(--text-primary, #ffffff);">Basic Patch Example</h4>
         <p style="color: var(--text-secondary, #cccccc); margin-bottom: 8px;">Try this simple setup:</p>
         <ol style="color: var(--text-secondary, #cccccc); margin: 0;">
-          <li>Add: Keyboard → Oscillator → Master Output</li>
-          <li>Connect: Keyboard frequency → Oscillator frequency CV</li>
-          <li>Connect: Keyboard gate → Oscillator gate</li>
-          <li>Connect: Oscillator audio out → Master Output audio in</li>
+          <li>Add: Keyboard → Oscillator → ADSR → VCA → Master Output</li>
+          <li>Connect: Keyboard Frequency → Oscillator Frequency CV</li>
+          <li>Connect: Keyboard Gate → ADSR Gate In</li>
+          <li>Connect: ADSR CV Out → VCA CV In/li>
+          <li>Connect Oscillator Audio Out → VCA Audio In</li>
+          <li>Connect: VCA Audio Out → Master Output Audio In</li>
           <li>Play notes on the keyboard!</li>
         </ol>
       </div>

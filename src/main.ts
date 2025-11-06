@@ -48,6 +48,7 @@ function setupPatchManagement(): void {
   const btnExport = document.getElementById('btn-export');
   const btnImport = document.getElementById('btn-import');
   const btnHelp = document.getElementById('btn-help');
+  const btnGithub = document.getElementById('btn-github');
 
   // Hidden file input for import
   const importFileInput = document.createElement('input');
@@ -156,6 +157,13 @@ function setupPatchManagement(): void {
     btnHelp.addEventListener('click', () => {
       helpSidebar?.toggle();
     });
+  }
+
+  // Go to github page
+  if (btnGithub) {
+    btnGithub.addEventListener('click', () => {
+      window.open('https://github.com/michael-graute/modular-web-syntheziser/', '_blank')
+    })
   }
 
   // Update patch name on input change

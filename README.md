@@ -70,7 +70,7 @@ The synthesizer uses three types of signals, color-coded for easy identification
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/michael-graute/modular-web-syntheziser.git
 cd modular-web-synthesizer
 
 # Install dependencies
@@ -97,6 +97,11 @@ npm run preview
 ```
 
 ## Usage
+
+### Loading a Factory Patch
+
+1. Click on "Load" in the Top Menu, then select "Factory"
+2. Load a Factory Preset by clicking on it
 
 ### Creating a Basic Patch
 
