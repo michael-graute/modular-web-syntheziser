@@ -4,7 +4,7 @@ A browser-based modular synthesizer application built with TypeScript and the We
 
 This is an experiment to see how far we can get with the Web Audio API, as well as a test on how good AI assisted coding works.
 
-This project was built in October 2025 by an experienced developer using only AI prompts in [claude code](https://claude.ai) with the assistance of [github spec-kit](https://github.com/github/spec-kit), no code has been written "by hand". Total development time was about 60-70 hours.
+This project was built in October 2025 by an experienced developer using only AI prompts in [Claude Code](https://claude.ai) with the assistance of [GitHub Spec-Kit](https://github.com/github/spec-kit), no code has been written "by hand". Total development time was about 60-70 hours.
 
 ![screenshot patch](./screenshot-patch.png)
 
@@ -210,6 +210,8 @@ Built with:
 - Vite
 - Web Audio API
 - HTML5 Canvas
+- [Claude Code](https://claude.ai)
+- [GitHub Spec-Kit](https://github.com/github/spec-kit)
 
 ---
 
