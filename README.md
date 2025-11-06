@@ -2,6 +2,12 @@
 
 A browser-based modular synthesizer application built with TypeScript and the Web Audio API. Create complex sound synthesis patches by connecting virtual modules in a visual canvas environment.
 
+This is an experiment to see how far we can get with the Web Audio API, as well as a test on how good AI assisted coding works.
+
+This project was built in October 2025 by an experienced developer using only AI prompts in [Claude Code](https://claude.ai)/Sonnet 4.5 with the assistance of [GitHub Spec-Kit](https://github.com/github/spec-kit), no code has been written "by hand". Total development time was about 60-70 hours.
+
+![screenshot patch](./screenshot-patch.png)
+
 ## Features
 
 ### Core Components
@@ -64,7 +70,7 @@ The synthesizer uses three types of signals, color-coded for easy identification
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/michael-graute/modular-web-syntheziser.git
 cd modular-web-synthesizer
 
 # Install dependencies
@@ -91,6 +97,11 @@ npm run preview
 ```
 
 ## Usage
+
+### Loading a Factory Patch
+
+1. Click on "Load" in the Top Menu, then select "Factory"
+2. Load a Factory Preset by clicking on it
 
 ### Creating a Basic Patch
 
@@ -199,6 +210,8 @@ Built with:
 - Vite
 - Web Audio API
 - HTML5 Canvas
+- [Claude Code](https://claude.ai)
+- [GitHub Spec-Kit](https://github.com/github/spec-kit)
 
 ---
 

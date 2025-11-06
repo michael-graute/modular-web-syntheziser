@@ -19,6 +19,8 @@ import { SaveModal } from './ui/SaveModal';
 import { LoadModal } from './ui/LoadModal';
 import { HelpSidebar } from './ui/HelpSidebar';
 import { ModulationVisualizer } from './visualization';
+import { AcceptanceStorage } from './storage/AcceptanceStorage';
+import { WelcomeDialog } from './ui/WelcomeDialog';
 
 console.log('🎹 Modular Synth - Initializing...');
 
@@ -46,6 +48,7 @@ function setupPatchManagement(): void {
   const btnExport = document.getElementById('btn-export');
   const btnImport = document.getElementById('btn-import');
   const btnHelp = document.getElementById('btn-help');
+  const btnGithub = document.getElementById('btn-github');
 
   // Hidden file input for import
   const importFileInput = document.createElement('input');
@@ -156,6 +159,22 @@ function setupPatchManagement(): void {
     });
   }
 
+  // Terms button (review mode)
+  const btnTerms = document.getElementById('btn-terms');
+  if (btnTerms) {
+    btnTerms.addEventListener('click', () => {
+      const dialog = new WelcomeDialog({ reviewMode: true });
+      dialog.open();
+    });
+  }
+
+  // Go to github page
+  if (btnGithub) {
+    btnGithub.addEventListener('click', () => {
+      window.open('https://github.com/michael-graute/modular-web-syntheziser/', '_blank')
+    })
+  }
+
   // Update patch name on input change
   if (patchNameInput) {
     patchNameInput.addEventListener('change', () => {
@@ -167,14 +186,49 @@ function setupPatchManagement(): void {
       }
     });
   }
+}
 
-  console.log('✅ Phase 4 Tasks 3-4 complete: Patch management UI integrated');
+/**
+ * Check acceptance and show welcome dialog if needed
+ */
+async function checkAndShowWelcomeDialog(): Promise<boolean> {
+  // Check if already accepted current version
+  if (AcceptanceStorage.hasValidAcceptance()) {
+    console.log('✅ Terms already accepted');
+    return true;
+  }
+
+  console.log('📋 Showing welcome dialog...');
+
+  // Show dialog and wait for user decision
+  return new Promise((resolve) => {
+    const dialog = new WelcomeDialog();
+
+    dialog.onAccept(() => {
+      AcceptanceStorage.saveAcceptance(true);
+      resolve(true);
+    });
+
+    dialog.onDecline(() => {
+      AcceptanceStorage.saveAcceptance(false);
+      resolve(false);
+    });
+
+    dialog.open();
+  });
 }
 
 /**
  * Initialize the application
  */
 async function init(): Promise<void> {
+  // CHECK TERMS ACCEPTANCE FIRST
+  const accepted = await checkAndShowWelcomeDialog();
+  if (!accepted) {
+    showErrorWithoutBrowserHint('You must accept the terms and conditions to use this application.');
+    return;
+  }
+
   // Check for required browser features
   if (!isWebAudioSupported()) {
     showError('Web Audio API is not supported in this browser.');
@@ -186,7 +240,6 @@ async function init(): Promise<void> {
   }
 
   console.log('✅ Browser compatibility check passed');
-  console.log('✅ Phase 1 Task 1 & 2 complete: Project initialization and core systems');
 
   // Load factory patches
   try {
@@ -199,17 +252,14 @@ async function init(): Promise<void> {
 
   // Register all component types
   registerAllComponents();
-  console.log('✅ Phase 2 Task 1 complete: Component base classes and registry');
 
   // Initialize sidebar component library
   const sidebar = new Sidebar();
   sidebar.populate();
-  console.log('✅ Phase 2 Task 5 complete: Component library with drag-and-drop');
 
   // Initialize audio engine
   try {
     await audioEngine.init();
-    console.log('✅ Phase 1 Task 4 complete: Audio engine initialized');
 
     // Initialize modulation visualizer
     await initializeModulationVisualizer();
@@ -227,7 +277,6 @@ async function init(): Promise<void> {
   if (canvasElement) {
     canvas = new Canvas(canvasElement);
     canvas.start();
-    console.log('✅ Phase 1 Task 3 complete: Canvas system initialized');
 
     // Set canvas for patch manager
     patchManager.setCanvas(canvas);
@@ -256,7 +305,6 @@ async function init(): Promise<void> {
   const keyboardElement = document.getElementById('keyboard-canvas') as HTMLCanvasElement;
   if (keyboardElement) {
     keyboardController = new KeyboardController(keyboardElement);
-    console.log('✅ Phase 2 Task 4 complete: Keyboard system initialized');
 
     // Wire keyboard to audio test function
     keyboardController.setNoteOnCallback((note, velocity) => {
@@ -772,6 +820,22 @@ function showError(message: string): void {
         <p style="color: var(--color-text-tertiary); font-size: 12px;">
           Please use a modern browser like Chrome, Firefox, or Safari.
         </p>
+      </div>
+    `;
+  }
+}
+
+/**
+ * Show error message without browser compatibility hint
+ * Used for non-browser-related errors (like declined terms)
+ */
+function showErrorWithoutBrowserHint(message: string): void {
+  const app = document.getElementById('app');
+  if (app) {
+    app.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column; gap: 16px;">
+        <h1 style="color: var(--color-error);">Error</h1>
+        <p style="color: var(--color-text-secondary);">${message}</p>
       </div>
     `;
   }

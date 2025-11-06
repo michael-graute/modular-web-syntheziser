@@ -3,6 +3,7 @@
 Auto-generated from all feature plans. Last updated: 2025-10-29
 
 ## Active Technologies
+- localStorage for acceptance tracking (004-startup-welcome-dialog)
 
 - TypeScript 5.6+, ES2020 target (001-effect-bypass)
 
@@ -22,6 +23,7 @@ npm test && npm run lint
 TypeScript 5.6+, ES2020 target: Follow standard conventions
 
 ## Recent Changes
+- 004-startup-welcome-dialog: Added TypeScript 5.6+, ES2020 targe
 
 - 001-effect-bypass: Added TypeScript 5.6+, ES2020 target
 
