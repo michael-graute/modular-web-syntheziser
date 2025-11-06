@@ -19,6 +19,8 @@ import { SaveModal } from './ui/SaveModal';
 import { LoadModal } from './ui/LoadModal';
 import { HelpSidebar } from './ui/HelpSidebar';
 import { ModulationVisualizer } from './visualization';
+import { AcceptanceStorage } from './storage/AcceptanceStorage';
+import { WelcomeDialog } from './ui/WelcomeDialog';
 
 console.log('🎹 Modular Synth - Initializing...');
 
@@ -172,9 +174,46 @@ function setupPatchManagement(): void {
 }
 
 /**
+ * Check acceptance and show welcome dialog if needed
+ */
+async function checkAndShowWelcomeDialog(): Promise<boolean> {
+  // Check if already accepted current version
+  if (AcceptanceStorage.hasValidAcceptance()) {
+    console.log('✅ Terms already accepted');
+    return true;
+  }
+
+  console.log('📋 Showing welcome dialog...');
+
+  // Show dialog and wait for user decision
+  return new Promise((resolve) => {
+    const dialog = new WelcomeDialog();
+
+    dialog.onAccept(() => {
+      AcceptanceStorage.saveAcceptance(true);
+      resolve(true);
+    });
+
+    dialog.onDecline(() => {
+      AcceptanceStorage.saveAcceptance(false);
+      resolve(false);
+    });
+
+    dialog.open();
+  });
+}
+
+/**
  * Initialize the application
  */
 async function init(): Promise<void> {
+  // CHECK TERMS ACCEPTANCE FIRST
+  const accepted = await checkAndShowWelcomeDialog();
+  if (!accepted) {
+    showError('You must accept the terms and conditions to use this application.');
+    return;
+  }
+
   // Check for required browser features
   if (!isWebAudioSupported()) {
     showError('Web Audio API is not supported in this browser.');
