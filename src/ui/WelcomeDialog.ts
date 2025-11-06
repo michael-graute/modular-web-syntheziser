@@ -23,6 +23,7 @@ export class WelcomeDialog extends Modal {
   private acceptCallback: (() => void) | null = null;
   private declineCallback: (() => void) | null = null;
   private reviewMode: boolean;
+  private previousFocus: HTMLElement | null = null;
 
   constructor(options?: Partial<WelcomeDialogOptions>) {
     const defaultOptions: WelcomeDialogOptions = {
@@ -44,8 +45,23 @@ export class WelcomeDialog extends Modal {
     super(defaultOptions);
     this.reviewMode = defaultOptions.reviewMode || false;
 
+    this.setupAccessibility();
     this.setupContent();
     this.setupButtons();
+  }
+
+  /**
+   * Setup ARIA attributes for accessibility
+   */
+  private setupAccessibility(): void {
+    // Add ARIA attributes to modal
+    this.modal.setAttribute('role', 'dialog');
+    this.modal.setAttribute('aria-modal', 'true');
+    this.modal.setAttribute('aria-labelledby', 'welcome-dialog-title');
+    this.modal.setAttribute('aria-describedby', 'welcome-dialog-description');
+
+    // Make modal focusable
+    this.modal.setAttribute('tabindex', '-1');
   }
 
   /**
@@ -57,10 +73,10 @@ export class WelcomeDialog extends Modal {
     body.innerHTML = `
       <div class="welcome-content" style="line-height: 1.6;">
         <section class="welcome-message" style="margin-bottom: 24px;">
-          <h3 style="margin: 0 0 12px 0; font-size: 1.1rem; color: var(--text-primary);">
+          <h3 id="welcome-dialog-title" style="margin: 0 0 12px 0; font-size: 1.1rem; color: var(--text-primary);">
             Welcome to Modular Synth
           </h3>
-          <p style="margin: 0 0 8px 0;">
+          <p id="welcome-dialog-description" style="margin: 0 0 8px 0;">
             Modular Synth is a browser-based modular synthesizer that brings the power of analog synthesis to your web browser.
           </p>
           <p style="margin: 0 0 8px 0;">
@@ -151,5 +167,33 @@ export class WelcomeDialog extends Modal {
    */
   onDecline(callback: () => void): void {
     this.declineCallback = callback;
+  }
+
+  /**
+   * Open the dialog with focus management
+   */
+  override open(): void {
+    // Store the currently focused element
+    this.previousFocus = document.activeElement as HTMLElement;
+
+    // Call parent open method
+    super.open();
+
+    // Focus the modal for accessibility
+    this.modal.focus();
+  }
+
+  /**
+   * Close the dialog with focus restoration
+   */
+  override close(): void {
+    // Call parent close method
+    super.close();
+
+    // Restore focus to previously focused element
+    if (this.previousFocus) {
+      this.previousFocus.focus();
+      this.previousFocus = null;
+    }
   }
 }

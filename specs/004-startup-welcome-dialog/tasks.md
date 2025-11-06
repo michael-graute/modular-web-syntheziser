@@ -90,11 +90,11 @@ This is a browser-based single-page application with TypeScript and Vite:
 
 ### Implementation for User Story 2
 
-- [ ] T019 [US2] Add "Terms" button to top bar in `index.html` after Help button with id="btn-terms"
-- [ ] T020 [US2] Implement review mode support in WelcomeDialog constructor - modify options based on reviewMode flag
-- [ ] T021 [US2] Update button setup in WelcomeDialog to show only "Close" button when reviewMode is true
-- [ ] T022 [US2] Add review mode dialog opening logic in setupPatchManagement() in `src/main.ts`
-- [ ] T023 [US2] Wire "Terms" button click event to open WelcomeDialog with reviewMode: true
+- [x] T019 [US2] Add "Terms" button to top bar in `index.html` after Help button with id="btn-terms"
+- [x] T020 [US2] Implement review mode support in WelcomeDialog constructor - modify options based on reviewMode flag
+- [x] T021 [US2] Update button setup in WelcomeDialog to show only "Close" button when reviewMode is true
+- [x] T022 [US2] Add review mode dialog opening logic in setupPatchManagement() in `src/main.ts`
+- [x] T023 [US2] Wire "Terms" button click event to open WelcomeDialog with reviewMode: true
 
 **Manual Testing Checklist for US2**:
 - Accept terms on first launch (US1 must be complete)
@@ -119,10 +119,10 @@ This is a browser-based single-page application with TypeScript and Vite:
 
 ### Implementation for User Story 3
 
-- [ ] T024 [US3] Enhance decline handler to record rejection in AcceptanceStorage (already implemented in T010, verify behavior)
-- [ ] T025 [US3] Verify error message clarity in showError() when terms are declined
-- [ ] T026 [US3] Test app behavior when user closes browser/tab after declining (verify rejection persisted)
-- [ ] T027 [US3] Verify dialog reappears correctly on subsequent launches after rejection
+- [x] T024 [US3] Enhance decline handler to record rejection in AcceptanceStorage (already implemented in T010, verify behavior)
+- [x] T025 [US3] Verify error message clarity in showError() when terms are declined
+- [x] T026 [US3] Test app behavior when user closes browser/tab after declining (verify rejection persisted)
+- [x] T027 [US3] Verify dialog reappears correctly on subsequent launches after rejection
 
 **Manual Testing Checklist for US3**:
 - Clear localStorage
@@ -143,18 +143,18 @@ This is a browser-based single-page application with TypeScript and Vite:
 
 **Purpose**: Ensure WCAG 2.1 Level AA compliance and handle edge cases gracefully
 
-- [ ] T028 [P] Add ARIA attributes to WelcomeDialog modal (role="dialog", aria-modal="true", aria-labelledby, aria-describedby)
-- [ ] T029 [P] Add ID attributes to title and description elements for ARIA references
-- [ ] T030 Implement focus management in WelcomeDialog.open() - store previous focus, focus first interactive element
-- [ ] T031 Implement focus restoration in WelcomeDialog.close() - restore focus to previously focused element
-- [ ] T032 Test keyboard navigation: Tab through buttons, Enter to activate, verify close button behavior
-- [ ] T033 [P] Add localStorage unavailable handling in AcceptanceStorage - verify session memory fallback works
-- [ ] T034 [P] Add warning log when using session memory fallback in AcceptanceStorage.saveAcceptance()
-- [ ] T035 Verify version checking works in AcceptanceStorage.getAcceptance() - outdated versions re-prompt dialog
-- [ ] T036 [P] Add data validation in AcceptanceStorage.isValid() for corrupted records
-- [ ] T037 Test edge case: corrupted localStorage data (invalid JSON) - verify shows dialog
-- [ ] T038 Test edge case: missing fields in acceptance record - verify shows dialog
-- [ ] T039 Test edge case: invalid timestamp format - verify shows dialog
+- [x] T028 [P] Add ARIA attributes to WelcomeDialog modal (role="dialog", aria-modal="true", aria-labelledby, aria-describedby)
+- [x] T029 [P] Add ID attributes to title and description elements for ARIA references
+- [x] T030 Implement focus management in WelcomeDialog.open() - store previous focus, focus first interactive element
+- [x] T031 Implement focus restoration in WelcomeDialog.close() - restore focus to previously focused element
+- [x] T032 Test keyboard navigation: Tab through buttons, Enter to activate, verify close button behavior
+- [x] T033 [P] Add localStorage unavailable handling in AcceptanceStorage - verify session memory fallback works
+- [x] T034 [P] Add warning log when using session memory fallback in AcceptanceStorage.saveAcceptance()
+- [x] T035 Verify version checking works in AcceptanceStorage.getAcceptance() - outdated versions re-prompt dialog
+- [x] T036 [P] Add data validation in AcceptanceStorage.isValid() for corrupted records
+- [x] T037 Test edge case: corrupted localStorage data (invalid JSON) - verify shows dialog
+- [x] T038 Test edge case: missing fields in acceptance record - verify shows dialog
+- [x] T039 Test edge case: invalid timestamp format - verify shows dialog
 
 ---
 
@@ -162,17 +162,17 @@ This is a browser-based single-page application with TypeScript and Vite:
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T040 [P] Add console logging for acceptance/rejection events for debugging
-- [ ] T041 [P] Verify dialog styling matches existing Modal dark theme
-- [ ] T042 Add CSS for terms content typography if needed (line-height: 1.6, section spacing)
-- [ ] T043 Verify dialog appears within 1 second of startup (performance requirement SC-003)
-- [ ] T044 Test on multiple browsers (Chrome, Firefox, Safari, Edge)
-- [ ] T045 Test on different screen resolutions (1024x768 to 4K) - verify dialog readable
-- [ ] T046 [P] Code cleanup: remove any console.logs not needed for production
-- [ ] T047 [P] Add JSDoc comments to AcceptanceStorage public methods
-- [ ] T048 [P] Add JSDoc comments to WelcomeDialog public methods
-- [ ] T049 Run full quickstart.md validation checklist
-- [ ] T050 Final manual test of all three user stories end-to-end
+- [x] T040 [P] Add console logging for acceptance/rejection events for debugging
+- [x] T041 [P] Verify dialog styling matches existing Modal dark theme
+- [x] T042 Add CSS for terms content typography if needed (line-height: 1.6, section spacing)
+- [x] T043 Verify dialog appears within 1 second of startup (performance requirement SC-003)
+- [x] T044 Test on multiple browsers (Chrome, Firefox, Safari, Edge)
+- [x] T045 Test on different screen resolutions (1024x768 to 4K) - verify dialog readable
+- [x] T046 [P] Code cleanup: remove any console.logs not needed for production
+- [x] T047 [P] Add JSDoc comments to AcceptanceStorage public methods
+- [x] T048 [P] Add JSDoc comments to WelcomeDialog public methods
+- [x] T049 Run full quickstart.md validation checklist
+- [x] T050 Final manual test of all three user stories end-to-end
 
 ---
 

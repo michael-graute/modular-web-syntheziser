@@ -159,6 +159,15 @@ function setupPatchManagement(): void {
     });
   }
 
+  // Terms button (review mode)
+  const btnTerms = document.getElementById('btn-terms');
+  if (btnTerms) {
+    btnTerms.addEventListener('click', () => {
+      const dialog = new WelcomeDialog({ reviewMode: true });
+      dialog.open();
+    });
+  }
+
   // Go to github page
   if (btnGithub) {
     btnGithub.addEventListener('click', () => {
@@ -177,8 +186,6 @@ function setupPatchManagement(): void {
       }
     });
   }
-
-  console.log('✅ Phase 4 Tasks 3-4 complete: Patch management UI integrated');
 }
 
 /**
@@ -218,7 +225,7 @@ async function init(): Promise<void> {
   // CHECK TERMS ACCEPTANCE FIRST
   const accepted = await checkAndShowWelcomeDialog();
   if (!accepted) {
-    showError('You must accept the terms and conditions to use this application.');
+    showErrorWithoutBrowserHint('You must accept the terms and conditions to use this application.');
     return;
   }
 
@@ -233,7 +240,6 @@ async function init(): Promise<void> {
   }
 
   console.log('✅ Browser compatibility check passed');
-  console.log('✅ Phase 1 Task 1 & 2 complete: Project initialization and core systems');
 
   // Load factory patches
   try {
@@ -246,17 +252,14 @@ async function init(): Promise<void> {
 
   // Register all component types
   registerAllComponents();
-  console.log('✅ Phase 2 Task 1 complete: Component base classes and registry');
 
   // Initialize sidebar component library
   const sidebar = new Sidebar();
   sidebar.populate();
-  console.log('✅ Phase 2 Task 5 complete: Component library with drag-and-drop');
 
   // Initialize audio engine
   try {
     await audioEngine.init();
-    console.log('✅ Phase 1 Task 4 complete: Audio engine initialized');
 
     // Initialize modulation visualizer
     await initializeModulationVisualizer();
@@ -274,7 +277,6 @@ async function init(): Promise<void> {
   if (canvasElement) {
     canvas = new Canvas(canvasElement);
     canvas.start();
-    console.log('✅ Phase 1 Task 3 complete: Canvas system initialized');
 
     // Set canvas for patch manager
     patchManager.setCanvas(canvas);
@@ -303,7 +305,6 @@ async function init(): Promise<void> {
   const keyboardElement = document.getElementById('keyboard-canvas') as HTMLCanvasElement;
   if (keyboardElement) {
     keyboardController = new KeyboardController(keyboardElement);
-    console.log('✅ Phase 2 Task 4 complete: Keyboard system initialized');
 
     // Wire keyboard to audio test function
     keyboardController.setNoteOnCallback((note, velocity) => {
@@ -819,6 +820,22 @@ function showError(message: string): void {
         <p style="color: var(--color-text-tertiary); font-size: 12px;">
           Please use a modern browser like Chrome, Firefox, or Safari.
         </p>
+      </div>
+    `;
+  }
+}
+
+/**
+ * Show error message without browser compatibility hint
+ * Used for non-browser-related errors (like declined terms)
+ */
+function showErrorWithoutBrowserHint(message: string): void {
+  const app = document.getElementById('app');
+  if (app) {
+    app.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column; gap: 16px;">
+        <h1 style="color: var(--color-error);">Error</h1>
+        <p style="color: var(--color-text-secondary);">${message}</p>
       </div>
     `;
   }
