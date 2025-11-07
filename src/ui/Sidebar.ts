@@ -130,6 +130,7 @@ export class Sidebar {
       [ComponentType.MASTER_OUTPUT]: '♫',
       [ComponentType.OSCILLOSCOPE]: '◰',
       [ComponentType.STEP_SEQUENCER]: '▦',
+      [ComponentType.COLLIDER]: '●',
     };
     return icons[type] || '□';
   }

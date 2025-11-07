@@ -25,11 +25,11 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Add ComponentType.COLLIDER enum value to src/core/types.ts
-- [ ] T002 [P] Create directory structure: src/physics/, src/music/, src/timing/
-- [ ] T003 [P] Create contracts directory: specs/006-collider-musical-physics/contracts/
-- [ ] T004 [P] Create TypeScript type definitions in specs/006-collider-musical-physics/contracts/types.ts
-- [ ] T005 [P] Configure test framework (Jest or Vitest) with TypeScript 5.6+ support in package.json and jest.config.js or vitest.config.ts
+- [X] T001 Add ComponentType.COLLIDER enum value to src/core/types.ts
+- [X] T002 [P] Create directory structure: src/physics/, src/music/, src/timing/
+- [X] T003 [P] Create contracts directory: specs/006-collider-musical-physics/contracts/
+- [X] T004 [P] Create TypeScript type definitions in specs/006-collider-musical-physics/contracts/types.ts
+- [X] T005 [P] Configure test framework (Jest or Vitest) with TypeScript 5.6+ support in package.json and jest.config.js or vitest.config.ts
 
 ---
 
@@ -39,15 +39,15 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 [P] Create Vector2D utility class in src/physics/Vector2D.ts with add, subtract, magnitude, normalize methods
-- [ ] T007 [P] Create ScaleTypes constants in src/music/ScaleTypes.ts with interval definitions for Major, Harmonic Minor, Natural Minor, Lydian, Mixolydian
-- [ ] T008 [P] Create MusicalScale class in src/music/MusicalScale.ts with scale generation, CV voltage calculation (1V/octave), and MIDI-to-Hz conversion
-- [ ] T009 [P] Create WeightedRandomSelector utility in src/music/WeightedRandomSelector.ts with 2x weighting for tonic (index 0) and fifth (index 4)
-- [ ] T010 [P] Create TimingCalculator class in src/timing/TimingCalculator.ts with BPM to millisecond duration conversion
-- [ ] T011 [P] Create validation functions in specs/006-collider-musical-physics/contracts/validation.ts for ColliderConfig (collider count 1-20, BPM 30-300, enum validations)
-- [ ] T012 Create PhysicsEngine class in src/physics/PhysicsEngine.ts with update(), addCollider(), removeCollider(), reset() methods and collision detection (brute-force O(n²))
-- [ ] T013 Create CollisionResolver class in src/physics/CollisionResolver.ts with elastic collision physics (equal mass) and wall reflection (angle of incidence = angle of reflection)
-- [ ] T014 Create ColliderRenderer class in src/canvas/ColliderRenderer.ts with canvas rendering, visual flash effects (300ms decay), and boundary visualization
+- [X] T006 [P] Create Vector2D utility class in src/physics/Vector2D.ts with add, subtract, magnitude, normalize methods
+- [X] T007 [P] Create ScaleTypes constants in src/music/ScaleTypes.ts with interval definitions for Major, Harmonic Minor, Natural Minor, Lydian, Mixolydian
+- [X] T008 [P] Create MusicalScale class in src/music/MusicalScale.ts with scale generation, CV voltage calculation (1V/octave), and MIDI-to-Hz conversion
+- [X] T009 [P] Create WeightedRandomSelector utility in src/music/WeightedRandomSelector.ts with 2x weighting for tonic (index 0) and fifth (index 4)
+- [X] T010 [P] Create TimingCalculator class in src/timing/TimingCalculator.ts with BPM to millisecond duration conversion
+- [X] T011 [P] Create validation functions in specs/006-collider-musical-physics/contracts/validation.ts for ColliderConfig (collider count 1-20, BPM 30-300, enum validations)
+- [X] T012 Create PhysicsEngine class in src/physics/PhysicsEngine.ts with update(), addCollider(), removeCollider(), reset() methods and collision detection (brute-force O(n²))
+- [X] T013 Create CollisionResolver class in src/physics/CollisionResolver.ts with elastic collision physics (equal mass) and wall reflection (angle of incidence = angle of reflection)
+- [X] T014 Create ColliderRenderer class in src/canvas/ColliderRenderer.ts with canvas rendering, visual flash effects (300ms decay), and boundary visualization
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -61,26 +61,26 @@
 
 ### Physics Module Tests
 
-- [ ] T015 [P] [TEST] Create Vector2D unit tests in tests/unit/physics/Vector2D.test.ts: test add, subtract, magnitude, normalize, dot product methods with edge cases (zero vectors, normalization of zero)
-- [ ] T016 [P] [TEST] Create PhysicsEngine collision detection tests in tests/unit/physics/PhysicsEngine.test.ts: test wall collision detection for all 4 walls, circle-circle collision with various separations (touching, overlapping, separated)
-- [ ] T017 [P] [TEST] Create PhysicsEngine collision response tests in tests/unit/physics/PhysicsEngine.test.ts: test elastic collision velocity exchange (equal mass), position correction prevents overlap, wall reflection accuracy within 2 degrees
-- [ ] T018 [P] [TEST] Create CollisionResolver unit tests in tests/unit/physics/CollisionResolver.test.ts: test resolveWallCollision() position clamping, resolveCircleCollision() with simultaneous impacts, edge case of zero velocity
+- [X] T015 [P] [TEST] Create Vector2D unit tests in tests/unit/physics/Vector2D.test.ts: test add, subtract, magnitude, normalize, dot product methods with edge cases (zero vectors, normalization of zero)
+- [X] T016 [P] [TEST] Create PhysicsEngine collision detection tests in tests/unit/physics/PhysicsEngine.test.ts: test wall collision detection for all 4 walls, circle-circle collision with various separations (touching, overlapping, separated)
+- [X] T017 [P] [TEST] Create PhysicsEngine collision response tests in tests/unit/physics/PhysicsEngine.test.ts: test elastic collision velocity exchange (equal mass), position correction prevents overlap, wall reflection accuracy within 2 degrees
+- [X] T018 [P] [TEST] Create CollisionResolver unit tests in tests/unit/physics/CollisionResolver.test.ts: test resolveWallCollision() position clamping, resolveCircleCollision() with simultaneous impacts, edge case of zero velocity
 
 ### Music Module Tests
 
-- [ ] T019 [P] [TEST] Create MusicalScale unit tests in tests/unit/music/MusicalScale.test.ts: test MIDI-to-Hz conversion (A4=440Hz), CV voltage calculation (1V/octave, C4=0V), scale interval generation for all 5 scale types (Major, Harmonic Minor, Natural Minor, Lydian, Mixolydian)
-- [ ] T020 [P] [TEST] Create WeightedRandomSelector unit tests in tests/unit/music/WeightedRandomSelector.test.ts: test weighted distribution with 1000 samples, verify tonic and fifth appear ~2x more frequently than other degrees (statistical validation with chi-squared test or similar)
-- [ ] T021 [P] [TEST] Create ScaleTypes unit tests in tests/unit/music/ScaleTypes.test.ts: validate SCALE_INTERVALS constants match music theory (check semitone patterns), validate all 5 required scales present
+- [X] T019 [P] [TEST] Create MusicalScale unit tests in tests/unit/music/MusicalScale.test.ts: test MIDI-to-Hz conversion (A4=440Hz), CV voltage calculation (1V/octave, C4=0V), scale interval generation for all 5 scale types (Major, Harmonic Minor, Natural Minor, Lydian, Mixolydian)
+- [X] T020 [P] [TEST] Create WeightedRandomSelector unit tests in tests/unit/music/WeightedRandomSelector.test.ts: test weighted distribution with 1000 samples, verify tonic and fifth appear ~2x more frequently than other degrees (statistical validation with chi-squared test or similar)
+- [X] T021 [P] [TEST] Create ScaleTypes unit tests in tests/unit/music/ScaleTypes.test.ts: validate SCALE_INTERVALS constants match music theory (check semitone patterns), validate all 5 required scales present
 
 ### Timing Module Tests
 
-- [ ] T022 [P] [TEST] Create TimingCalculator unit tests in tests/unit/timing/TimingCalculator.test.ts: test calculateGateDuration() for all gate sizes (1, 1/2, 1/4, 1/8, 1/16) at BPM boundaries (30, 120, 300), validate quarter note at 120 BPM = 500ms
+- [X] T022 [P] [TEST] Create TimingCalculator unit tests in tests/unit/timing/TimingCalculator.test.ts: test calculateGateDuration() for all gate sizes (1, 1/2, 1/4, 1/8, 1/16) at BPM boundaries (30, 120, 300), validate quarter note at 120 BPM = 500ms
 
 ### Integration Tests
 
-- [ ] T023 [TEST] Create Collider component lifecycle integration tests in tests/integration/collider-lifecycle.test.ts: test startSimulation() initializes correct number of colliders, stopSimulation() cleans up animation frame and audio nodes, configuration changes blocked during simulation (FR-018)
-- [ ] T024 [TEST] Create audio output integration tests in tests/integration/audio-output.test.ts: test CV/Gate node creation and connection, triggerNote() schedules AudioParam changes correctly, gate envelope timing matches calculated duration, verify no audio clicks (smooth ramps)
-- [ ] T025 [TEST] Create collision event integration tests in tests/integration/collision-events.test.ts: test wall collision triggers CollisionEvent with correct wallSide, collider-collider collision triggers events for both colliders, collision events trigger audio output and visual flash
+- [X] T023 [TEST] Create Collider component lifecycle integration tests in tests/integration/collider-lifecycle.test.ts: test startSimulation() initializes correct number of colliders, stopSimulation() cleans up animation frame and audio nodes, configuration changes blocked during simulation (FR-018)
+- [X] T024 [TEST] Create audio output integration tests in tests/integration/audio-output.test.ts: test CV/Gate node creation and connection, triggerNote() schedules AudioParam changes correctly, gate envelope timing matches calculated duration, verify no audio clicks (smooth ramps)
+- [X] T025 [TEST] Create collision event integration tests in tests/integration/collision-events.test.ts: test wall collision triggers CollisionEvent with correct wallSide, collider-collider collision triggers events for both colliders, collision events trigger audio output and visual flash
 
 **Checkpoint**: Constitution testing requirements satisfied - proceed to user story implementation
 
@@ -94,20 +94,20 @@
 
 ### Implementation for User Story 1
 
-- [ ] T026 [P] [US1] Create Collider component class in src/components/utilities/Collider.ts extending SynthComponent with constructor, base properties (id, type, position)
-- [ ] T027 [P] [US1] Add ColliderConfig interface to contracts/types.ts with scaleType, rootNote, colliderCount, speedPreset, bpm, gateSize fields
-- [ ] T028 [US1] Implement configuration management in Collider.ts: setConfiguration(), getConfiguration() methods with validation and immutability during simulation (FR-018)
-- [ ] T029 [US1] Implement audio node creation in Collider.ts: createAudioNodes() with ConstantSourceNode for CV output and Gate output (1V/octave standard, 0-5V gate envelope)
-- [ ] T030 [US1] Implement collider initialization in Collider.ts: createCollider() method generating random non-overlapping positions (FR-005), random velocities based on speed preset, weighted random note assignment
-- [ ] T031 [US1] Implement startSimulation() in Collider.ts: initialize physics engine, create colliders, start animation loop using requestAnimationFrame
-- [ ] T032 [US1] Implement simulation loop in Collider.ts: animate() method calling physicsEngine.update(), processing collision events, triggering audio output
-- [ ] T033 [US1] Implement audio triggering in Collider.ts: triggerNote() method scheduling CV voltage changes (exponential ramp to prevent clicks) and gate envelopes (0V→5V→0V with calculated duration)
-- [ ] T034 [US1] Implement wall collision detection and response in PhysicsEngine: checkWallCollision(), resolveWallCollision() with position clamping and velocity reflection
-- [ ] T035 [US1] Implement collider-collider collision detection and response in PhysicsEngine: checkCircleCollision() using circle-circle distance check, resolveCircleCollision() with elastic collision formulas and position correction
-- [ ] T036 [US1] Implement collision event generation in PhysicsEngine: return CollisionEvent array with type ('wall' or 'collider'), timestamp, colliderId, optional wallSide or otherColliderId
-- [ ] T037 [US1] Implement stopSimulation() in Collider.ts: cancel animation frame, clear physics engine state, reset CV/Gate outputs to 0V
-- [ ] T038 [US1] Register Collider component in component registry with ComponentType.COLLIDER and factory function
-- [ ] T039 [US1] Add start/stop button controls to Collider component UI following existing component patterns
+- [X] T026 [P] [US1] Create Collider component class in src/components/utilities/Collider.ts extending SynthComponent with constructor, base properties (id, type, position)
+- [X] T027 [P] [US1] Add ColliderConfig interface to contracts/types.ts with scaleType, rootNote, colliderCount, speedPreset, bpm, gateSize fields
+- [X] T028 [US1] Implement configuration management in Collider.ts: setConfiguration(), getConfiguration() methods with validation and immutability during simulation (FR-018)
+- [X] T029 [US1] Implement audio node creation in Collider.ts: createAudioNodes() with ConstantSourceNode for CV output and Gate output (1V/octave standard, 0-5V gate envelope)
+- [X] T030 [US1] Implement collider initialization in Collider.ts: createCollider() method generating random non-overlapping positions (FR-005), random velocities based on speed preset, weighted random note assignment
+- [X] T031 [US1] Implement startSimulation() in Collider.ts: initialize physics engine, create colliders, start animation loop using requestAnimationFrame
+- [X] T032 [US1] Implement simulation loop in Collider.ts: animate() method calling physicsEngine.update(), processing collision events, triggering audio output
+- [X] T033 [US1] Implement audio triggering in Collider.ts: triggerNote() method scheduling CV voltage changes (exponential ramp to prevent clicks) and gate envelopes (0V→5V→0V with calculated duration)
+- [X] T034 [US1] Implement wall collision detection and response in PhysicsEngine: checkWallCollision(), resolveWallCollision() with position clamping and velocity reflection
+- [X] T035 [US1] Implement collider-collider collision detection and response in PhysicsEngine: checkCircleCollision() using circle-circle distance check, resolveCircleCollision() with elastic collision formulas and position correction
+- [X] T036 [US1] Implement collision event generation in PhysicsEngine: return CollisionEvent array with type ('wall' or 'collider'), timestamp, colliderId, optional wallSide or otherColliderId
+- [X] T037 [US1] Implement stopSimulation() in Collider.ts: cancel animation frame, clear physics engine state, reset CV/Gate outputs to 0V
+- [X] T038 [US1] Register Collider component in component registry with ComponentType.COLLIDER and factory function
+- [X] T039 [US1] Add start/stop button controls to Collider component UI following existing component patterns
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - users can configure and run a basic collider simulation with audio output
 

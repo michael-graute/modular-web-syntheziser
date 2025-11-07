@@ -1244,6 +1244,7 @@ export class CanvasComponent {
       [ComponentType.MASTER_OUTPUT]: 'Master Out',
       [ComponentType.OSCILLOSCOPE]: 'Scope',
       [ComponentType.STEP_SEQUENCER]: 'Sequencer',
+      [ComponentType.COLLIDER]: 'Collider',
     };
     return names[this.type] || 'Component';
   }
