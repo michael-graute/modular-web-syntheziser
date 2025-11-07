@@ -1,0 +1,382 @@
+{
+  "name": "Two Oscillator Setup with LFOs, Filter and Mixer",
+  "version": "1.0",
+  "created": "2025-11-07T16:02:52.666Z",
+  "modified": "2025-11-07T16:02:52.666Z",
+  "components": [
+    {
+      "id": "7c470704-7d10-490e-a5b5-5c5cd3c9c03e",
+      "type": "oscillator",
+      "position": {
+        "x": 260,
+        "y": 0
+      },
+      "parameters": {
+        "waveform": 1,
+        "frequency": 0,
+        "detune": 0
+      }
+    },
+    {
+      "id": "f9053f55-8fd4-42d2-8c28-27f11839a96d",
+      "type": "keyboard-input",
+      "position": {
+        "x": 80,
+        "y": 0
+      },
+      "parameters": {}
+    },
+    {
+      "id": "c9a211a6-7a84-45d5-b5cc-8b200803cbae",
+      "type": "vca",
+      "position": {
+        "x": 440,
+        "y": 0
+      },
+      "parameters": {
+        "gain": 0
+      }
+    },
+    {
+      "id": "071959be-9b2c-453e-977a-ded8176eced3",
+      "type": "adsr-envelope",
+      "position": {
+        "x": 260,
+        "y": 220
+      },
+      "parameters": {
+        "attack": 0.1,
+        "decay": 0.2,
+        "sustain": 0.7,
+        "release": 0.3
+      }
+    },
+    {
+      "id": "1baaf78a-c818-4a79-b3b2-b0d4bea71eaa",
+      "type": "oscilloscope",
+      "position": {
+        "x": 600,
+        "y": 0
+      },
+      "parameters": {
+        "timeScale": 50,
+        "fftSize": 2048,
+        "displayMode": 2,
+        "gain": 1
+      }
+    },
+    {
+      "id": "49e48846-e37f-4ef7-b517-8a8382340060",
+      "type": "master-output",
+      "position": {
+        "x": 2060,
+        "y": 400
+      },
+      "parameters": {
+        "volume": 0.7,
+        "limiter": 1
+      }
+    },
+    {
+      "id": "cb1ce186-364c-4007-b041-3833e5b8d7be",
+      "type": "oscillator",
+      "position": {
+        "x": 260,
+        "y": 420
+      },
+      "parameters": {
+        "waveform": 2,
+        "frequency": 0,
+        "detune": -23
+      }
+    },
+    {
+      "id": "bf32d22c-ce47-4ce1-988e-7e8d6fb6aca0",
+      "type": "adsr-envelope",
+      "position": {
+        "x": 260,
+        "y": 640
+      },
+      "parameters": {
+        "attack": 0.1,
+        "decay": 0.2,
+        "sustain": 0.7,
+        "release": 0.3
+      }
+    },
+    {
+      "id": "abfe79d1-ab04-4de1-82bb-643d513c84ad",
+      "type": "vca",
+      "position": {
+        "x": 440,
+        "y": 420
+      },
+      "parameters": {
+        "gain": 0
+      }
+    },
+    {
+      "id": "06c9ced7-d4f2-4909-bb0c-ba2cbc3f6821",
+      "type": "oscilloscope",
+      "position": {
+        "x": 600,
+        "y": 420
+      },
+      "parameters": {
+        "timeScale": 50,
+        "fftSize": 2048,
+        "displayMode": 2,
+        "gain": 1
+      }
+    },
+    {
+      "id": "e6299ebd-52b9-4ee8-a80c-8184d21a3338",
+      "type": "mixer",
+      "position": {
+        "x": 1600,
+        "y": 400
+      },
+      "parameters": {
+        "gain1": 0.49999995231628414,
+        "gain2": 0.7374999523162842,
+        "gain3": 0.75,
+        "gain4": 0.75,
+        "master": 0.75
+      }
+    },
+    {
+      "id": "822dfb22-180c-45a9-a304-92b902abf0bd",
+      "type": "oscilloscope",
+      "position": {
+        "x": 1820,
+        "y": 400
+      },
+      "parameters": {
+        "timeScale": 50,
+        "fftSize": 2048,
+        "displayMode": 2,
+        "gain": 1
+      }
+    },
+    {
+      "id": "55eeb0e0-9a0b-42ff-9309-bf0f215a1637",
+      "type": "filter",
+      "position": {
+        "x": 1100,
+        "y": 0
+      },
+      "parameters": {
+        "type": 0,
+        "cutoff": 4300,
+        "resonance": 0.0001
+      }
+    },
+    {
+      "id": "ccb13c83-92af-4ff1-8f82-3efd9c050665",
+      "type": "oscilloscope",
+      "position": {
+        "x": 1300,
+        "y": 0
+      },
+      "parameters": {
+        "timeScale": 50,
+        "fftSize": 2048,
+        "displayMode": 2,
+        "gain": 1
+      }
+    },
+    {
+      "id": "36a5613b-9fa3-4574-9b0c-b8c0abd48cc5",
+      "type": "lfo",
+      "position": {
+        "x": 860,
+        "y": 260
+      },
+      "parameters": {
+        "waveform": 0,
+        "rate": 3.1988999999999996,
+        "depth": 13.5
+      }
+    },
+    {
+      "id": "3c1b3074-c3d1-4167-b69d-812c20ffe902",
+      "type": "lfo",
+      "position": {
+        "x": 860,
+        "y": 60
+      },
+      "parameters": {
+        "waveform": 0,
+        "rate": 3.0989500000000008,
+        "depth": 100
+      }
+    },
+    {
+      "id": "d3ac6d92-a971-48c8-8ab9-42e9e0c5e74c",
+      "type": "lfo",
+      "position": {
+        "x": 40,
+        "y": 500
+      },
+      "parameters": {
+        "waveform": 0,
+        "rate": 3.09895,
+        "depth": 20
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "76021c9a-7f2b-409d-a0ae-6e5d84b100c7",
+      "sourceComponentId": "f9053f55-8fd4-42d2-8c28-27f11839a96d",
+      "sourcePortId": "frequency",
+      "targetComponentId": "7c470704-7d10-490e-a5b5-5c5cd3c9c03e",
+      "targetPortId": "frequency",
+      "signalType": "cv"
+    },
+    {
+      "id": "569339d3-5cd1-4c5d-862d-42a5a863b3ba",
+      "sourceComponentId": "f9053f55-8fd4-42d2-8c28-27f11839a96d",
+      "sourcePortId": "gate",
+      "targetComponentId": "071959be-9b2c-453e-977a-ded8176eced3",
+      "targetPortId": "gate",
+      "signalType": "gate"
+    },
+    {
+      "id": "286c14aa-7e7b-4ed8-95b2-b25f3f479020",
+      "sourceComponentId": "071959be-9b2c-453e-977a-ded8176eced3",
+      "sourcePortId": "output",
+      "targetComponentId": "c9a211a6-7a84-45d5-b5cc-8b200803cbae",
+      "targetPortId": "cv",
+      "signalType": "cv"
+    },
+    {
+      "id": "5f2cdf6f-0358-404d-b2bf-9f155d615b6b",
+      "sourceComponentId": "7c470704-7d10-490e-a5b5-5c5cd3c9c03e",
+      "sourcePortId": "output",
+      "targetComponentId": "c9a211a6-7a84-45d5-b5cc-8b200803cbae",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "5308b2a0-6d98-4500-9723-a2eb1c0c512e",
+      "sourceComponentId": "c9a211a6-7a84-45d5-b5cc-8b200803cbae",
+      "sourcePortId": "output",
+      "targetComponentId": "1baaf78a-c818-4a79-b3b2-b0d4bea71eaa",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "78f34c9a-444a-44a4-a282-8a84f7a8ca5e",
+      "sourceComponentId": "06c9ced7-d4f2-4909-bb0c-ba2cbc3f6821",
+      "sourcePortId": "output",
+      "targetComponentId": "e6299ebd-52b9-4ee8-a80c-8184d21a3338",
+      "targetPortId": "input2",
+      "signalType": "audio"
+    },
+    {
+      "id": "756c9a05-225b-480f-81d3-a7968265c9a0",
+      "sourceComponentId": "f9053f55-8fd4-42d2-8c28-27f11839a96d",
+      "sourcePortId": "frequency",
+      "targetComponentId": "cb1ce186-364c-4007-b041-3833e5b8d7be",
+      "targetPortId": "frequency",
+      "signalType": "cv"
+    },
+    {
+      "id": "c800b8e2-4f89-49e2-9d25-3f09f692f673",
+      "sourceComponentId": "f9053f55-8fd4-42d2-8c28-27f11839a96d",
+      "sourcePortId": "gate",
+      "targetComponentId": "bf32d22c-ce47-4ce1-988e-7e8d6fb6aca0",
+      "targetPortId": "gate",
+      "signalType": "gate"
+    },
+    {
+      "id": "e66ce975-4558-4091-bdf5-c2397f0e24ef",
+      "sourceComponentId": "bf32d22c-ce47-4ce1-988e-7e8d6fb6aca0",
+      "sourcePortId": "output",
+      "targetComponentId": "abfe79d1-ab04-4de1-82bb-643d513c84ad",
+      "targetPortId": "cv",
+      "signalType": "cv"
+    },
+    {
+      "id": "e7aa1880-f813-4847-8bdd-d75fad9fa7cf",
+      "sourceComponentId": "cb1ce186-364c-4007-b041-3833e5b8d7be",
+      "sourcePortId": "output",
+      "targetComponentId": "abfe79d1-ab04-4de1-82bb-643d513c84ad",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "0fd0bb21-b975-43dc-a54c-6e913076a8e8",
+      "sourceComponentId": "abfe79d1-ab04-4de1-82bb-643d513c84ad",
+      "sourcePortId": "output",
+      "targetComponentId": "06c9ced7-d4f2-4909-bb0c-ba2cbc3f6821",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "826e59cc-8528-4538-b3eb-18b3c7fd9ec8",
+      "sourceComponentId": "e6299ebd-52b9-4ee8-a80c-8184d21a3338",
+      "sourcePortId": "output",
+      "targetComponentId": "822dfb22-180c-45a9-a304-92b902abf0bd",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "e72865a6-9f18-4398-b795-eed9742aa000",
+      "sourceComponentId": "822dfb22-180c-45a9-a304-92b902abf0bd",
+      "sourcePortId": "output",
+      "targetComponentId": "49e48846-e37f-4ef7-b517-8a8382340060",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "0e656dd6-8201-4d56-8461-b88c10aaa8f8",
+      "sourceComponentId": "1baaf78a-c818-4a79-b3b2-b0d4bea71eaa",
+      "sourcePortId": "output",
+      "targetComponentId": "55eeb0e0-9a0b-42ff-9309-bf0f215a1637",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "4891e9c0-eb22-4b2f-b23e-e362433cb755",
+      "sourceComponentId": "55eeb0e0-9a0b-42ff-9309-bf0f215a1637",
+      "sourcePortId": "output",
+      "targetComponentId": "ccb13c83-92af-4ff1-8f82-3efd9c050665",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "837dec39-8a75-4a24-b990-fed3012af825",
+      "sourceComponentId": "ccb13c83-92af-4ff1-8f82-3efd9c050665",
+      "sourcePortId": "output",
+      "targetComponentId": "e6299ebd-52b9-4ee8-a80c-8184d21a3338",
+      "targetPortId": "input1",
+      "signalType": "audio"
+    },
+    {
+      "id": "9457b94c-c615-459d-ac69-92c898d6a5f1",
+      "sourceComponentId": "36a5613b-9fa3-4574-9b0c-b8c0abd48cc5",
+      "sourcePortId": "output",
+      "targetComponentId": "55eeb0e0-9a0b-42ff-9309-bf0f215a1637",
+      "targetPortId": "resonance_cv",
+      "signalType": "cv"
+    },
+    {
+      "id": "bb714cc6-69e2-4d77-8cf3-4c5ce0acbc27",
+      "sourceComponentId": "3c1b3074-c3d1-4167-b69d-812c20ffe902",
+      "sourcePortId": "output",
+      "targetComponentId": "55eeb0e0-9a0b-42ff-9309-bf0f215a1637",
+      "targetPortId": "cutoff_cv",
+      "signalType": "cv"
+    },
+    {
+      "id": "312aae74-7284-4fc3-8372-b50bb465c2ef",
+      "sourceComponentId": "d3ac6d92-a971-48c8-8ab9-42e9e0c5e74c",
+      "sourcePortId": "output",
+      "targetComponentId": "cb1ce186-364c-4007-b041-3833e5b8d7be",
+      "targetPortId": "detune",
+      "signalType": "cv"
+    }
+  ]
+}
