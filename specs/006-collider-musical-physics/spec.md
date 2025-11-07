@@ -23,7 +23,7 @@ A user wants to create a musical physics simulation by placing a Collider compon
 
 **Why this priority**: This is the core functionality - without the ability to configure and run a basic collider simulation, the feature has no value. This represents the minimum viable product.
 
-**Independent Test**: Can be fully tested by placing the component, selecting any scale (e.g., C Major), setting collider count to 3, clicking start, and verifying that notes are output as CV frequencies when collisions occur. Delivers immediate musical value.
+**Independent Test**: Can be fully tested by placing the component, selecting any scale (e.g., C Major), setting collider count to 3, clicking start, and verifying that notes are output as CV voltages when collisions occur. Delivers immediate musical value.
 
 **Acceptance Scenarios**:
 
@@ -40,7 +40,7 @@ A user wants to experiment with different musical scales and root notes to creat
 
 **Why this priority**: This enhances the musical versatility of the feature but the simulation can work with a single scale. Adding multiple scale options significantly increases creative possibilities.
 
-**Independent Test**: Can be tested by configuring the component with different scales (Major, Harmonic Minor, Natural Minor, Lydian, Mixolydian) and different root notes (C, D, E, F, G, A, B), then verifying that the output CV frequencies match the expected notes for each scale.
+**Independent Test**: Can be tested by configuring the component with different scales (Major, Harmonic Minor, Natural Minor, Lydian, Mixolydian) and different root notes (C, D, E, F, G, A, B), then verifying that the output CV voltages match the expected notes for each scale.
 
 **Acceptance Scenarios**:
 
@@ -138,7 +138,7 @@ A user wants their Collider component configuration to be automatically saved an
 
 - What happens when the collider count is set to 1 (minimum density)?
 - What happens when many colliders are configured and they all initialize in close proximity, causing immediate multiple collisions?
-- How does the system handle rapid successive collisions of the same collider (bouncing in a corner)?
+- How does the system handle rapid successive collisions of the same collider (bouncing in a corner)? **ANSWER**: Position correction with epsilon (0.01 pixels) prevents stuck colliders. Each collision is resolved independently per frame. Collision events are queued and processed sequentially within the same animation frame, with all audio triggers scheduled at the same timestamp to maintain temporal accuracy.
 - What happens when the user tries to change configuration while the simulation is running?
 - How does the simulation behave if the component is resized while running?
 - What happens when a collider collides with another collider at exactly the same moment it hits a wall?
@@ -158,16 +158,17 @@ A user wants their Collider component configuration to be automatically saved an
 - **FR-004b**: System MUST provide a BPM (beats per minute) setting with a default value of 120 and valid range of 30-300 BPM
 - **FR-004c**: System MUST provide a gate size selector with options: 1 (whole note), 1/2 (half note), 1/4 (quarter note), 1/8 (eighth note), and 1/16 (sixteenth note)
 - **FR-005**: System MUST initialize all colliders at random non-overlapping positions within the component boundary when simulation starts
+- **FR-005a**: System MUST handle position generation failure when collision boundary is too small for the requested collider count, attempting up to 100 position placements before displaying error message: "Cannot fit {count} colliders in current boundary. Reduce collider count or increase component size."
 - **FR-006**: System MUST assign each collider a note from the selected scale using weighted random distribution, where the tonic (root note) and fifth scale degree appear more frequently to emphasize tonal center
 - **FR-007**: System MUST move colliders continuously in their assigned directions at a velocity determined by a user-selected speed preset (slow, medium, or fast)
 - **FR-008**: System MUST detect collisions between colliders and the boundary walls
 - **FR-009**: System MUST detect collisions between pairs of colliders
-- **FR-010**: System MUST output the collider's assigned note as a CV frequency value whenever that collider collides with a wall, with gate duration calculated from BPM and gate size settings
-- **FR-011**: System MUST output the collider's assigned note as a CV frequency value whenever that collider collides with another collider, with gate duration calculated from BPM and gate size settings
+- **FR-010**: System MUST output the collider's assigned note as a CV voltage value whenever that collider collides with a wall, with gate duration calculated from BPM and gate size settings
+- **FR-011**: System MUST output the collider's assigned note as a CV voltage value whenever that collider collides with another collider, with gate duration calculated from BPM and gate size settings
 - **FR-012**: System MUST calculate reflection angles for wall collisions using the principle that angle of incidence equals angle of reflection
 - **FR-013**: System MUST calculate collision responses between colliders using elastic collision physics (momentum and energy conservation)
 - **FR-014**: System MUST provide visual representation of all active colliders
-- **FR-014a**: System MUST display a brief visual feedback effect (flash or pulse) on a collider when it collides with a wall or another collider
+- **FR-014a**: System MUST display a visual feedback effect (flash or pulse) on a collider when it collides with a wall or another collider, with initial opacity of 0.3 and linear decay over 300ms duration
 - **FR-015**: System MUST provide visual representation of the collision boundary area
 - **FR-016**: System MUST provide a start button to initiate the simulation
 - **FR-017**: System MUST provide a way to stop the simulation
@@ -186,7 +187,7 @@ A user wants their Collider component configuration to be automatically saved an
 
 - **Collision Boundary**: The rectangular area within the component where colliders can move. Has defined walls (top, bottom, left, right) that colliders bounce off.
 
-- **CV Output**: A control voltage frequency value representing a musical note, output when a collision occurs. Relates to the collider's assigned note. Gate duration is determined by the BPM setting and gate size (note length) selection.
+- **CV Output**: A control voltage value representing a musical note, output when a collision occurs. Relates to the collider's assigned note. Gate duration is determined by the BPM setting and gate size (note length) selection.
 
 - **Timing Configuration**: Controls the rhythmic properties of note outputs. Key attributes include: BPM (beats per minute, default 120), gate size (note length: 1, 1/2, 1/4, 1/8, or 1/16 note duration).
 
@@ -195,8 +196,8 @@ A user wants their Collider component configuration to be automatically saved an
 ### Measurable Outcomes
 
 - **SC-001**: Users can configure and start a basic collider simulation in under 30 seconds
-- **SC-002**: System accurately outputs CV frequencies corresponding to the correct musical notes from the selected scale 100% of the time
-- **SC-003**: Collision detection triggers note output within 16ms of the collision event (one animation frame at 60fps)
+- **SC-002**: System accurately outputs CV voltages corresponding to the correct musical notes from the selected scale 100% of the time
+- **SC-003**: Collision detection triggers note output with average latency <8ms and 95th percentile <16ms from collision event to AudioParam scheduling (measured via performance.now() timestamps in collision handler and audio trigger method)
 - **SC-004**: Physics simulation maintains stable performance with up to the maximum supported number of colliders without frame drops below 30fps
 - **SC-005**: Collision reflection angles are physically accurate within 2 degrees of the mathematically correct angle
 - **SC-006**: Visual representation updates smoothly with collider positions at minimum 30 frames per second
@@ -207,7 +208,7 @@ A user wants their Collider component configuration to be automatically saved an
 ## Assumptions
 
 - The component follows the existing canvas component pattern used in the codebase (similar to LFO and other utilities)
-- CV frequency output follows the existing voltage/frequency standards used in the application
+- CV voltage output follows the existing voltage standards used in the application (1V/octave)
 - Speed presets correspond to approximate velocities: Slow (~30-50 px/s), Medium (~70-100 px/s), Fast (~120-150 px/s)
 - The maximum number of colliders is 20 (balance between musical complexity and performance)
 - The minimum number of colliders is 1

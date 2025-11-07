@@ -16,13 +16,13 @@ Create a Collider utility component for the modular synthesizer that simulates p
 - Frontend: Vite (build tool), Web Audio API (audio synthesis), HTML Canvas API (visualization)
 - No backend required (browser-based application)
 **Storage**: localStorage via existing PatchSerializer/PatchStorage pattern
-**Testing**: [NEEDS CLARIFICATION: Test framework not yet configured - recommend Jest or Vitest]
+**Testing**: Jest or Vitest (configured in Phase 1 - see tasks.md T005)
 **Target Platform**: Modern web browsers with Web Audio API support
 **Project Type**: Browser-based modular synthesizer (single-page application)
 **Performance Goals**:
-- 30+ FPS rendering with up to 20 colliders
-- <16ms collision detection and audio output latency
-- Smooth visual updates at 60fps target
+- Rendering: Target 60 FPS, minimum acceptable 30 FPS with up to 20 colliders (measured via browser DevTools Performance panel)
+- Collision detection: Average latency <8ms, 95th percentile <16ms (measured from collision occurrence to audio trigger)
+- Visual updates: Smooth 60 FPS animation loop via requestAnimationFrame (graceful degradation to 30 FPS under load)
 **Constraints**:
 - Must use Web Audio API for CV frequency output
 - Must integrate with existing component architecture (SynthComponent base class)
@@ -96,6 +96,29 @@ src/
 ```
 
 **Structure Decision**: Browser-based modular synthesizer with feature-organized modules. The Collider component integrates with existing SynthComponent base class and CanvasComponent visualization system. Physics, music theory, and timing concerns are separated into dedicated modules for testability and reusability.
+
+### Integration Testing Strategy
+
+Integration tests verify component interaction with existing codebase systems:
+
+**AudioEngine Integration**:
+- Test ConstantSourceNode creation via audioEngine.getContext()
+- Verify audio node registration via registerAudioNode() for proper cleanup
+- Test audio node connection to AudioEngine output
+- Validate AudioParam scheduling uses audioEngine.getContext().currentTime
+
+**CanvasComponent Integration**:
+- Test ColliderRenderer integration with existing CanvasComponent render events
+- Verify canvas context retrieval and dimension updates
+- Test canvas resize event handling for boundary recalculation
+
+**PatchSerializer Integration**:
+- Test serialize() output matches ComponentData interface structure
+- Verify enum index serialization/deserialization round-trips correctly
+- Test integration with existing PatchStorage.save() and load() methods
+- Validate default configuration restoration when deserialization fails
+
+See tests/integration/ for implementation details.
 
 ## Complexity Tracking
 
