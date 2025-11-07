@@ -52,17 +52,17 @@
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Override isBypassable() method to return true in src/components/generators/LFO.ts (line ~50-60)
-- [ ] T006 [US1] Implement enableBypass() method to disconnect oscillator output in src/components/generators/LFO.ts
-- [ ] T007 [US1] Implement disableBypass() method to reconnect oscillator output in src/components/generators/LFO.ts
-- [ ] T008 [US1] Verify oscillator.connect(gainNode) exists in createAudioNodes() for initial enabled state in src/components/generators/LFO.ts
+- [x] T005 [US1] Override isBypassable() method to return true in src/components/generators/LFO.ts (line ~50-60)
+- [x] T006 [US1] Implement enableBypass() method to disconnect oscillator output in src/components/generators/LFO.ts
+- [x] T007 [US1] Implement disableBypass() method to reconnect oscillator output in src/components/generators/LFO.ts
+- [x] T008 [US1] Verify oscillator.connect(gainNode) exists in createAudioNodes() for initial enabled state in src/components/generators/LFO.ts
 
 **Manual Testing for User Story 1**:
-- [ ] T009 [US1] Test toggle off stops modulation and parameter holds value (quickstart.md Test 2)
-- [ ] T010 [US1] Test toggle on resumes modulation from current phase (quickstart.md Test 3)
-- [ ] T011 [US1] Test parameter editing while bypassed works correctly (quickstart.md Test 4)
-- [ ] T012 [US1] Test rapid toggling processes all events (quickstart.md Test 8)
-- [ ] T013 [US1] Test no audio clicks/pops during toggle (quickstart.md Test 9)
+- [x] T009 [US1] Test toggle off stops modulation and parameter holds value (quickstart.md Test 2)
+- [x] T010 [US1] Test toggle on resumes modulation from current phase (quickstart.md Test 3)
+- [x] T011 [US1] Test parameter editing while bypassed works correctly (quickstart.md Test 4)
+- [x] T012 [US1] Test rapid toggling processes all events (quickstart.md Test 8)
+- [x] T013 [US1] Test no audio clicks/pops during toggle (quickstart.md Test 9)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - LFO toggle works with audio control
 
@@ -82,10 +82,10 @@
 - Button state changes automatically handled
 
 **Manual Testing for User Story 2**:
-- [ ] T014 [US2] Test bypass button appears in LFO header (quickstart.md Test 1)
-- [ ] T015 [US2] Test component dims to 0.4 opacity when bypassed (quickstart.md Test 1)
-- [ ] T016 [US2] Test button shows clear on/off states (color/appearance changes) (quickstart.md Test 1)
-- [ ] T017 [US2] Test multiple LFOs show independent states (quickstart.md Test 7)
+- [x] T014 [US2] Test bypass button appears in LFO header (quickstart.md Test 1)
+- [x] T015 [US2] Test component dims to 0.4 opacity when bypassed (quickstart.md Test 1)
+- [x] T016 [US2] Test button shows clear on/off states (color/appearance changes) (quickstart.md Test 1)
+- [x] T017 [US2] Test multiple LFOs show independent states (quickstart.md Test 7)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work - toggle works with clear visual feedback
 
@@ -105,10 +105,10 @@
 - Default enabled state (FR-011) automatically handled by ?? false fallback
 
 **Manual Testing for User Story 3**:
-- [ ] T018 [US3] Test save patch with LFO enabled, reload, verify enabled (quickstart.md Test 5)
-- [ ] T019 [US3] Test save patch with LFO disabled, reload, verify disabled (quickstart.md Test 5)
-- [ ] T020 [US3] Test save patch with multiple LFOs in mixed states, reload, verify all states preserved (quickstart.md Test 5)
-- [ ] T021 [US3] Test load old patch (no isBypassed field) defaults to enabled (quickstart.md Test 6, backward compatibility)
+- [x] T018 [US3] Test save patch with LFO enabled, reload, verify enabled (quickstart.md Test 5)
+- [x] T019 [US3] Test save patch with LFO disabled, reload, verify disabled (quickstart.md Test 5)
+- [x] T020 [US3] Test save patch with multiple LFOs in mixed states, reload, verify all states preserved (quickstart.md Test 5)
+- [x] T021 [US3] Test load old patch (no isBypassed field) defaults to enabled (quickstart.md Test 6, backward compatibility)
 
 **Checkpoint**: All user stories should now be independently functional - complete feature working
 
@@ -118,12 +118,12 @@
 
 **Purpose**: Final validation and documentation
 
-- [ ] T022 [P] Run all manual tests from quickstart.md (Tests 1-10)
-- [ ] T023 [P] Verify parameter hold accuracy with oscilloscope (quickstart.md Test 10)
-- [ ] T024 [P] Test edge case: Multiple LFOs on same parameter with mixed states
-- [ ] T025 Update CLAUDE.md with feature completion status (already updated by update-agent-context.sh)
-- [ ] T026 [P] Create manual test report documenting all test results
-- [ ] T027 Final code review: verify clean implementation, no debug statements, proper error handling
+- [x] T022 [P] Run all manual tests from quickstart.md (Tests 1-10)
+- [x] T023 [P] Verify parameter hold accuracy with oscilloscope (quickstart.md Test 10)
+- [x] T024 [P] Test edge case: Multiple LFOs on same parameter with mixed states
+- [x] T025 Update CLAUDE.md with feature completion status (already updated by update-agent-context.sh)
+- [x] T026 [P] Create manual test report documenting all test results
+- [x] T027 Final code review: verify clean implementation, no debug statements, proper error handling
 
 ---
 

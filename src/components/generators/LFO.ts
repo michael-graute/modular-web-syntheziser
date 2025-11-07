@@ -170,4 +170,44 @@ export class LFO extends SynthComponent {
   getDepth(): number {
     return this.getParameter('depth')?.getValue() || 50;
   }
+
+  /**
+   * Check if this component supports bypass
+   * LFOs are now bypassable to enable runtime on/off toggle
+   */
+  override isBypassable(): boolean {
+    return true;
+  }
+
+  /**
+   * Enable bypass - disconnect oscillator output to stop modulation
+   * Oscillator continues running internally to maintain phase continuity
+   */
+  protected override enableBypass(): void {
+    if (!this.oscillator || !this.gainNode) {
+      throw new Error('Cannot bypass LFO: audio nodes not initialized');
+    }
+
+    // Disconnect oscillator from gain node
+    // This stops modulation output while keeping oscillator running
+    this.oscillator.disconnect();
+
+    console.log(`LFO ${this.id} bypassed (modulation disabled)`);
+  }
+
+  /**
+   * Disable bypass - reconnect oscillator output to resume modulation
+   * Modulation resumes from current phase position
+   */
+  protected override disableBypass(): void {
+    if (!this.oscillator || !this.gainNode) {
+      throw new Error('Cannot enable LFO: audio nodes not initialized');
+    }
+
+    // Reconnect oscillator to gain node
+    // Modulation resumes from current phase position
+    this.oscillator.connect(this.gainNode);
+
+    console.log(`LFO ${this.id} restored (modulation enabled)`);
+  }
 }
