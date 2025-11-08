@@ -45,8 +45,6 @@ const DEFAULT_CONFIG: ColliderConfig = {
 /**
  * Rendering constants
  */
-const CANVAS_WIDTH = 400;
-const CANVAS_HEIGHT = 300;
 const BOUNDARY_PADDING = 10;
 const COLLIDER_RADIUS = 15;
 const MIN_POSITION_SPACING = 40; // Minimum distance between colliders
@@ -109,6 +107,20 @@ export class Collider extends SynthComponent {
 
     // Add Gate output port (0-5V)
     this.addOutput('gate', 'Gate Out', SignalType.GATE);
+
+    // T040: Add scale type parameter (0=Major, 1=Harmonic Minor, 2=Natural Minor, 3=Lydian, 4=Mixolydian)
+    this.addParameter('scaleType', 'Scale', 0, 0, 4, 1, '');
+
+    // T041: Add root note parameter (0-11 for C through B)
+    this.addParameter('rootNote', 'Root', 0, 0, 11, 1, '');
+
+    // T046: Add collider count parameter (1-20)
+    this.addParameter('colliderCount', 'Count', 3, 1, 20, 1, '');
+
+    // Additional parameters for complete configuration
+    this.addParameter('speedPreset', 'Speed', 1, 0, 2, 1, ''); // 0=Slow, 1=Medium, 2=Fast
+    this.addParameter('bpm', 'BPM', 120, 30, 300, 1, 'bpm');
+    this.addParameter('gateSize', 'Gate', 2, 0, 4, 1, ''); // 0=Whole, 1=Half, 2=Quarter, 3=Eighth, 4=Sixteenth
   }
 
   /**
@@ -201,16 +213,84 @@ export class Collider extends SynthComponent {
   }
 
   /**
-   * Update audio parameters (not used for Collider - configuration-driven)
+   * Update audio parameters - converts parameter values to configuration
    */
-  updateAudioParameter(parameterId: string, _value: number): void {
-    // FR-018: Configuration changes only allowed when stopped
+  updateAudioParameter(parameterId: string, value: number): void {
+    // T043, T045: FR-018: Configuration changes only allowed when stopped
     if (this.isRunning) {
-      throw new Error('Cannot change parameters while simulation is running');
+      throw new Error('Cannot change parameters while simulation is running. Stop simulation first.');
     }
 
-    // Collider uses setConfiguration() instead of individual parameters
-    console.warn(`Parameter ${parameterId} should be set via setConfiguration()`);
+    // Map parameter IDs to configuration updates
+    const updates: Partial<ColliderConfig> = {};
+
+    switch (parameterId) {
+      case 'scaleType':
+        // T040: Map numeric value to ScaleType enum
+        const scaleTypes = [
+          ScaleType.MAJOR,
+          ScaleType.HARMONIC_MINOR,
+          ScaleType.NATURAL_MINOR,
+          ScaleType.LYDIAN,
+          ScaleType.MIXOLYDIAN,
+        ];
+        updates.scaleType = scaleTypes[Math.round(value)] || ScaleType.MAJOR;
+        break;
+
+      case 'rootNote':
+        // T041: Map numeric value to Note enum
+        const notes = [
+          Note.C, Note.C_SHARP, Note.D, Note.D_SHARP,
+          Note.E, Note.F, Note.F_SHARP, Note.G,
+          Note.G_SHARP, Note.A, Note.A_SHARP, Note.B,
+        ];
+        updates.rootNote = notes[Math.round(value)] || Note.C;
+        break;
+
+      case 'colliderCount':
+        // T046, T048: Update collider count (will be validated)
+        updates.colliderCount = Math.round(value);
+        break;
+
+      case 'speedPreset':
+        const speeds = [SpeedPreset.SLOW, SpeedPreset.MEDIUM, SpeedPreset.FAST];
+        updates.speedPreset = speeds[Math.round(value)] || SpeedPreset.MEDIUM;
+        break;
+
+      case 'bpm':
+        updates.bpm = value;
+        break;
+
+      case 'gateSize':
+        const gateSizes = [
+          GateSize.WHOLE,
+          GateSize.HALF,
+          GateSize.QUARTER,
+          GateSize.EIGHTH,
+          GateSize.SIXTEENTH,
+        ];
+        updates.gateSize = gateSizes[Math.round(value)] || GateSize.QUARTER;
+        break;
+
+      default:
+        console.warn(`Unknown parameter: ${parameterId}`);
+        return;
+    }
+
+    // Apply configuration updates
+    try {
+      this.setConfiguration(updates);
+    } catch (error) {
+      console.error(`Failed to update ${parameterId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check if simulation is currently running
+   */
+  isSimulationRunning(): boolean {
+    return this.isRunning;
   }
 
   /**
@@ -497,9 +577,8 @@ export class Collider extends SynthComponent {
       throw new Error('Failed to get 2D context from canvas');
     }
 
-    // Set canvas dimensions
-    canvas.width = CANVAS_WIDTH;
-    canvas.height = CANVAS_HEIGHT;
+    // Don't override canvas dimensions - use whatever dimensions were set by the display
+    // The display (ColliderDisplay) is responsible for managing canvas size
 
     // T058: Add resize handling
     window.addEventListener('resize', this.handleCanvasResize);

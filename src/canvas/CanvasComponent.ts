@@ -11,12 +11,14 @@ import { Slider } from './controls/Slider';
 import { Button } from './controls/Button';
 import { OscilloscopeDisplay } from './displays/OscilloscopeDisplay';
 import { SequencerDisplay } from './displays/SequencerDisplay';
+import { ColliderDisplay } from './displays/ColliderDisplay';
 import type { Oscilloscope } from '../components/analyzers/Oscilloscope';
 import type { StepSequencer } from '../components/utilities/StepSequencer';
+import type { Collider } from '../components/utilities/Collider';
 import { eventBus } from '../core/EventBus';
 import { EventType } from '../core/types';
 
-type Control = Knob | Dropdown | Slider;
+type Control = Knob | Dropdown | Slider | Button;
 
 /**
  * Base class for visual component representation
@@ -33,6 +35,7 @@ export class CanvasComponent {
   private bypassButton: Button | null = null;
   private oscilloscopeDisplay: OscilloscopeDisplay | null = null;
   private sequencerDisplay: SequencerDisplay | null = null;
+  private colliderDisplay: ColliderDisplay | null = null;
 
   constructor(
     id: string,
@@ -824,6 +827,147 @@ export class CanvasComponent {
         canvasElement.parentElement.appendChild(this.sequencerDisplay.getCanvas());
       }
     }
+
+    // Collider-specific controls
+    if (this.type === ComponentType.COLLIDER) {
+      // Get all parameters
+      const scaleTypeParam = this.synthComponent.getParameter('scaleType');
+      const rootNoteParam = this.synthComponent.getParameter('rootNote');
+      const colliderCountParam = this.synthComponent.getParameter('colliderCount');
+      const speedPresetParam = this.synthComponent.getParameter('speedPreset');
+      const bpmParam = this.synthComponent.getParameter('bpm');
+      const gateSizeParam = this.synthComponent.getParameter('gateSize');
+
+      // Calculate Y position below port labels
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      // Create knobs in a grid layout (3 columns)
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const knobSpacing = (this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2 - knobSize * 3) / 2;
+
+      // Row 1: Scale, Root, Count
+      if (scaleTypeParam) {
+        const knob = new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
+          knobY,
+          knobSize,
+          scaleTypeParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (rootNoteParam) {
+        const knob = new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + knobSize + knobSpacing,
+          knobY,
+          knobSize,
+          rootNoteParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (colliderCountParam) {
+        const knob = new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + (knobSize + knobSpacing) * 2,
+          knobY,
+          knobSize,
+          colliderCountParam
+        );
+        this.controls.push(knob);
+      }
+
+      // Row 2: Speed, BPM, Gate
+      const knobY2 = knobY + knobSize + 20 + COMPONENT.CONTROL_SPACING_VERTICAL; // 20px for label
+
+      if (speedPresetParam) {
+        const knob = new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
+          knobY2,
+          knobSize,
+          speedPresetParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (bpmParam) {
+        const knob = new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + knobSize + knobSpacing,
+          knobY2,
+          knobSize,
+          bpmParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (gateSizeParam) {
+        const knob = new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + (knobSize + knobSpacing) * 2,
+          knobY2,
+          knobSize,
+          gateSizeParam
+        );
+        this.controls.push(knob);
+      }
+
+      // Start/Stop button
+      const buttonY = knobY2 + knobSize + 20 + COMPONENT.CONTROL_SPACING_VERTICAL; // 20px for label
+      const buttonWidth = 80;
+      const buttonHeight = 30;
+      const buttonX = this.position.x + (this.width - buttonWidth) / 2;
+
+      const startStopButton = new Button(
+        buttonX,
+        buttonY,
+        buttonWidth,
+        buttonHeight,
+        'Start/Stop',
+        () => {
+          const collider = this.synthComponent as Collider;
+          if (!collider) return;
+
+          // Toggle simulation state
+          if (collider.isSimulationRunning()) {
+            collider.stopSimulation();
+          } else {
+            try {
+              collider.startSimulation();
+            } catch (error) {
+              console.error('Failed to start simulation:', error);
+            }
+          }
+        },
+        () => {
+          // State function: returns true when simulation is running
+          const collider = this.synthComponent as Collider;
+          return collider ? collider.isSimulationRunning() : false;
+        }
+      );
+
+      this.controls.push(startStopButton);
+
+      // Create embedded collider display
+      const displayY = buttonY + buttonHeight + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const displayWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const displayHeight = 200; // Canvas height for physics visualization
+
+      this.colliderDisplay = new ColliderDisplay(
+        this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
+        displayY,
+        displayWidth,
+        displayHeight,
+        this.synthComponent as Collider
+      );
+
+      // Add canvas to DOM (will be positioned absolutely)
+      const canvasElement2 = document.getElementById('synth-canvas');
+      if (canvasElement2 && canvasElement2.parentElement) {
+        canvasElement2.parentElement.appendChild(this.colliderDisplay.getCanvas());
+      }
+    }
   }
 
   /**
@@ -870,6 +1014,12 @@ export class CanvasComponent {
     if (this.sequencerDisplay) {
       this.sequencerDisplay.destroy();
       this.sequencerDisplay = null;
+    }
+
+    // Clean up collider display before recreating controls
+    if (this.colliderDisplay) {
+      this.colliderDisplay.destroy();
+      this.colliderDisplay = null;
     }
 
     // Recreate controls at new position
@@ -1121,6 +1271,10 @@ export class CanvasComponent {
       this.sequencerDisplay.destroy();
       this.sequencerDisplay = null;
     }
+    if (this.colliderDisplay) {
+      this.colliderDisplay.destroy();
+      this.colliderDisplay = null;
+    }
   }
 
   /**
@@ -1132,6 +1286,9 @@ export class CanvasComponent {
     }
     if (this.sequencerDisplay) {
       this.sequencerDisplay.updateViewportTransform(zoom, panX, panY);
+    }
+    if (this.colliderDisplay) {
+      this.colliderDisplay.updateViewportTransform(zoom, panX, panY);
     }
   }
 
@@ -1277,6 +1434,10 @@ export class CanvasComponent {
         if (control.onMouseDown(x, y)) {
           return true;
         }
+      } else if (control instanceof Button) {
+        if (control.handleMouseDown(x, y)) {
+          return true;
+        }
       }
     }
     return false;
@@ -1306,6 +1467,8 @@ export class CanvasComponent {
           }
           return true;
         }
+      } else if (control instanceof Button) {
+        control.handleMouseMove(x, y);
       }
     }
     return false;
@@ -1325,6 +1488,8 @@ export class CanvasComponent {
         control.onMouseUp();
       } else if (control instanceof Slider) {
         control.onMouseUp();
+      } else if (control instanceof Button) {
+        control.handleMouseUp(x, y);
       }
     }
   }

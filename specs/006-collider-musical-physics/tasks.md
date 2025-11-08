@@ -121,12 +121,12 @@
 
 ### Implementation for User Story 2
 
-- [ ] T040 [P] [US2] Add scale type dropdown UI control in Collider component with options: Major, Harmonic Minor, Natural Minor, Lydian, Mixolydian
-- [ ] T041 [P] [US2] Add root note selector UI control in Collider component with all 12 chromatic notes (C, C#, D, D#, E, F, F#, G, G#, A, A#, B)
-- [ ] T042 [US2] Implement scale update logic in Collider.ts: updateScale() method recreating MusicalScale instance when scaleType or rootNote changes
-- [ ] T043 [US2] Implement configuration change prevention during simulation in Collider.ts: guard checks in setConfiguration() and updateAudioParameter() throwing errors if isRunning === true (FR-018)
-- [ ] T044 [US2] Add validation for scale type and root note in validation.ts: ensure enum values are valid ScaleType and Note values
-- [ ] T045 [US2] Add UI feedback for disabled configuration controls when simulation is running: gray out dropdowns, show tooltip requiring stop first
+- [X] T040 [P] [US2] Add scale type dropdown UI control in Collider component with options: Major, Harmonic Minor, Natural Minor, Lydian, Mixolydian
+- [X] T041 [P] [US2] Add root note selector UI control in Collider component with all 12 chromatic notes (C, C#, D, D#, E, F, F#, G, G#, A, A#, B)
+- [X] T042 [US2] Implement scale update logic in Collider.ts: updateScale() method recreating MusicalScale instance when scaleType or rootNote changes
+- [X] T043 [US2] Implement configuration change prevention during simulation in Collider.ts: guard checks in setConfiguration() and updateAudioParameter() throwing errors if isRunning === true (FR-018)
+- [X] T044 [US2] Add validation for scale type and root note in validation.ts: ensure enum values are valid ScaleType and Note values
+- [X] T045 [US2] Add UI feedback for disabled configuration controls when simulation is running: gray out dropdowns, show tooltip requiring stop first
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - users can configure any scale/root combination and hear the musical differences
 
@@ -140,11 +140,11 @@
 
 ### Implementation for User Story 3
 
-- [ ] T046 [P] [US3] Add collider count input field UI control in Collider component with numeric input validation (1-20 range)
-- [ ] T047 [US3] Implement collider count validation in validation.ts: check integer constraint, minimum 1, maximum 20, add descriptive error messages (FR-020)
-- [ ] T048 [US3] Update collider initialization in Collider.ts to create exactly config.colliderCount colliders with non-overlapping position validation
-- [ ] T049 [US3] Implement position generation retry logic in validation.ts: generateNonOverlappingPosition() with maxAttempts (100) and error if boundary too small
-- [ ] T050 [US3] Add UI validation feedback for collider count input: display error messages for out-of-range values, prevent non-integer input
+- [X] T046 [P] [US3] Add collider count input field UI control in Collider component with numeric input validation (1-20 range)
+- [X] T047 [US3] Implement collider count validation in validation.ts: check integer constraint, minimum 1, maximum 20, add descriptive error messages (FR-020)
+- [X] T048 [US3] Update collider initialization in Collider.ts to create exactly config.colliderCount colliders with non-overlapping position validation
+- [X] T049 [US3] Implement position generation retry logic in validation.ts: generateNonOverlappingPosition() with maxAttempts (100) and error if boundary too small
+- [X] T050 [US3] Add UI validation feedback for collider count input: display error messages for out-of-range values, prevent non-integer input
 
 **Checkpoint**: All basic configuration options are now available - users can control collider count, scale, and root note
 
@@ -158,15 +158,15 @@
 
 ### Implementation for User Story 4
 
-- [ ] T051 [P] [US4] Implement collision boundary rendering in ColliderRenderer.ts: drawBounds() method rendering rectangular boundary with padding
-- [ ] T052 [P] [US4] Implement collider rendering in ColliderRenderer.ts: drawCircles() method with arc drawing, fill color, stroke (2px white outline)
-- [ ] T053 [US4] Implement visual flash effect in ColliderRenderer.ts: flashCollider() method setting flashOpacity for specific collider ID, drawFlash() with opacity decay (0.05 per frame, ~300ms duration)
-- [ ] T054 [US4] Integrate ColliderRenderer with Collider component: call renderer.render() in animation loop passing ctx, colliders array, and boundary
-- [ ] T055 [US4] Implement collision event handling for visual feedback in Collider.ts: call renderer.flashCollider() when collision events occur (FR-014a)
-- [ ] T056 [US4] Create boundary from canvas dimensions in Collider.ts: createBoundaryFromCanvas() method with proportional sizing and padding (FR-019)
-- [ ] T057 [US4] Implement continuous position updates in PhysicsEngine: updatePositions() method integrating velocity * deltaTime for smooth motion
-- [ ] T058 [US4] Implement canvas resize handling in Collider.ts: add resize event listener to canvas element, recalculate boundary via createBoundaryFromCanvas() on resize, clamp collider positions to new boundary (FR-019)
-- [ ] T059 [US4] Add color generation for colliders in Collider.ts: generateColorForDegree() assigning distinct colors based on scale degree for visual differentiation
+- [X] T051 [P] [US4] Implement collision boundary rendering in ColliderRenderer.ts: drawBounds() method rendering rectangular boundary with padding
+- [X] T052 [P] [US4] Implement collider rendering in ColliderRenderer.ts: drawCircles() method with arc drawing, fill color, stroke (2px white outline)
+- [X] T053 [US4] Implement visual flash effect in ColliderRenderer.ts: flashCollider() method setting flashOpacity for specific collider ID, drawFlash() with opacity decay (0.05 per frame, ~300ms duration)
+- [X] T054 [US4] Integrate ColliderRenderer with Collider component: call renderer.render() in animation loop passing ctx, colliders array, and boundary
+- [X] T055 [US4] Implement collision event handling for visual feedback in Collider.ts: call renderer.flashCollider() when collision events occur (FR-014a)
+- [X] T056 [US4] Create boundary from canvas dimensions in Collider.ts: createBoundaryFromCanvas() method with proportional sizing and padding (FR-019)
+- [X] T057 [US4] Implement continuous position updates in PhysicsEngine: updatePositions() method integrating velocity * deltaTime for smooth motion
+- [X] T058 [US4] Implement canvas resize handling in Collider.ts: add resize event listener to canvas element, recalculate boundary via createBoundaryFromCanvas() on resize, clamp collider positions to new boundary (FR-019)
+- [X] T059 [US4] Add color generation for colliders in Collider.ts: generateColorForDegree() assigning distinct colors based on scale degree for visual differentiation
 
 **Checkpoint**: Visual feedback is now complete - users can see and understand the physics simulation driving the musical output
 
@@ -180,11 +180,11 @@
 
 ### Implementation for User Story 5
 
-- [ ] T060 [P] [US5] Add speed preset selector UI control in Collider component with three options: Slow, Medium, Fast
-- [ ] T061 [P] [US5] Create SPEED_PRESET_VELOCITIES constant in ScaleTypes.ts mapping SpeedPreset enum to pixel/second values (Slow: 40, Medium: 85, Fast: 135)
-- [ ] T062 [US5] Implement random velocity generation in Collider.ts: getRandomVelocity() method creating random direction with magnitude from speed preset
-- [ ] T063 [US5] Update collider initialization to use speed preset when setting initial velocities in createCollider() method
-- [ ] T064 [US5] Implement configuration change prevention for speed preset during simulation: add guard check in setConfiguration() (FR-018)
+- [X] T060 [P] [US5] Add speed preset selector UI control in Collider component with three options: Slow, Medium, Fast
+- [X] T061 [P] [US5] Create SPEED_PRESET_VELOCITIES constant in ScaleTypes.ts mapping SpeedPreset enum to pixel/second values (Slow: 40, Medium: 85, Fast: 135)
+- [X] T062 [US5] Implement random velocity generation in Collider.ts: getRandomVelocity() method creating random direction with magnitude from speed preset
+- [X] T063 [US5] Update collider initialization to use speed preset when setting initial velocities in createCollider() method
+- [X] T064 [US5] Implement configuration change prevention for speed preset during simulation: add guard check in setConfiguration() (FR-018)
 
 **Checkpoint**: Users can now control the pace of the simulation - slow for sparse/meditative patterns, fast for dense/energetic patterns
 

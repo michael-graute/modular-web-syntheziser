@@ -104,6 +104,13 @@ function getControlLayout(type: ComponentType): ControlLayout {
         numKnobs: 3, // rate, depth, mix
       };
 
+    case ComponentType.COLLIDER:
+      return {
+        numKnobs: 6, // scaleType, rootNote, colliderCount, speedPreset, bpm, gateSize
+        hasDisplayArea: true,
+        displayHeight: 200, // physics simulation canvas
+      };
+
     case ComponentType.KEYBOARD_INPUT:
     case ComponentType.FILTER_ENVELOPE:
     default:
@@ -164,6 +171,9 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
     case ComponentType.OSCILLOSCOPE:
       return { inputs: 1, outputs: 0 }; // audio in
 
+    case ComponentType.COLLIDER:
+      return { inputs: 0, outputs: 2 }; // CV out, Gate out
+
     default:
       return { inputs: 1, outputs: 1 };
   }
@@ -175,6 +185,30 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
 export function calculateComponentHeight(type: ComponentType): number {
   const portCounts = getPortCounts(type);
   const controlLayout = getControlLayout(type);
+
+  // Special case for Collider: 6 knobs in 3x2 grid + button + display
+  if (type === ComponentType.COLLIDER) {
+    const maxPorts = Math.max(portCounts.inputs, portCounts.outputs);
+    const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+    let height = COMPONENT.HEADER_HEIGHT; // 32
+    height += portAreaHeight; // Port area
+    height += 10; // Spacing above knobs
+    height += 12; // Knob labels (row 1)
+    height += 40; // Knob size (row 1)
+    height += 12; // Value text (row 1)
+    height += 20; // Spacing between rows
+    height += 12; // Knob labels (row 2)
+    height += 40; // Knob size (row 2)
+    height += 12; // Value text (row 2)
+    height += 10; // Spacing before button
+    height += 30; // Button height
+    height += 10; // Spacing before display
+    height += 200; // Display area
+    height += 10; // Spacing after display
+
+    return height;
+  }
 
   // Start with header height
   let height: number = COMPONENT.HEADER_HEIGHT; // 32
@@ -262,6 +296,11 @@ export function calculateComponentWidth(type: ComponentType): number {
   // StepSequencer needs extra width for 16-step display
   if (type === ComponentType.STEP_SEQUENCER) {
     width = 316; // Enough for 16 steps: 16*16px + 15*2px gaps + 2*5px margins + 20px padding
+  }
+
+  // Collider needs extra width for 6 knobs in 3x2 grid + button + display area
+  if (type === ComponentType.COLLIDER) {
+    width = 280; // Enough for 3 knobs side by side (40px each + spacing) + margins + display area
   }
 
   return width;
