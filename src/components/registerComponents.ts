@@ -13,6 +13,7 @@ import { ADSREnvelope } from './processors/ADSREnvelope';
 import { KeyboardInput } from './utilities/KeyboardInput';
 import { MasterOutput } from './utilities/MasterOutput';
 import { Mixer } from './utilities/Mixer';
+import { Collider } from './utilities/Collider';
 import { Delay } from './effects/Delay';
 import { Reverb } from './effects/Reverb';
 import { Distortion } from './effects/Distortion';
@@ -116,6 +117,15 @@ export function registerAllComponents(): void {
     'Utilities',
     (id, position) => new StepSequencer(id, position),
     calculateComponentDimensions(ComponentType.STEP_SEQUENCER)
+  );
+
+  componentRegistry.register(
+    ComponentType.COLLIDER,
+    'Collider',
+    'Musical physics simulation with CV/Gate outputs',
+    'Utilities',
+    (id, position) => new Collider(id, 'Collider', position),
+    calculateComponentDimensions(ComponentType.COLLIDER)
   );
 
   // Effects

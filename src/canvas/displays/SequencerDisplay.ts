@@ -19,6 +19,11 @@ export class SequencerDisplay {
   private baseWidth: number;
   private baseHeight: number;
 
+  // Performance optimization: throttle to 30fps
+  private lastRenderTime: number = 0;
+  private targetFPS: number = 30;
+  private frameInterval: number = 1000 / this.targetFPS;
+
   // Transport control buttons
   private playStopButton: Button;
   private resetButton: Button;
@@ -95,14 +100,38 @@ export class SequencerDisplay {
   }
 
   /**
-   * Start animation loop
+   * Check if canvas is visible in viewport (Performance optimization)
+   */
+  private isVisible(): boolean {
+    const rect = this.canvas.getBoundingClientRect();
+    return (
+      rect.top < window.innerHeight &&
+      rect.bottom > 0 &&
+      rect.left < window.innerWidth &&
+      rect.right > 0
+    );
+  }
+
+  /**
+   * Start animation loop (throttled to 30fps for performance)
    */
   private startAnimation(): void {
-    const animate = () => {
-      this.render();
+    const animate = (timestamp: number) => {
+      // Skip rendering if not visible (Performance: Priority 2)
+      if (!this.isVisible()) {
+        this.animationFrame = requestAnimationFrame(animate);
+        return;
+      }
+
+      // Throttle to 30fps (Performance: Priority 1)
+      if (timestamp - this.lastRenderTime >= this.frameInterval) {
+        this.render();
+        this.lastRenderTime = timestamp;
+      }
+
       this.animationFrame = requestAnimationFrame(animate);
     };
-    animate();
+    animate(performance.now());
   }
 
   /**

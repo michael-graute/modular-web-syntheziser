@@ -32,6 +32,7 @@ export enum ComponentType {
   MASTER_OUTPUT = 'master-output',
   OSCILLOSCOPE = 'oscilloscope',
   STEP_SEQUENCER = 'step-sequencer',
+  COLLIDER = 'collider',
 }
 
 /**
