@@ -750,23 +750,30 @@ export class CanvasComponent {
         this.controls.push(knob);
       }
 
-      // Create embedded oscilloscope display
+      // Create or update embedded oscilloscope display
       const displayY = knobY + 40 + 12 + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const displayX = this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL;
       const displayWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
       const displayHeight = 150;
 
-      this.oscilloscopeDisplay = new OscilloscopeDisplay(
-        this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
-        displayY,
-        displayWidth,
-        displayHeight,
-        this.synthComponent as Oscilloscope
-      );
+      if (!this.oscilloscopeDisplay) {
+        // Create new display
+        this.oscilloscopeDisplay = new OscilloscopeDisplay(
+          displayX,
+          displayY,
+          displayWidth,
+          displayHeight,
+          this.synthComponent as Oscilloscope
+        );
 
-      // Add canvas to DOM (will be positioned absolutely)
-      const canvasElement = document.getElementById('synth-canvas');
-      if (canvasElement && canvasElement.parentElement) {
-        canvasElement.parentElement.appendChild(this.oscilloscopeDisplay.getCanvas());
+        // Add canvas to DOM (will be positioned absolutely)
+        const canvasElement = document.getElementById('synth-canvas');
+        if (canvasElement && canvasElement.parentElement) {
+          canvasElement.parentElement.appendChild(this.oscilloscopeDisplay.getCanvas());
+        }
+      } else {
+        // Update existing display position
+        this.oscilloscopeDisplay.updatePosition(displayX, displayY);
       }
     }
 
@@ -808,23 +815,30 @@ export class CanvasComponent {
         this.controls.push(knob);
       }
 
-      // Create embedded sequencer display
+      // Create or update embedded sequencer display
       const displayY = knobY + 40 + 12 + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const displayX = this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL;
       const displayWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
       const displayHeight = 160; // Increased to fully show buttons, grid, and step editor
 
-      this.sequencerDisplay = new SequencerDisplay(
-        this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
-        displayY,
-        displayWidth,
-        displayHeight,
-        this.synthComponent as StepSequencer
-      );
+      if (!this.sequencerDisplay) {
+        // Create new display
+        this.sequencerDisplay = new SequencerDisplay(
+          displayX,
+          displayY,
+          displayWidth,
+          displayHeight,
+          this.synthComponent as StepSequencer
+        );
 
-      // Add canvas to DOM (will be positioned absolutely)
-      const canvasElement = document.getElementById('synth-canvas');
-      if (canvasElement && canvasElement.parentElement) {
-        canvasElement.parentElement.appendChild(this.sequencerDisplay.getCanvas());
+        // Add canvas to DOM (will be positioned absolutely)
+        const canvasElement = document.getElementById('synth-canvas');
+        if (canvasElement && canvasElement.parentElement) {
+          canvasElement.parentElement.appendChild(this.sequencerDisplay.getCanvas());
+        }
+      } else {
+        // Update existing display position
+        this.sequencerDisplay.updatePosition(displayX, displayY);
       }
     }
 
@@ -949,23 +963,30 @@ export class CanvasComponent {
 
       this.controls.push(startStopButton);
 
-      // Create embedded collider display
+      // Create or update embedded collider display
       const displayY = buttonY + buttonHeight + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const displayX = this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL;
       const displayWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
       const displayHeight = 200; // Canvas height for physics visualization
 
-      this.colliderDisplay = new ColliderDisplay(
-        this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
-        displayY,
-        displayWidth,
-        displayHeight,
-        this.synthComponent as Collider
-      );
+      if (!this.colliderDisplay) {
+        // Create new display
+        this.colliderDisplay = new ColliderDisplay(
+          displayX,
+          displayY,
+          displayWidth,
+          displayHeight,
+          this.synthComponent as Collider
+        );
 
-      // Add canvas to DOM (will be positioned absolutely)
-      const canvasElement2 = document.getElementById('synth-canvas');
-      if (canvasElement2 && canvasElement2.parentElement) {
-        canvasElement2.parentElement.appendChild(this.colliderDisplay.getCanvas());
+        // Add canvas to DOM (will be positioned absolutely)
+        const canvasElement2 = document.getElementById('synth-canvas');
+        if (canvasElement2 && canvasElement2.parentElement) {
+          canvasElement2.parentElement.appendChild(this.colliderDisplay.getCanvas());
+        }
+      } else {
+        // Update existing display position
+        this.colliderDisplay.updatePosition(displayX, displayY);
       }
     }
   }
@@ -1004,25 +1025,14 @@ export class CanvasComponent {
    * Update control positions after component moves
    */
   private updateControlPositions(): void {
-    // Clean up oscilloscope display before recreating controls
-    if (this.oscilloscopeDisplay) {
-      this.oscilloscopeDisplay.destroy();
-      this.oscilloscopeDisplay = null;
-    }
+    // Update display positions instead of destroying and recreating them
+    // This preserves the canvas and rendering state
 
-    // Clean up sequencer display before recreating controls
-    if (this.sequencerDisplay) {
-      this.sequencerDisplay.destroy();
-      this.sequencerDisplay = null;
-    }
+    // NOTE: We used to destroy and recreate displays here, but that caused the canvas
+    // to be replaced while the simulation was running, making rendering invisible.
+    // Now we just update positions on existing displays.
 
-    // Clean up collider display before recreating controls
-    if (this.colliderDisplay) {
-      this.colliderDisplay.destroy();
-      this.colliderDisplay = null;
-    }
-
-    // Recreate controls at new position
+    // Recreate controls at new position (this updates knobs, buttons, etc.)
     this.createControls();
 
     // Emit event so ModulationVisualizer can re-register the new controls

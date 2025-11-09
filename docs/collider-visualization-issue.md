@@ -1,8 +1,10 @@
 # Collider Visualization Issue
 
-**Status**: UNRESOLVED
-**Date**: 2025-11-08
+**Status**: ✅ FULLY RESOLVED
+**Date**: 2025-11-08 (Resolved: 2025-11-09)
 **Severity**: HIGH - Component functionality is complete but visualization is not visible
+
+**Resolution Confirmed**: Visualization now displays correctly with physics simulation visible on screen.
 
 ---
 
@@ -434,6 +436,104 @@ Manual Test Results:
 
 ---
 
-**Last Updated**: 2025-11-08
+## Resolution
+
+**Date**: 2025-11-09
+**Root Cause Identified**:
+
+**Canvas Replacement During Rendering** - The `updateControlPositions()` method was destroying and recreating the ColliderDisplay canvas multiple times during component initialization. The simulation would start rendering to the first canvas, but then that canvas would be destroyed and replaced while the simulation was running, making all rendering operations invisible to the user.
+
+**Secondary Issues**:
+1. **No Device Pixel Ratio (DPR) Scaling** - Canvas wasn't scaled for high-DPI displays (Retina)
+2. **Duplicate Canvas Creation** - `createControls()` was being called multiple times without checking if display already existed
+
+**Fixes Applied**:
+
+### 1. CanvasComponent.ts - Prevent Canvas Destruction (Primary Fix)
+**File**: `src/canvas/CanvasComponent.ts`
+
+Modified `updateControlPositions()` to **stop destroying and recreating displays**:
+```typescript
+private updateControlPositions(): void {
+  // Update display positions instead of destroying and recreating them
+  // This preserves the canvas and rendering state
+
+  // NOTE: We used to destroy and recreate displays here, but that caused the canvas
+  // to be replaced while the simulation was running, making rendering invisible.
+  // Now we just update positions on existing displays.
+
+  // Recreate controls at new position (this updates knobs, buttons, etc.)
+  this.createControls();
+  // ...
+}
+```
+
+Modified `createControls()` to **prevent duplicate canvas creation**:
+```typescript
+// Create embedded collider display (only if it doesn't exist)
+if (!this.colliderDisplay) {
+  this.colliderDisplay = new ColliderDisplay(/* ... */);
+  // Add canvas to DOM
+}
+```
+
+### 2. ColliderDisplay.ts - Added Device Pixel Ratio Support
+**File**: `src/canvas/displays/ColliderDisplay.ts`
+
+```typescript
+// Apply device pixel ratio scaling for sharp rendering on high-DPI displays
+const dpr = window.devicePixelRatio || 1;
+this.canvas.width = width * dpr;
+this.canvas.height = height * dpr;
+this.canvas.style.width = `${width}px`;
+this.canvas.style.height = `${height}px`;
+
+// Scale the 2D context to match device pixel ratio
+const ctx = this.canvas.getContext('2d');
+if (ctx) {
+  ctx.scale(dpr, dpr);
+}
+```
+
+### 3. Collider.ts & ColliderRenderer.ts - Use Logical Dimensions
+**Files**: `src/components/utilities/Collider.ts`, `src/canvas/ColliderRenderer.ts`
+
+Updated boundary calculation and clearRect to use CSS dimensions when context is DPR-scaled:
+```typescript
+// Use logical dimensions (CSS size) when context is scaled by device pixel ratio
+const logicalWidth = parseInt(this.canvas.style.width) || this.canvas.width;
+const logicalHeight = parseInt(this.canvas.style.height) || this.canvas.height;
+```
+
+**Testing**:
+- ✅ Build completes successfully
+- ✅ TypeScript compilation passes
+- ✅ No runtime errors
+- ✅ Visualization confirmed working on macOS
+- ✅ Physics simulation visible with colored circles bouncing
+- ✅ Boundary rendering correct
+- ✅ Canvas persists during simulation
+
+---
+
+## Summary
+
+The collider visualization issue has been **fully resolved**. The root cause was canvas destruction/recreation during component initialization, which caused the simulation to render to orphaned canvases that were no longer in the DOM.
+
+The fix involved:
+1. Preventing `updateControlPositions()` from destroying displays
+2. Preventing duplicate canvas creation in `createControls()`
+3. Adding device pixel ratio support for sharp Retina rendering
+4. Using logical dimensions for physics calculations
+
+**Impact**:
+- Collider component now displays correctly
+- Visualization remains stable during component movement
+- Sharp rendering on high-DPI displays
+- No performance degradation
+
+---
+
+**Last Updated**: 2025-11-09
 **Reporter**: Development Team
-**Status**: DOCUMENTED - Ready for Investigation
+**Status**: ✅ FULLY RESOLVED AND TESTED

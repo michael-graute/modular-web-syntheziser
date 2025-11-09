@@ -48,6 +48,7 @@ const DEFAULT_CONFIG: ColliderConfig = {
 const BOUNDARY_PADDING = 10;
 const COLLIDER_RADIUS = 15;
 const MIN_POSITION_SPACING = 40; // Minimum distance between colliders
+const MAX_POSITION_ATTEMPTS = 100; // Maximum attempts to find non-overlapping position
 
 /**
  * Color palette for scale degrees
@@ -85,9 +86,12 @@ export class Collider extends SynthComponent {
   private renderer: ColliderRenderer | null = null;
   private timingCalculator: TimingCalculator;
 
-  // Audio nodes
-  private cvNode: ConstantSourceNode | null = null;
+  // Audio nodes (matching KeyboardInput naming)
+  private frequencyNode: ConstantSourceNode | null = null;
   private gateNode: ConstantSourceNode | null = null;
+
+  // Gate targets (ADSR envelopes that should be triggered)
+  private gateTargets: SynthComponent[] = [];
 
   // Canvas reference
   private canvas: HTMLCanvasElement | null = null;
@@ -102,11 +106,9 @@ export class Collider extends SynthComponent {
     // Create timing calculator
     this.timingCalculator = new TimingCalculator();
 
-    // Add CV output port (1V/octave standard)
-    this.addOutput('cv', 'CV Out', SignalType.CV);
-
-    // Add Gate output port (0-5V)
-    this.addOutput('gate', 'Gate Out', SignalType.GATE);
+    // Add output ports (matching KeyboardInput)
+    this.addOutput('frequency', 'Frequency', SignalType.CV);
+    this.addOutput('gate', 'Gate', SignalType.GATE);
 
     // T040: Add scale type parameter (0=Major, 1=Harmonic Minor, 2=Natural Minor, 3=Lydian, 4=Mixolydian)
     this.addParameter('scaleType', 'Scale', 0, 0, 4, 1, '');
@@ -168,22 +170,29 @@ export class Collider extends SynthComponent {
   }
 
   /**
-   * T029: Create audio nodes (CV and Gate outputs)
+   * T029: Create audio nodes (Frequency and Gate outputs)
+   * Matches KeyboardInput behavior exactly
    */
   createAudioNodes(): void {
+    if (!audioEngine.isReady()) {
+      throw new Error('AudioEngine not initialized');
+    }
+
     const context = audioEngine.getContext();
 
-    // Create CV output (ConstantSourceNode for 1V/octave)
-    this.cvNode = context.createConstantSource();
-    this.cvNode.offset.value = 0;
-    this.cvNode.start();
-    this.registerAudioNode('cv', this.cvNode);
+    // Create frequency output (ConstantSourceNode outputting Hz)
+    this.frequencyNode = context.createConstantSource();
+    this.frequencyNode.offset.value = 440; // A4 default
+    this.frequencyNode.start();
+    this.registerAudioNode('frequency', this.frequencyNode);
 
-    // Create Gate output (ConstantSourceNode for 0-5V envelope)
+    // Create gate output (ConstantSourceNode for 0/1 gate signal)
     this.gateNode = context.createConstantSource();
-    this.gateNode.offset.value = 0;
+    this.gateNode.offset.value = 0; // Gate off by default
     this.gateNode.start();
     this.registerAudioNode('gate', this.gateNode);
+
+    console.log(`Collider ${this.id} audio nodes created`);
   }
 
   /**
@@ -195,14 +204,14 @@ export class Collider extends SynthComponent {
       this.stopSimulation();
     }
 
-    // Stop and disconnect CV node
-    if (this.cvNode) {
-      this.cvNode.stop();
-      this.cvNode.disconnect();
-      this.cvNode = null;
+    // Stop and disconnect frequency node
+    if (this.frequencyNode) {
+      this.frequencyNode.stop();
+      this.frequencyNode.disconnect();
+      this.frequencyNode = null;
     }
 
-    // Stop and disconnect Gate node
+    // Stop and disconnect gate node
     if (this.gateNode) {
       this.gateNode.stop();
       this.gateNode.disconnect();
@@ -210,6 +219,7 @@ export class Collider extends SynthComponent {
     }
 
     this.audioNodes.clear();
+    console.log(`Collider ${this.id} audio nodes destroyed`);
   }
 
   /**
@@ -295,42 +305,65 @@ export class Collider extends SynthComponent {
 
   /**
    * T031: Start simulation
+   * T078: Comprehensive error handling with try-catch
    */
   startSimulation(): void {
     if (this.isRunning) {
-      console.warn('Simulation already running');
+      console.warn('[Collider] Simulation already running');
       return;
     }
 
-    // Initialize scale
-    if (!this.scale) {
-      this.updateScale();
+    try {
+      console.log('[Collider] Starting simulation...', {
+        config: this.config,
+        hasCanvas: !!this.canvas,
+        hasContext: !!this.ctx,
+      });
+
+      // Initialize scale
+      if (!this.scale) {
+        this.updateScale();
+      }
+
+      // Initialize canvas and renderer
+      if (!this.canvas || !this.ctx) {
+        throw new Error('Canvas not initialized. Call setCanvas() first.');
+      }
+
+      this.boundary = this.createBoundaryFromCanvas();
+      this.renderer = new ColliderRenderer(this.ctx);
+
+      // Initialize physics engine
+      this.physicsEngine = new PhysicsEngine();
+      this.physicsEngine.setBoundary(this.boundary);
+
+      // T030: Create colliders
+      this.initializeColliders();
+
+      // Add colliders to physics engine
+      this.colliders.forEach(collider => {
+        this.physicsEngine!.addCollider(collider);
+      });
+
+      // Start animation loop
+      this.isRunning = true;
+      this.lastUpdateTime = performance.now();
+      this.animate();
+
+      console.log('[Collider] Simulation started successfully', {
+        colliderCount: this.colliders.length,
+        boundary: this.boundary,
+      });
+    } catch (error) {
+      // T078: Error handling with user-friendly message
+      console.error('[Collider] Failed to start simulation:', error);
+      this.isRunning = false;
+
+      if (error instanceof Error) {
+        throw new Error(`Failed to start collider simulation: ${error.message}`);
+      }
+      throw error;
     }
-
-    // Initialize canvas and renderer
-    if (!this.canvas || !this.ctx) {
-      throw new Error('Canvas not initialized. Call setCanvas() first.');
-    }
-
-    this.boundary = this.createBoundaryFromCanvas();
-    this.renderer = new ColliderRenderer(this.ctx);
-
-    // Initialize physics engine
-    this.physicsEngine = new PhysicsEngine();
-    this.physicsEngine.setBoundary(this.boundary);
-
-    // T030: Create colliders
-    this.initializeColliders();
-
-    // Add colliders to physics engine
-    this.colliders.forEach(collider => {
-      this.physicsEngine!.addCollider(collider);
-    });
-
-    // Start animation loop
-    this.isRunning = true;
-    this.lastUpdateTime = performance.now();
-    this.animate();
   }
 
   /**
@@ -382,16 +415,16 @@ export class Collider extends SynthComponent {
 
   /**
    * T049: Generate non-overlapping position
+   * T083: Edge case handling for boundary size
    */
   private generateNonOverlappingPosition(): Vector2D {
     if (!this.boundary) {
       throw new Error('Boundary not initialized');
     }
 
-    const maxAttempts = 100;
     let attempts = 0;
 
-    while (attempts < maxAttempts) {
+    while (attempts < MAX_POSITION_ATTEMPTS) {
       // Generate random position within boundary
       const x = this.boundary.left + COLLIDER_RADIUS +
         Math.random() * (this.boundary.width - COLLIDER_RADIUS * 2);
@@ -413,8 +446,14 @@ export class Collider extends SynthComponent {
       attempts++;
     }
 
-    // If we couldn't find a non-overlapping position, the boundary is too small
-    throw new Error('Could not generate non-overlapping position. Boundary too small for collider count.');
+    // T083: If we couldn't find a non-overlapping position, the boundary is too small
+    const availableArea = this.boundary.width * this.boundary.height;
+    const requiredArea = this.config.colliderCount * (MIN_POSITION_SPACING * MIN_POSITION_SPACING);
+    throw new Error(
+      `Could not generate non-overlapping position after ${MAX_POSITION_ATTEMPTS} attempts. ` +
+      `Boundary too small (${availableArea.toFixed(0)}px²) for ${this.config.colliderCount} colliders ` +
+      `(requires ~${requiredArea.toFixed(0)}px²). Try reducing collider count or increasing canvas size.`
+    );
   }
 
   /**
@@ -433,8 +472,13 @@ export class Collider extends SynthComponent {
       throw new Error('Canvas not initialized');
     }
 
-    const width = this.canvas.width - BOUNDARY_PADDING * 2;
-    const height = this.canvas.height - BOUNDARY_PADDING * 2;
+    // Use logical dimensions (CSS size) when context is scaled by device pixel ratio
+    // The canvas context is scaled by DPR, so we use CSS dimensions for physics calculations
+    const logicalWidth = parseInt(this.canvas.style.width) || this.canvas.width;
+    const logicalHeight = parseInt(this.canvas.style.height) || this.canvas.height;
+
+    const width = logicalWidth - BOUNDARY_PADDING * 2;
+    const height = logicalHeight - BOUNDARY_PADDING * 2;
 
     return {
       left: BOUNDARY_PADDING,
@@ -473,17 +517,52 @@ export class Collider extends SynthComponent {
 
   /**
    * T055: Process collision events for audio and visual feedback
+   * T079: Logging for debugging
    */
   private processCollisionEvents(events: CollisionEvent[]): void {
+    if (events.length === 0) return;
+
     const currentTime = audioEngine.getContext().currentTime;
 
     for (const event of events) {
       // Find the collider that triggered the event
       const collider = this.colliders.find(c => c.id === event.colliderId);
-      if (!collider) continue;
+      if (!collider) {
+        console.warn(`[Collider] Event for unknown collider: ${event.colliderId}`);
+        continue;
+      }
 
-      // Trigger audio output
+      // T079: Log collision event (can be commented out in production)
+      // Uncomment for detailed collision debugging:
+      // console.debug('[Collider] Collision event:', {
+      //   type: event.type,
+      //   colliderId: event.colliderId,
+      //   wallSide: event.wallSide,
+      //   otherColliderId: event.otherColliderId,
+      //   cvVoltage: collider.cvVoltage,
+      // });
+
+      // Trigger audio output (Frequency + Gate)
       this.triggerNote(collider.cvVoltage, currentTime);
+
+      // Trigger connected ADSR envelopes (matches KeyboardInput behavior)
+      this.triggerGateTargets();
+
+      // Calculate gate duration
+      const gateDurationMs = this.timingCalculator.calculateGateDuration(
+        this.config.bpm,
+        this.config.gateSize
+      );
+      const gateDurationSeconds = gateDurationMs / 1000;
+
+      // Schedule gate release
+      const releaseTime = currentTime + gateDurationSeconds;
+      this.releaseGate(releaseTime);
+
+      // Schedule ADSR release
+      setTimeout(() => {
+        this.releaseGateTargets();
+      }, gateDurationMs);
 
       // Trigger visual flash
       if (this.renderer) {
@@ -493,42 +572,65 @@ export class Collider extends SynthComponent {
   }
 
   /**
-   * T033: Trigger audio output (CV + Gate)
+   * Convert CV voltage (1V/octave) to frequency in Hz
+   * Reference: C4 (MIDI 60) = 0V = 261.63 Hz
+   * Formula: freq = 261.63 * 2^(cv_voltage)
+   */
+  private cvToFrequency(cvVoltage: number): number {
+    const C4_FREQUENCY = 261.63; // Middle C reference frequency
+    return C4_FREQUENCY * Math.pow(2, cvVoltage);
+  }
+
+  /**
+   * T033: Trigger audio output (Frequency + Gate)
+   * Matches KeyboardInput behavior exactly
    */
   private triggerNote(cvVoltage: number, scheduleTime: number): void {
-    if (!this.cvNode || !this.gateNode) return;
+    if (!this.frequencyNode || !this.gateNode) return;
 
-    const gateDuration = this.timingCalculator.calculateGateDuration(
-      this.config.bpm,
-      this.config.gateSize
-    ) / 1000; // Convert to seconds
+    try {
+      // Convert CV voltage to frequency in Hz
+      const frequencyHz = this.cvToFrequency(cvVoltage);
 
-    const rampTime = 0.01; // 10ms ramp to prevent clicks
+      // Update frequency output (matches KeyboardInput behavior)
+      this.frequencyNode.offset.setValueAtTime(frequencyHz, scheduleTime);
 
-    // Schedule CV change (exponential ramp to prevent clicks)
-    this.cvNode.offset.cancelScheduledValues(scheduleTime);
-    this.cvNode.offset.setValueAtTime(this.cvNode.offset.value, scheduleTime);
-    this.cvNode.offset.exponentialRampToValueAtTime(
-      cvVoltage + 0.001, // Add small offset to prevent zero in exponential ramp
-      scheduleTime + rampTime
-    );
+      // Gate on (0 -> 1, matches KeyboardInput behavior)
+      this.gateNode.offset.setValueAtTime(1, scheduleTime);
 
-    // Schedule Gate envelope (0V → 5V → 0V)
-    this.gateNode.offset.cancelScheduledValues(scheduleTime);
-    this.gateNode.offset.setValueAtTime(0, scheduleTime);
-    this.gateNode.offset.linearRampToValueAtTime(5, scheduleTime + rampTime);
-    this.gateNode.offset.linearRampToValueAtTime(5, scheduleTime + gateDuration - rampTime);
-    this.gateNode.offset.linearRampToValueAtTime(0, scheduleTime + gateDuration);
+      console.log(`[Collider] Note triggered: ${frequencyHz.toFixed(2)} Hz (CV: ${cvVoltage.toFixed(3)}V)`);
+    } catch (error) {
+      console.error('[Collider] Failed to trigger note:', error);
+    }
+  }
+
+  /**
+   * Release gate signal
+   */
+  private releaseGate(scheduleTime: number): void {
+    if (!this.gateNode) return;
+
+    try {
+      // Gate off (1 -> 0, matches KeyboardInput behavior)
+      this.gateNode.offset.setValueAtTime(0, scheduleTime);
+
+      console.log(`[Collider] Gate released`);
+    } catch (error) {
+      console.error('[Collider] Failed to release gate:', error);
+    }
   }
 
   /**
    * T037: Stop simulation
+   * T079: Logging for debugging
    */
   stopSimulation(): void {
     if (!this.isRunning) {
-      console.warn('Simulation not running');
+      console.warn('[Collider] Simulation not running');
       return;
     }
+
+    console.log('[Collider] Stopping simulation...');
 
     // Stop animation loop
     this.isRunning = false;
@@ -537,17 +639,17 @@ export class Collider extends SynthComponent {
       this.animationFrameId = null;
     }
 
-    // Reset CV/Gate outputs to 0V
-    if (this.cvNode) {
-      const now = audioEngine.getContext().currentTime;
-      this.cvNode.offset.cancelScheduledValues(now);
-      this.cvNode.offset.setValueAtTime(0, now);
+    // Reset frequency and gate outputs
+    const now = audioEngine.getContext().currentTime;
+
+    if (this.frequencyNode) {
+      this.frequencyNode.offset.cancelScheduledValues(now);
+      this.frequencyNode.offset.setValueAtTime(440, now); // Reset to A4
     }
 
     if (this.gateNode) {
-      const now = audioEngine.getContext().currentTime;
       this.gateNode.offset.cancelScheduledValues(now);
-      this.gateNode.offset.setValueAtTime(0, now);
+      this.gateNode.offset.setValueAtTime(0, now); // Gate off
     }
 
     // Clear physics engine
@@ -564,6 +666,8 @@ export class Collider extends SynthComponent {
     if (this.renderer) {
       this.renderer.clearFlashes();
     }
+
+    console.log('[Collider] Simulation stopped');
   }
 
   /**
@@ -617,20 +721,22 @@ export class Collider extends SynthComponent {
    * Get output node for connections
    */
   getOutputNode(): AudioNode | null {
-    // Default to CV output
-    return this.cvNode;
+    // Default to frequency output (matches KeyboardInput)
+    return this.frequencyNode;
   }
 
   /**
-   * Get output node by port
+   * Get output node by port (matches KeyboardInput)
    */
   protected override getOutputNodeByPort(portId: string): AudioNode | null {
-    if (portId === 'cv') {
-      return this.cvNode;
-    } else if (portId === 'gate') {
-      return this.gateNode;
+    switch (portId) {
+      case 'frequency':
+        return this.frequencyNode;
+      case 'gate':
+        return this.gateNode;
+      default:
+        return this.frequencyNode; // Default to frequency
     }
-    return null;
   }
 
   /**
@@ -638,6 +744,54 @@ export class Collider extends SynthComponent {
    */
   getInputNode(): AudioNode | null {
     return null;
+  }
+
+  /**
+   * Register a gate target (ADSR envelope) for triggering
+   * Called automatically when connecting gate output to an ADSR envelope
+   */
+  registerGateTarget(target: SynthComponent): void {
+    if (!this.gateTargets.includes(target)) {
+      this.gateTargets.push(target);
+      console.log(`[Collider] Registered gate target: ${target.name} (${target.id})`);
+    }
+  }
+
+  /**
+   * Unregister a gate target
+   */
+  unregisterGateTarget(target: SynthComponent): void {
+    const index = this.gateTargets.indexOf(target);
+    if (index !== -1) {
+      this.gateTargets.splice(index, 1);
+      console.log(`[Collider] Unregistered gate target: ${target.name} (${target.id})`);
+    }
+  }
+
+  /**
+   * Trigger all registered ADSR envelopes
+   */
+  private triggerGateTargets(): void {
+    for (const target of this.gateTargets) {
+      // Check if target has triggerGateOn method (ADSR envelope)
+      const triggerMethod = (target as any).triggerGateOn;
+      if (triggerMethod && typeof triggerMethod === 'function') {
+        triggerMethod.call(target);
+      }
+    }
+  }
+
+  /**
+   * Release all registered ADSR envelopes
+   */
+  private releaseGateTargets(): void {
+    for (const target of this.gateTargets) {
+      // Check if target has triggerGateOff method (ADSR envelope)
+      const releaseMethod = (target as any).triggerGateOff;
+      if (releaseMethod && typeof releaseMethod === 'function') {
+        releaseMethod.call(target);
+      }
+    }
   }
 
   /**
@@ -651,6 +805,9 @@ export class Collider extends SynthComponent {
     if (this.isRunning) {
       this.stopSimulation();
     }
+
+    // Clear gate targets
+    this.gateTargets = [];
 
     // Destroy audio nodes
     this.destroyAudioNodes();

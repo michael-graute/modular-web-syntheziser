@@ -13,6 +13,8 @@ export class ColliderDisplay {
   private collider: Collider;
   private baseX: number;
   private baseY: number;
+  private baseWidth: number;
+  private baseHeight: number;
 
   constructor(
     x: number,
@@ -24,11 +26,19 @@ export class ColliderDisplay {
     this.collider = collider;
     this.baseX = x;
     this.baseY = y;
+    this.baseWidth = width;
+    this.baseHeight = height;
 
     // Create canvas element
     this.canvas = document.createElement('canvas');
-    this.canvas.width = width;
-    this.canvas.height = height;
+
+    // Apply device pixel ratio scaling for sharp rendering on high-DPI displays (e.g., Retina)
+    const dpr = window.devicePixelRatio || 1;
+    this.canvas.width = width * dpr;
+    this.canvas.height = height * dpr;
+    this.canvas.style.width = `${width}px`;
+    this.canvas.style.height = `${height}px`;
+
     this.canvas.style.position = 'absolute';
     this.canvas.style.left = `${x}px`;
     this.canvas.style.top = `${y}px`;
@@ -37,6 +47,12 @@ export class ColliderDisplay {
     this.canvas.style.pointerEvents = 'none'; // Don't interfere with canvas interactions
     this.canvas.style.transformOrigin = '0 0'; // Transform from top-left corner
     this.canvas.style.zIndex = '100'; // Ensure canvas appears above main canvas (main canvas is z-index: 1)
+
+    // Scale the 2D context to match device pixel ratio
+    const ctx = this.canvas.getContext('2d');
+    if (ctx) {
+      ctx.scale(dpr, dpr);
+    }
 
     // Initialize collider component with this canvas
     // The Collider component will create its own renderer when simulation starts
@@ -48,6 +64,20 @@ export class ColliderDisplay {
    */
   getCanvas(): HTMLCanvasElement {
     return this.canvas;
+  }
+
+  /**
+   * Get the base (logical) width of the canvas
+   */
+  getBaseWidth(): number {
+    return this.baseWidth;
+  }
+
+  /**
+   * Get the base (logical) height of the canvas
+   */
+  getBaseHeight(): number {
+    return this.baseHeight;
   }
 
   /**
@@ -64,8 +94,21 @@ export class ColliderDisplay {
    * Update size when component resizes
    */
   updateSize(width: number, height: number): void {
-    this.canvas.width = width;
-    this.canvas.height = height;
+    this.baseWidth = width;
+    this.baseHeight = height;
+
+    // Apply device pixel ratio scaling
+    const dpr = window.devicePixelRatio || 1;
+    this.canvas.width = width * dpr;
+    this.canvas.height = height * dpr;
+    this.canvas.style.width = `${width}px`;
+    this.canvas.style.height = `${height}px`;
+
+    // Re-apply context scaling after resize
+    const ctx = this.canvas.getContext('2d');
+    if (ctx) {
+      ctx.scale(dpr, dpr);
+    }
   }
 
   /**

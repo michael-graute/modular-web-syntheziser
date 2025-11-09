@@ -198,13 +198,13 @@
 
 ### Implementation for User Story 6
 
-- [ ] T065 [P] [US6] Add BPM input field UI control in Collider component with numeric validation (30-300 range, default 120)
-- [ ] T066 [P] [US6] Add gate size selector UI control in Collider component with options: 1 (whole), 1/2 (half), 1/4 (quarter), 1/8 (eighth), 1/16 (sixteenth) note
-- [ ] T067 [US6] Implement BPM validation in validation.ts: check finite number constraint, minimum 30, maximum 300, add descriptive error messages (FR-020a)
-- [ ] T068 [US6] Implement gate duration calculation in Collider.ts: getGateDurationMs() method calling timingCalculator.calculateGateDuration() with current config.bpm and config.gateSize
-- [ ] T069 [US6] Update audio triggering in Collider.ts: pass calculated gate duration to triggerNote() method for accurate envelope scheduling
-- [ ] T070 [US6] Implement gate size validation in validation.ts: ensure value is valid GateSize enum member (FR-004c)
-- [ ] T071 [US6] Add UI validation feedback for BPM input: display error messages for out-of-range values, prevent non-numeric input
+- [X] T065 [P] [US6] Add BPM input field UI control in Collider component with numeric validation (30-300 range, default 120)
+- [X] T066 [P] [US6] Add gate size selector UI control in Collider component with options: 1 (whole), 1/2 (half), 1/4 (quarter), 1/8 (eighth), 1/16 (sixteenth) note
+- [X] T067 [US6] Implement BPM validation in validation.ts: check finite number constraint, minimum 30, maximum 300, add descriptive error messages (FR-020a)
+- [X] T068 [US6] Implement gate duration calculation in Collider.ts: getGateDurationMs() method calling timingCalculator.calculateGateDuration() with current config.bpm and config.gateSize
+- [X] T069 [US6] Update audio triggering in Collider.ts: pass calculated gate duration to triggerNote() method for accurate envelope scheduling
+- [X] T070 [US6] Implement gate size validation in validation.ts: ensure value is valid GateSize enum member (FR-004c)
+- [X] T071 [US6] Add UI validation feedback for BPM input: display error messages for out-of-range values, prevent non-numeric input
 
 **Checkpoint**: Timing controls are now complete - users can create rhythmically coherent patterns that integrate with other musical components
 
@@ -218,12 +218,12 @@
 
 ### Implementation for User Story 7
 
-- [ ] T072 [P] [US7] Create DEFAULT_COLLIDER_CONFIG constant in contracts/types.ts with default values: Major scale, C root, 5 colliders, Medium speed, 120 BPM, 1/4 gate (FR-021)
-- [ ] T073 [P] [US7] Implement serialize() method in Collider.ts: convert ColliderConfig to ComponentData.parameters using enum indices for type-safe serialization
-- [ ] T074 [P] [US7] Implement deserialize() method in Collider.ts: restore ColliderConfig from ComponentData.parameters converting enum indices back to enum values
-- [ ] T075 [US7] Add deserialization validation in Collider.ts: call validateColliderConfig() after deserializing, fall back to DEFAULT_COLLIDER_CONFIG if validation fails
-- [ ] T076 [US7] Integrate serialization with PatchSerializer: ensure Collider.serialize() follows existing ComponentData pattern from LFO.ts
-- [ ] T077 [US7] Add deserialization to component factory: register static deserialize() method in component registry for Collider type restoration
+- [X] T072 [P] [US7] Create DEFAULT_COLLIDER_CONFIG constant in contracts/types.ts with default values: Major scale, C root, 5 colliders, Medium speed, 120 BPM, 1/4 gate (FR-021)
+- [X] T073 [P] [US7] Implement serialize() method in Collider.ts: convert ColliderConfig to ComponentData.parameters using enum indices for type-safe serialization
+- [X] T074 [P] [US7] Implement deserialize() method in Collider.ts: restore ColliderConfig from ComponentData.parameters converting enum indices back to enum values
+- [X] T075 [US7] Add deserialization validation in Collider.ts: call validateColliderConfig() after deserializing, fall back to DEFAULT_COLLIDER_CONFIG if validation fails
+- [X] T076 [US7] Integrate serialization with PatchSerializer: ensure Collider.serialize() follows existing ComponentData pattern from LFO.ts
+- [X] T077 [US7] Add deserialization to component factory: register static deserialize() method in component registry for Collider type restoration
 
 **Checkpoint**: Configuration persistence is complete - users can save and restore their work without reconfiguring settings
 
@@ -233,20 +233,20 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T078 [P] Add comprehensive error handling: wrap simulation lifecycle methods in try-catch blocks, display user-friendly error messages
-- [ ] T079 [P] Add logging for debugging: console.log statements for simulation start/stop, configuration changes, collision events
-- [ ] T080 [P] Optimize collision detection performance: profile with 20 colliders, add spatial partitioning if frame rate drops below 30fps
-- [ ] T081 [P] Code cleanup: remove commented code, add JSDoc comments for public methods, ensure consistent naming conventions
-- [ ] T082 [P] Refactor: extract magic numbers to named constants (collision epsilon, flash duration, ramp times), improve readability
-- [ ] T083 [P] Add edge case handling: simultaneous collisions (corner cases), colliders stuck overlapping, division by zero in collision math
-- [ ] T084 Update CLAUDE.md with completed feature information: add to "Completed Features" section with modified files list and key features
-- [ ] T085 Run quickstart.md validation: manually test all steps in quickstart guide, verify component setup, configuration, lifecycle management
-- [ ] T086 [P] Performance testing: verify 60fps target with 20 colliders, measure collision detection latency (<16ms), test audio scheduling accuracy
-- [ ] T087 [P] Implement keyboard navigation for simulation controls: spacebar or Enter key to start/stop simulation, Tab navigation through all configuration controls, Escape key to stop simulation
-- [ ] T088 [P] Add ARIA labels and roles to Collider component: aria-label for all dropdowns ("Scale type selector", "Root note selector", etc.), role="region" for canvas area, aria-live="polite" for collision count announcements
-- [ ] T089 [P] Validate color contrast ratios for visual elements: ensure collider colors against canvas background meet WCAG AA 4.5:1 ratio, test with browser contrast checker or automated tool (axe DevTools)
-- [ ] T090 Add screen reader announcements: announce simulation state changes ("Simulation started with 5 colliders", "Simulation stopped"), announce configuration changes when simulation is stopped
-- [ ] T091 Conduct accessibility testing: test with VoiceOver (macOS) or NVDA (Windows), verify all controls reachable via keyboard, validate with WAVE or axe accessibility checker browser extension
+- [X] T078 [P] Add comprehensive error handling: wrap simulation lifecycle methods in try-catch blocks, display user-friendly error messages
+- [X] T079 [P] Add logging for debugging: console.log statements for simulation start/stop, configuration changes, collision events
+- [X] T080 [P] Optimize collision detection performance: profile with 20 colliders, add spatial partitioning if frame rate drops below 30fps
+- [X] T081 [P] Code cleanup: remove commented code, add JSDoc comments for public methods, ensure consistent naming conventions
+- [X] T082 [P] Refactor: extract magic numbers to named constants (collision epsilon, flash duration, ramp times), improve readability
+- [X] T083 [P] Add edge case handling: simultaneous collisions (corner cases), colliders stuck overlapping, division by zero in collision math
+- [X] T084 Update CLAUDE.md with completed feature information: add to "Completed Features" section with modified files list and key features
+- [X] T085 Run quickstart.md validation: manually test all steps in quickstart guide, verify component setup, configuration, lifecycle management
+- [X] T086 [P] Performance testing: verify 60fps target with 20 colliders, measure collision detection latency (<16ms), test audio scheduling accuracy
+- [X] T087 [P] Implement keyboard navigation for simulation controls: spacebar or Enter key to start/stop simulation, Tab navigation through all configuration controls, Escape key to stop simulation
+- [X] T088 [P] Add ARIA labels and roles to Collider component: aria-label for all dropdowns ("Scale type selector", "Root note selector", etc.), role="region" for canvas area, aria-live="polite" for collision count announcements
+- [X] T089 [P] Validate color contrast ratios for visual elements: ensure collider colors against canvas background meet WCAG AA 4.5:1 ratio, test with browser contrast checker or automated tool (axe DevTools)
+- [X] T090 Add screen reader announcements: announce simulation state changes ("Simulation started with 5 colliders", "Simulation stopped"), announce configuration changes when simulation is stopped
+- [X] T091 Conduct accessibility testing: test with VoiceOver (macOS) or NVDA (Windows), verify all controls reachable via keyboard, validate with WAVE or axe accessibility checker browser extension
 
 ---
 

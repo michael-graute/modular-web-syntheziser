@@ -39,7 +39,10 @@ export class ColliderRenderer {
    */
   clear(): void {
     const canvas = this.ctx.canvas;
-    this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Use logical dimensions (CSS size) when context is scaled by device pixel ratio
+    const logicalWidth = parseInt(canvas.style.width) || canvas.width;
+    const logicalHeight = parseInt(canvas.style.height) || canvas.height;
+    this.ctx.clearRect(0, 0, logicalWidth, logicalHeight);
   }
 
   /**

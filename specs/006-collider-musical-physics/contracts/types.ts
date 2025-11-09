@@ -99,6 +99,20 @@ export interface ColliderConfig {
   gateSize: GateSize;
 }
 
+/**
+ * Default Collider configuration
+ * Used when creating new components or when deserialization fails
+ * FR-021: Default values for all configuration parameters
+ */
+export const DEFAULT_COLLIDER_CONFIG: ColliderConfig = {
+  scaleType: ScaleType.MAJOR,
+  rootNote: Note.C,
+  colliderCount: 5,
+  speedPreset: SpeedPreset.MEDIUM,
+  bpm: 120,
+  gateSize: GateSize.QUARTER,
+};
+
 // Audio output types
 export interface GateOutput {
   cvValue: number;

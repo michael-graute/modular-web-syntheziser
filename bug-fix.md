@@ -621,3 +621,192 @@ BufferSource → BiquadFilter (lowpass) → GainNode → [external connections]
 8. **CV signal scaling is critical** - Different AudioParams expect different value ranges (e.g., frequency: 20-20000 Hz, gain: 0-1). When connecting CV sources with large output ranges (like LFOs outputting 0-100) to parameters with small ranges, insert a scaling gain node to prevent clipping and on/off behavior. The scaler should connect to the AudioParam, not the audio signal path.
 
 9. **Hot-swap internal routing instead of destroying nodes** - When changing component behavior that requires different internal signal paths (like switching noise types or filter modes), reconnect audio nodes internally rather than destroying and recreating them. This preserves external connections and prevents interruptions. Only disconnect/reconnect the internal path that needs to change, leaving interface nodes (inputs/outputs) intact.
+
+10. **Match established patterns for CV/Gate outputs** - When creating new CV/Gate source components, they must match the exact behavior of existing working components (like KeyboardInput) to ensure compatibility with the audio routing system. This includes output formats (Hz vs voltage), gate signal levels (0/1 vs 0/5V), update methods (setValueAtTime vs ramps), and port naming conventions.
+
+---
+
+## Issue 10: Collider CV/Gate Outputs Not Working
+
+### Problem
+The Collider component's CV and Gate outputs were not functioning:
+1. Connecting CV output to oscillator's frequency input did not change the oscillator frequency
+2. Connecting Gate output to ADSR envelope did not trigger the envelope
+3. No audio output despite the physics simulation running correctly and collisions being detected
+
+### Root Cause
+The Collider was implementing CV/Gate outputs differently from the working KeyboardInput component:
+
+**Collider (incorrect):**
+- Output ports: `'cv'` and `'gate'`
+- CV output: 1V/octave voltage (0V = C4, 1V = C5, etc.)
+- Gate output: 0-5V with exponential/linear ramps
+- Used `exponentialRampToValueAtTime()` and `linearRampToValueAtTime()`
+- Missing `registerGateTarget()` method required by connection system
+
+**KeyboardInput (correct reference):**
+- Output ports: `'frequency'` and `'gate'`
+- Frequency output: Direct Hz values (440 = A4, etc.)
+- Gate output: Simple 0/1 signal
+- Uses `setValueAtTime()` for instant changes
+- Has `registerGateTarget()` for ADSR triggering
+
+**Why it failed:**
+1. **CV → Oscillator**: Oscillator's frequency AudioParam expects Hz values, not voltage. Sending 0.5V (representing E4) to a parameter expecting 329.63 Hz resulted in an extremely low, inaudible frequency.
+
+2. **Gate → ADSR**: The connection system checks for a `registerGateTarget()` method on the source component. Without this method, ADSR envelopes were never registered and never received trigger events.
+
+### Solution
+Refactored Collider to exactly match KeyboardInput's behavior:
+
+**Step 1: Changed output port names**
+```typescript
+// OLD
+this.addOutput('cv', 'CV Out', SignalType.CV);
+this.addOutput('gate', 'Gate Out', SignalType.GATE);
+
+// NEW (matches KeyboardInput)
+this.addOutput('frequency', 'Frequency', SignalType.CV);
+this.addOutput('gate', 'Gate', SignalType.GATE);
+```
+
+**Step 2: Renamed audio nodes**
+```typescript
+// OLD
+private cvNode: ConstantSourceNode | null = null;
+
+// NEW (matches KeyboardInput)
+private frequencyNode: ConstantSourceNode | null = null;
+```
+
+**Step 3: Output frequency in Hz instead of voltage**
+```typescript
+// Convert CV voltage (1V/octave) to frequency in Hz
+private cvToFrequency(cvVoltage: number): number {
+  const C4_FREQUENCY = 261.63; // Middle C reference
+  return C4_FREQUENCY * Math.pow(2, cvVoltage);
+}
+
+// Trigger note with frequency in Hz
+private triggerNote(cvVoltage: number, scheduleTime: number): void {
+  const frequencyHz = this.cvToFrequency(cvVoltage);
+
+  // Update frequency output (matches KeyboardInput behavior)
+  this.frequencyNode.offset.setValueAtTime(frequencyHz, scheduleTime);
+
+  // Gate on (0 -> 1, matches KeyboardInput behavior)
+  this.gateNode.offset.setValueAtTime(1, scheduleTime);
+}
+```
+
+**Step 4: Implemented gate target management**
+```typescript
+// Gate targets (ADSR envelopes that should be triggered)
+private gateTargets: SynthComponent[] = [];
+
+registerGateTarget(target: SynthComponent): void {
+  if (!this.gateTargets.includes(target)) {
+    this.gateTargets.push(target);
+  }
+}
+
+private triggerGateTargets(): void {
+  for (const target of this.gateTargets) {
+    const triggerMethod = (target as any).triggerGateOn;
+    if (triggerMethod && typeof triggerMethod === 'function') {
+      triggerMethod.call(target);
+    }
+  }
+}
+
+private releaseGateTargets(): void {
+  for (const target of this.gateTargets) {
+    const releaseMethod = (target as any).triggerGateOff;
+    if (releaseMethod && typeof releaseMethod === 'function') {
+      releaseMethod.call(target);
+    }
+  }
+}
+```
+
+**Step 5: Updated port mapping**
+```typescript
+protected override getOutputNodeByPort(portId: string): AudioNode | null {
+  switch (portId) {
+    case 'frequency':
+      return this.frequencyNode;
+    case 'gate':
+      return this.gateNode;
+    default:
+      return this.frequencyNode; // Default to frequency
+  }
+}
+```
+
+**Step 6: Schedule gate release**
+```typescript
+// In processCollisionEvents()
+// Trigger audio output (Frequency + Gate)
+this.triggerNote(collider.cvVoltage, currentTime);
+
+// Trigger connected ADSR envelopes
+this.triggerGateTargets();
+
+// Calculate gate duration
+const gateDurationMs = this.timingCalculator.calculateGateDuration(
+  this.config.bpm,
+  this.config.gateSize
+);
+
+// Schedule gate release
+const releaseTime = currentTime + (gateDurationMs / 1000);
+this.releaseGate(releaseTime);
+
+// Schedule ADSR release
+setTimeout(() => {
+  this.releaseGateTargets();
+}, gateDurationMs);
+```
+
+### Signal Flow Comparison
+
+**Before (broken):**
+```
+Collider → CV (0.5V) → Oscillator.frequency (expects Hz)
+❌ 0.5V treated as 0.5 Hz = inaudible
+
+Collider → Gate (0-5V ramps) → ADSR
+❌ No registerGateTarget() = ADSR never triggered
+```
+
+**After (working):**
+```
+Collider → Frequency (329.63 Hz) → Oscillator.frequency
+✅ Correct frequency, oscillator plays E4
+
+Collider → Gate (0/1) → ADSR
+✅ registerGateTarget() registers ADSR
+✅ triggerGateOn() called on collision
+✅ triggerGateOff() called after gate duration
+```
+
+### Testing Results
+✅ **Collider → Oscillator**: Frequency changes correctly based on collision notes
+✅ **Collider → ADSR → VCA**: Gate triggers envelope with proper attack/decay/sustain/release
+✅ **Multiple colliders**: Each collision triggers a new note
+✅ **Gate duration**: Controlled by BPM and gate size settings
+✅ **Audio quality**: Clean note transitions without clicks or pops
+
+### Files Modified
+- `src/components/utilities/Collider.ts` - Complete refactor of CV/Gate output system to match KeyboardInput
+
+### Key Takeaway
+When implementing new CV/Gate source components, **always reference and match the behavior of KeyboardInput** (the canonical working implementation). This includes:
+- Port naming conventions (`'frequency'` not `'cv'`)
+- Output value formats (Hz for frequency, not voltage)
+- Gate signal levels (0/1 not 0/5V)
+- Update methods (`setValueAtTime()` not ramps)
+- Gate target registration system
+- ADSR trigger/release mechanisms
+
+The Web Audio API and connection system expect these specific patterns, and deviating from them will cause compatibility issues.
