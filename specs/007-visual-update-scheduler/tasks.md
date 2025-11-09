@@ -24,8 +24,8 @@
 
 **Purpose**: Create scheduler singleton and initialize at application startup
 
-- [ ] T001 Create singleton scheduler instance export in src/visualization/scheduler.ts
-- [ ] T002 Initialize scheduler singleton at application startup in src/main.ts
+- [x] T001 Create singleton scheduler instance export in src/visualization/scheduler.ts
+- [x] T002 Initialize scheduler singleton at application startup in src/main.ts
 
 **Checkpoint**: Scheduler singleton created and initialized - ready for component migration
 
@@ -37,9 +37,9 @@
 
 **⚠️ CRITICAL**: These enhancements must be complete before component migrations to ensure proper error handling, background tab pause, and safe lifecycle management
 
-- [ ] T003 [P] Implement FR-011: Page Visibility API pause/resume in src/visualization/VisualUpdateScheduler.ts
-- [ ] T004 [P] Implement FR-012: Enhanced error logging with component ID in src/visualization/VisualUpdateScheduler.ts
-- [ ] T005 Implement FR-013: Deferred removal pattern for safe unsubscribe during callback execution in src/visualization/VisualUpdateScheduler.ts
+- [x] T003 [P] Implement FR-011: Page Visibility API pause/resume in src/visualization/VisualUpdateScheduler.ts
+- [x] T004 [P] Implement FR-012: Enhanced error logging with component ID in src/visualization/VisualUpdateScheduler.ts
+- [x] T005 Implement FR-013: Deferred removal pattern for safe unsubscribe during callback execution in src/visualization/VisualUpdateScheduler.ts
 
 **Checkpoint**: Scheduler enhancements complete - components can now safely migrate with full error isolation and background tab handling
 
@@ -55,7 +55,7 @@
 
 **Canvas Migration** (60fps, main render loop):
 
-- [ ] T006 [P] [US1] Migrate Canvas.ts to use centralized scheduler in src/canvas/Canvas.ts
+- [x] T006 [P] [US1] Migrate Canvas.ts to use centralized scheduler in src/canvas/Canvas.ts
   - Import visualUpdateScheduler and SubscriptionHandle
   - Replace animationFrameId property with subscription property
   - Remove render() method's requestAnimationFrame call
@@ -65,7 +65,7 @@
 
 **OscilloscopeDisplay Migration** (30fps throttled, visibility checked):
 
-- [ ] T007 [P] [US1] Migrate OscilloscopeDisplay.ts to use centralized scheduler in src/canvas/displays/OscilloscopeDisplay.ts
+- [x] T007 [P] [US1] Migrate OscilloscopeDisplay.ts to use centralized scheduler in src/canvas/displays/OscilloscopeDisplay.ts
   - Import visualUpdateScheduler and SubscriptionHandle
   - Replace animationFrame property with subscription property
   - Remove startAnimation() method entirely
@@ -77,7 +77,7 @@
 
 **SequencerDisplay Migration** (30fps throttled, visibility checked):
 
-- [ ] T008 [P] [US1] Migrate SequencerDisplay.ts to use centralized scheduler in src/canvas/displays/SequencerDisplay.ts
+- [x] T008 [P] [US1] Migrate SequencerDisplay.ts to use centralized scheduler in src/canvas/displays/SequencerDisplay.ts
   - Import visualUpdateScheduler and SubscriptionHandle
   - Replace animationFrame property with subscription property
   - Remove startAnimation() method entirely
@@ -89,7 +89,7 @@
 
 **Collider Migration** (30fps rendering, 60fps physics):
 
-- [ ] T009 [P] [US1] Migrate Collider.ts to use centralized scheduler in src/components/utilities/Collider.ts
+- [x] T009 [P] [US1] Migrate Collider.ts to use centralized scheduler in src/components/utilities/Collider.ts
   - Import visualUpdateScheduler and SubscriptionHandle
   - Replace animationFrameId property with subscription property
   - Remove animate() method's requestAnimationFrame call
@@ -99,34 +99,34 @@
 
 ### Verification for User Story 1
 
-- [ ] T010 [US1] Baseline performance measurement before final verification
+- [x] T010 [US1] Baseline performance measurement before final verification
   - Document current CPU usage with Activity Monitor (expect 80-98%)
   - Count active requestAnimationFrame loops in Chrome DevTools Performance tab (expect 5-6)
   - Count render calls per second in Chrome DevTools (expect ~300)
   - Take screenshots for comparison
 
-- [ ] T011 [US1] Verify CPU reduction on macOS in Activity Monitor
+- [x] T011 [US1] Verify CPU reduction on macOS in Activity Monitor
   - Open Activity Monitor
   - Filter for browser process
   - Create 2 oscilloscopes + 1 sequencer + 1 collider
   - Record CPU usage over 60 seconds
   - Verify: 15-30% CPU (down from 80-98%) ✓ SC-001
 
-- [ ] T012 [US1] Verify single animation loop in Chrome DevTools Performance
+- [x] T012 [US1] Verify single animation loop in Chrome DevTools Performance
   - Open DevTools → Performance tab
   - Record 10-second profile
   - Search for "requestAnimationFrame" in call tree
   - Verify: Exactly 1 animation loop active ✓ SC-003
   - Verify: ~60 render calls/sec (down from ~300) ✓ SC-004
 
-- [ ] T013 [US1] Verify visual behavior unchanged for all components
+- [x] T013 [US1] Verify visual behavior unchanged for all components
   - Canvas: Check rendering quality, smoothness, no stuttering
   - OscilloscopeDisplay: Check waveform updates, 30fps feel maintained
   - SequencerDisplay: Check step indicator updates, 30fps feel maintained
   - Collider: Check physics simulation smooth, collision rendering at 30fps
   - Verify: No visual regressions ✓ SC-006
 
-- [ ] T014 [US1] Verify 60fps frame rate maintained
+- [x] T014 [US1] Verify 60fps frame rate maintained
   - Use visualUpdateScheduler.getCurrentFPS() in console
   - Check FPS display (if available)
   - Verify: Stable 60fps ✓ SC-002
@@ -147,23 +147,23 @@
 
 ### Verification for User Story 2
 
-- [ ] T015 [P] [US2] Test multiple visual components rendering simultaneously
+- [x] T015 [P] [US2] Test multiple visual components rendering simultaneously
   - Create patch with 3 oscilloscopes + 2 sequencers + 1 collider
   - Play continuous audio tone
   - Verify: All components render at stable frame rate ✓ Acceptance 1
 
-- [ ] T016 [P] [US2] Test adding new components doesn't degrade existing components
+- [x] T016 [P] [US2] Test adding new components doesn't degrade existing components
   - Start with 2 oscilloscopes rendering
   - Add 2 more oscilloscopes one by one
   - Verify: Existing components maintain rendering quality ✓ Acceptance 2
 
-- [ ] T017 [P] [US2] Test visual updates remain synchronized with audio
+- [X] T017 [P] [US2] Test visual updates remain synchronized with audio
   - Play audio through patch
   - Verify oscilloscope waveforms match audio output
   - Verify sequencer display updates in sync with audio timing
   - Verify: No lag or drift between visual and audio ✓ Acceptance 3
 
-- [ ] T018 [US2] Test error isolation works correctly
+- [x] T018 [US2] Test error isolation works correctly
   - Temporarily inject error in one component's callback (throw new Error)
   - Verify error logged to console with component ID
   - Verify other components continue rendering normally

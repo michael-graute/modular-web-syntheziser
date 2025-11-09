@@ -29,6 +29,8 @@ import { Vector2D } from '../../physics/Vector2D';
 import { selectWeightedScaleDegree } from '../../music/WeightedRandomSelector';
 import { SPEED_PRESET_VELOCITIES } from '../../music/ScaleTypes';
 import { validateColliderConfig } from '../../../specs/006-collider-musical-physics/contracts/validation';
+import { visualUpdateScheduler } from '../../visualization/scheduler';
+import type { SubscriptionHandle } from '../../visualization/types';
 
 /**
  * Default configuration values
@@ -78,7 +80,7 @@ export class Collider extends SynthComponent {
   private colliders: ColliderState[] = [];
   private boundary: CollisionBoundary | null = null;
   private scale: IMusicalScale | null = null;
-  private animationFrameId: number | null = null;
+  private subscription: SubscriptionHandle | null = null;
   private lastUpdateTime: number = 0;
 
   // Performance optimization: throttle rendering to 30fps (physics still updates at 60fps)
@@ -349,10 +351,12 @@ export class Collider extends SynthComponent {
         this.physicsEngine!.addCollider(collider);
       });
 
-      // Start animation loop
+      // Subscribe to centralized scheduler
       this.isRunning = true;
       this.lastUpdateTime = performance.now();
-      this.animate();
+      this.subscription = visualUpdateScheduler.onFrame((_deltaMs) => {
+        this.animate();
+      }, 'Collider');
 
       console.log('[Collider] Simulation started successfully', {
         colliderCount: this.colliders.length,
@@ -519,9 +523,6 @@ export class Collider extends SynthComponent {
       }
       this.lastRenderTime = currentTime;
     }
-
-    // Continue animation loop
-    this.animationFrameId = requestAnimationFrame(this.animate);
   };
 
   /**
@@ -643,9 +644,9 @@ export class Collider extends SynthComponent {
 
     // Stop animation loop
     this.isRunning = false;
-    if (this.animationFrameId !== null) {
-      cancelAnimationFrame(this.animationFrameId);
-      this.animationFrameId = null;
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+      this.subscription = null;
     }
 
     // Reset frequency and gate outputs
@@ -813,6 +814,12 @@ export class Collider extends SynthComponent {
     // Stop simulation
     if (this.isRunning) {
       this.stopSimulation();
+    }
+
+    // Ensure subscription is cleaned up
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+      this.subscription = null;
     }
 
     // Clear gate targets

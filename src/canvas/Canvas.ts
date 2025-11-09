@@ -12,6 +12,8 @@ import { stateManager } from '../core/StateManager';
 import { EventType, Position } from '../core/types';
 import { CANVAS, COLORS } from '../utils/constants';
 import { snapToGrid } from '../utils/geometry';
+import { visualUpdateScheduler } from '../visualization/scheduler';
+import type { SubscriptionHandle } from '../visualization/types';
 
 enum InteractionMode {
   NONE = 'none',
@@ -32,7 +34,7 @@ export class Canvas {
   private selectionManager: SelectionManager;
   private connectionManager: ConnectionManager;
 
-  private animationFrameId: number | null;
+  private subscription: SubscriptionHandle | null;
   private isRunning: boolean;
 
   // Interaction state
@@ -64,7 +66,7 @@ export class Canvas {
     this.selectionManager = new SelectionManager();
     this.connectionManager = new ConnectionManager();
 
-    this.animationFrameId = null;
+    this.subscription = null;
     this.isRunning = false;
 
     this.interactionMode = InteractionMode.NONE;
@@ -607,7 +609,12 @@ export class Canvas {
   start(): void {
     if (!this.isRunning) {
       this.isRunning = true;
-      this.render();
+
+      // Subscribe to centralized scheduler
+      this.subscription = visualUpdateScheduler.onFrame(
+        (_deltaMs) => this.render(),
+        'Canvas'
+      );
     }
   }
 
@@ -616,9 +623,11 @@ export class Canvas {
    */
   stop(): void {
     this.isRunning = false;
-    if (this.animationFrameId !== null) {
-      cancelAnimationFrame(this.animationFrameId);
-      this.animationFrameId = null;
+
+    // Unsubscribe from centralized scheduler
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+      this.subscription = null;
     }
   }
 
@@ -669,8 +678,7 @@ export class Canvas {
     // Render UI overlay (not affected by viewport transform)
     this.renderOverlay();
 
-    // Schedule next frame
-    this.animationFrameId = requestAnimationFrame(this.render);
+    // No need to schedule next frame - handled by centralized scheduler
   };
 
   /**
