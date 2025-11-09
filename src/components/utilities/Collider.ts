@@ -81,6 +81,10 @@ export class Collider extends SynthComponent {
   private animationFrameId: number | null = null;
   private lastUpdateTime: number = 0;
 
+  // Performance optimization: throttle rendering to 30fps (physics still updates at 60fps)
+  private lastRenderTime: number = 0;
+  private renderInterval: number = 1000 / 30; // 30fps for rendering
+
   // Engine instances
   private physicsEngine: PhysicsEngine | null = null;
   private renderer: ColliderRenderer | null = null;
@@ -492,6 +496,7 @@ export class Collider extends SynthComponent {
 
   /**
    * T032: Animation loop
+   * Performance: Physics updates at 60fps, rendering throttled to 30fps
    */
   private animate = (): void => {
     if (!this.isRunning) return;
@@ -500,15 +505,19 @@ export class Collider extends SynthComponent {
     const deltaTime = currentTime - this.lastUpdateTime;
     this.lastUpdateTime = currentTime;
 
-    // Update physics (returns collision events)
+    // Always update physics at full frame rate (60fps) for smooth simulation
     const collisionEvents = this.physicsEngine!.update(deltaTime / 1000); // Convert to seconds
 
     // Process collision events
     this.processCollisionEvents(collisionEvents);
 
-    // Render scene
-    if (this.renderer && this.boundary) {
-      this.renderer.render(this.colliders, this.boundary);
+    // Throttle rendering to 30fps (Performance optimization)
+    // Rendering is expensive but physics accuracy is more important
+    if (currentTime - this.lastRenderTime >= this.renderInterval) {
+      if (this.renderer && this.boundary) {
+        this.renderer.render(this.colliders, this.boundary);
+      }
+      this.lastRenderTime = currentTime;
     }
 
     // Continue animation loop
