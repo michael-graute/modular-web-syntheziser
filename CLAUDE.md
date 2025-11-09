@@ -26,9 +26,9 @@ npm test && npm run lint
 TypeScript 5.6+, ES2020 target: Follow standard conventions
 
 ## Recent Changes
+- 007-visual-update-scheduler: Added TypeScript 5.6+, ES2020 targe
 - 006-collider-musical-physics: ✅ COMPLETE - Musical physics simulation component implemented
 - 005-lfo-runtime-toggle: ✅ COMPLETE - LFO runtime toggle implemented with bypass pattern
-- 004-startup-welcome-dialog: Added TypeScript 5.6+, ES2020 target
 
 
 ## Completed Features
