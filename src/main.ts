@@ -21,6 +21,7 @@ import { HelpSidebar } from './ui/HelpSidebar';
 import { ModulationVisualizer } from './visualization';
 import { AcceptanceStorage } from './storage/AcceptanceStorage';
 import { WelcomeDialog } from './ui/WelcomeDialog';
+import { visualUpdateScheduler } from './visualization/scheduler';
 
 console.log('🎹 Modular Synth - Initializing...');
 
@@ -256,6 +257,11 @@ async function init(): Promise<void> {
   // Initialize sidebar component library
   const sidebar = new Sidebar();
   sidebar.populate();
+
+  // Initialize centralized animation scheduler
+  visualUpdateScheduler.initialize(60, true);
+  visualUpdateScheduler.start();
+  console.log('✓ Centralized animation scheduler started');
 
   // Initialize audio engine
   try {

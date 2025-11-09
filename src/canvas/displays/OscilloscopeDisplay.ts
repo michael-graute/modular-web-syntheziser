@@ -3,6 +3,8 @@
  */
 
 import type { Oscilloscope } from '../../components/analyzers/Oscilloscope';
+import { visualUpdateScheduler } from '../../visualization/scheduler';
+import type { SubscriptionHandle } from '../../visualization/types';
 
 /**
  * Display renderer for oscilloscope visualization
@@ -11,7 +13,7 @@ export class OscilloscopeDisplay {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private oscilloscope: Oscilloscope;
-  private animationFrame: number | null;
+  private subscription: SubscriptionHandle | null;
   private isFrozen: boolean;
   private baseWidth: number;
   private baseHeight: number;
@@ -32,7 +34,7 @@ export class OscilloscopeDisplay {
   ) {
     this.oscilloscope = oscilloscope;
     this.isFrozen = false;
-    this.animationFrame = null;
+    this.subscription = null;
     this.baseX = x;
     this.baseY = y;
     this.baseWidth = width;
@@ -56,8 +58,21 @@ export class OscilloscopeDisplay {
     }
     this.ctx = context;
 
-    // Start animation loop
-    this.startAnimation();
+    // Subscribe to centralized scheduler
+    this.subscription = visualUpdateScheduler.onFrame((_deltaMs) => {
+      const now = performance.now();
+
+      // Throttle to 30fps (component-level)
+      if (now - this.lastRenderTime >= this.frameInterval) {
+        // Skip rendering if not visible
+        if (!this.isVisible()) return;
+
+        if (!this.isFrozen) {
+          this.render();
+        }
+        this.lastRenderTime = now;
+      }
+    }, 'OscilloscopeDisplay');
   }
 
   /**
@@ -73,39 +88,6 @@ export class OscilloscopeDisplay {
     );
   }
 
-  /**
-   * Start animation loop (throttled to 30fps for performance)
-   */
-  private startAnimation(): void {
-    const animate = (timestamp: number) => {
-      // Skip rendering if not visible (Performance: Priority 2)
-      if (!this.isVisible()) {
-        this.animationFrame = requestAnimationFrame(animate);
-        return;
-      }
-
-      // Throttle to 30fps (Performance: Priority 1)
-      if (timestamp - this.lastRenderTime >= this.frameInterval) {
-        if (!this.isFrozen) {
-          this.render();
-        }
-        this.lastRenderTime = timestamp;
-      }
-
-      this.animationFrame = requestAnimationFrame(animate);
-    };
-    animate(performance.now());
-  }
-
-  /**
-   * Stop animation loop
-   */
-  private stopAnimation(): void {
-    if (this.animationFrame !== null) {
-      cancelAnimationFrame(this.animationFrame);
-      this.animationFrame = null;
-    }
-  }
 
   /**
    * Main render method
@@ -274,7 +256,12 @@ export class OscilloscopeDisplay {
    * Destroy display and clean up
    */
   destroy(): void {
-    this.stopAnimation();
+    // Unsubscribe from centralized scheduler
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+      this.subscription = null;
+    }
+
     if (this.canvas.parentElement) {
       this.canvas.parentElement.removeChild(this.canvas);
     }
