@@ -15,6 +15,19 @@ export class Connection {
   targetComponentId: string;
   targetPortId: string;
   signalType: SignalType;
+  /**
+   * Optional modulation metadata for CV connections
+   * Feature: 008-lfo-parameter-depth (T025, T026)
+   * Stores parameter-aware depth calculation results for patch persistence
+   */
+  modulationMetadata?: {
+    targetParameterMin: number;
+    targetParameterMax: number;
+    lastCalculatedDepth: number;
+    lastCalculatedBaseValue: number;
+    lastCalculatedGain: number;
+    lastCalculatedAt: number;
+  };
 
   constructor(
     id: string,
@@ -64,6 +77,8 @@ export class Connection {
 
   /**
    * Serialize connection to JSON
+   * Feature: 008-lfo-parameter-depth (T025)
+   * Includes optional modulationMetadata for CV connections
    */
   serialize(): {
     id: string;
@@ -72,8 +87,16 @@ export class Connection {
     targetComponentId: string;
     targetPortId: string;
     signalType: SignalType;
+    modulationMetadata?: {
+      targetParameterMin: number;
+      targetParameterMax: number;
+      lastCalculatedDepth: number;
+      lastCalculatedBaseValue: number;
+      lastCalculatedGain: number;
+      lastCalculatedAt: number;
+    };
   } {
-    return {
+    const serialized: any = {
       id: this.id,
       sourceComponentId: this.sourceComponentId,
       sourcePortId: this.sourcePortId,
@@ -81,10 +104,19 @@ export class Connection {
       targetPortId: this.targetPortId,
       signalType: this.signalType,
     };
+
+    // Include modulationMetadata if present
+    if (this.modulationMetadata) {
+      serialized.modulationMetadata = this.modulationMetadata;
+    }
+
+    return serialized;
   }
 
   /**
    * Deserialize connection from JSON
+   * Feature: 008-lfo-parameter-depth (T026, T027)
+   * Restores modulationMetadata if present, backward compatible with old patches
    */
   static deserialize(data: {
     id: string;
@@ -93,8 +125,16 @@ export class Connection {
     targetComponentId: string;
     targetPortId: string;
     signalType: SignalType;
+    modulationMetadata?: {
+      targetParameterMin: number;
+      targetParameterMax: number;
+      lastCalculatedDepth: number;
+      lastCalculatedBaseValue: number;
+      lastCalculatedGain: number;
+      lastCalculatedAt: number;
+    };
   }): Connection {
-    return new Connection(
+    const connection = new Connection(
       data.id,
       data.sourceComponentId,
       data.sourcePortId,
@@ -102,5 +142,13 @@ export class Connection {
       data.targetPortId,
       data.signalType
     );
+
+    // Restore modulationMetadata if present (T026)
+    // Backward compatibility: old patches without metadata will work fine (T027)
+    if (data.modulationMetadata) {
+      connection.modulationMetadata = data.modulationMetadata;
+    }
+
+    return connection;
   }
 }

@@ -27,12 +27,40 @@ npm test && npm run lint
 TypeScript 5.6+, ES2020 target: Follow standard conventions
 
 ## Recent Changes
-- 008-lfo-parameter-depth: Added TypeScript 5.6+, ES2020 target, Web Audio API
+- 008-lfo-parameter-depth: ✅ COMPLETE - Parameter-aware LFO depth calculation implemented
 - 007-visual-update-scheduler: Added TypeScript 5.6+, ES2020 targe
 - 006-collider-musical-physics: ✅ COMPLETE - Musical physics simulation component implemented
 
 
 ## Completed Features
+- **008-lfo-parameter-depth** (2025-11-10): LFO depth calculations automatically scale based on target parameter bounds
+  - Core files:
+    - src/modulation/ParameterAwareDepthCalculator.ts - Core depth calculation engine
+    - src/modulation/ModulationConnectionManager.ts - Manages scaling GainNodes for CV connections
+    - src/modulation/types.ts, src/modulation/validation.ts - Type definitions and validation
+    - src/canvas/ConnectionManager.ts - Enhanced with CV connection detection and depth calculation
+    - src/components/base/Parameter.ts - Added modulation helper methods
+    - src/core/Connection.ts - Extended with optional modulationMetadata
+  - Features:
+    - Parameter-aware depth calculation (depth % applied to parameter range)
+    - Asymmetric range handling (independent upward/downward calculation)
+    - Edge case handling (base at boundaries, zero range, out of bounds)
+    - Event-driven recalculation (on depth or base value changes)
+    - FR-013 enforcement (one LFO per parameter maximum)
+    - Scaling GainNode architecture (LFO → GainNode → AudioParam)
+    - Enhanced logging with asymmetry detection
+    - Patch persistence with modulationMetadata
+    - Backward compatibility with existing patches
+  - Architecture:
+    - Additive modulation: currentValue = baseValue + modulationAmount
+    - Averaged gain approach: gain = (upwardRange + downwardRange) / 2
+    - Calculation latency: <1ms per connection
+    - Zero impact on LFO component (no visual changes)
+  - Type definitions: specs/008-lfo-parameter-depth/contracts/types.ts
+  - Validation: specs/008-lfo-parameter-depth/contracts/validation.ts
+  - Documentation: specs/008-lfo-parameter-depth/spec.md, plan.md, tasks.md
+
+
 - **006-collider-musical-physics** (2025-11-09): Collider component generates CV/Gate signals from 2D physics collisions
   - Core files:
     - src/components/utilities/Collider.ts - Main component with physics simulation

@@ -76,6 +76,19 @@ export interface Connection {
   targetComponentId: string;
   targetPortId: string;
   signalType: SignalType;
+  /**
+   * Optional modulation metadata for CV connections
+   * Feature: 008-lfo-parameter-depth
+   * Only present for CV signal type connections from LFOs to parameters
+   */
+  modulationMetadata?: {
+    targetParameterMin: number;
+    targetParameterMax: number;
+    lastCalculatedDepth: number;
+    lastCalculatedBaseValue: number;
+    lastCalculatedGain: number;
+    lastCalculatedAt: number;
+  };
 }
 
 /**

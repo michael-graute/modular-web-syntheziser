@@ -160,6 +160,47 @@ export class Parameter {
   }
 
   /**
+   * Get available modulation range in upward direction
+   * Feature: 008-lfo-parameter-depth
+   * @returns Distance from base value to maximum
+   */
+  getUpwardRange(): number {
+    return this.max - this.baseValue;
+  }
+
+  /**
+   * Get available modulation range in downward direction
+   * Feature: 008-lfo-parameter-depth
+   * @returns Distance from minimum to base value
+   */
+  getDownwardRange(): number {
+    return this.baseValue - this.min;
+  }
+
+  /**
+   * Check if parameter can be modulated
+   * Feature: 008-lfo-parameter-depth
+   * @returns false if min === max (zero range), otherwise true
+   */
+  canBeModulated(): boolean {
+    return this.max !== this.min;
+  }
+
+  /**
+   * Get parameter bounds for depth calculation
+   * Feature: 008-lfo-parameter-depth
+   * @returns Parameter bounds including computed range
+   */
+  getModulationBounds(): { min: number; max: number; baseValue: number; range: number } {
+    return {
+      min: this.min,
+      max: this.max,
+      baseValue: this.baseValue,
+      range: this.max - this.min,
+    };
+  }
+
+  /**
    * Serialize parameter data
    */
   serialize(): {

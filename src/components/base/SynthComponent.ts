@@ -309,8 +309,9 @@ export abstract class SynthComponent {
 
   /**
    * Get AudioParam for a specific input port (override in subclasses for CV inputs)
+   * Public for use by connection managers (e.g., parameter-aware depth calculation)
    */
-  protected getAudioParamForInput(_inputId: string): AudioParam | null {
+  getAudioParamForInput(_inputId: string): AudioParam | null {
     // Default implementation returns null
     // Subclasses should override to provide AudioParams for CV inputs
     return null;

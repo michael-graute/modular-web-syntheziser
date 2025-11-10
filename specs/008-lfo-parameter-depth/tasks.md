@@ -27,9 +27,9 @@ This is a single TypeScript audio application with paths at repository root:
 
 **Purpose**: Create new modulation module directory structure
 
-- [ ] T001 Create modulation module directory at src/modulation/
-- [ ] T002 [P] Copy type definitions from specs/008-lfo-parameter-depth/contracts/types.ts to src/modulation/types.ts
-- [ ] T003 [P] Copy validation logic from specs/008-lfo-parameter-depth/contracts/validation.ts to src/modulation/validation.ts
+- [X] T001 Create modulation module directory at src/modulation/
+- [X] T002 [P] Copy type definitions from specs/008-lfo-parameter-depth/contracts/types.ts to src/modulation/types.ts
+- [X] T003 [P] Copy validation logic from specs/008-lfo-parameter-depth/contracts/validation.ts to src/modulation/validation.ts
 
 ---
 
@@ -39,9 +39,9 @@ This is a single TypeScript audio application with paths at repository root:
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Implement ParameterAwareDepthCalculator class in src/modulation/ParameterAwareDepthCalculator.ts with calculateModulationRanges() and applyModulation() methods per contracts/types.ts interface
-- [ ] T005 Add helper methods to Parameter class in src/components/base/Parameter.ts: getUpwardRange(), getDownwardRange(), canBeModulated(), getModulationBounds()
-- [ ] T006 Extend Connection interface in src/core/types.ts to support optional modulationMetadata field per contracts/types.ts ModulationConnection interface
+- [X] T004 Implement ParameterAwareDepthCalculator class in src/modulation/ParameterAwareDepthCalculator.ts with calculateModulationRanges() and applyModulation() methods per contracts/types.ts interface
+- [X] T005 Add helper methods to Parameter class in src/components/base/Parameter.ts: getUpwardRange(), getDownwardRange(), canBeModulated(), getModulationBounds()
+- [X] T006 Extend Connection interface in src/core/types.ts to support optional modulationMetadata field per contracts/types.ts ModulationConnection interface
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -60,13 +60,13 @@ This is a single TypeScript audio application with paths at repository root:
 
 ### Implementation for User Story 1
 
-- [ ] T007 [P] [US1] Create ModulationConnectionManager class in src/modulation/ModulationConnectionManager.ts to track scaling GainNodes for each CV connection and manage ModulationConnection instances (interface defined in types.ts). Implement FR-013 enforcement: check for existing CV connection to target parameter before creating new connection, reject or replace existing connection
-- [ ] T008 [US1] Enhance ConnectionManager.createConnection() in src/core/ConnectionManager.ts to detect CV signal type connections and create scaling GainNode between LFO output and target AudioParam
-- [ ] T009 [US1] Implement depth calculation trigger in ConnectionManager when CV connection created: call ParameterAwareDepthCalculator.calculateModulationRanges() and set scaling GainNode gain value
-- [ ] T010 [US1] Add event listener in ConnectionManager for LFO depth parameter changes to recalculate scaling GainNode gain for all connected parameters
-- [ ] T011 [US1] Add event listener in ConnectionManager for parameter base value changes to recalculate scaling GainNode gain
-- [ ] T012 [US1] Update ConnectionManager.removeConnection() to properly disconnect and cleanup scaling GainNodes for CV connections
-- [ ] T013 [US1] Add console logging for depth calculations (parameter bounds, calculated ranges, applied gain) for debugging
+- [X] T007 [P] [US1] Create ModulationConnectionManager class in src/modulation/ModulationConnectionManager.ts to track scaling GainNodes for each CV connection and manage ModulationConnection instances (interface defined in types.ts). Implement FR-013 enforcement: check for existing CV connection to target parameter before creating new connection, reject or replace existing connection
+- [X] T008 [US1] Enhance ConnectionManager.createConnection() in src/core/ConnectionManager.ts to detect CV signal type connections and create scaling GainNode between LFO output and target AudioParam
+- [X] T009 [US1] Implement depth calculation trigger in ConnectionManager when CV connection created: call ParameterAwareDepthCalculator.calculateModulationRanges() and set scaling GainNode gain value
+- [X] T010 [US1] Add event listener in ConnectionManager for LFO depth parameter changes to recalculate scaling GainNode gain for all connected parameters
+- [X] T011 [US1] Add event listener in ConnectionManager for parameter base value changes to recalculate scaling GainNode gain
+- [X] T012 [US1] Update ConnectionManager.removeConnection() to properly disconnect and cleanup scaling GainNodes for CV connections
+- [X] T013 [US1] Add console logging for depth calculations (parameter bounds, calculated ranges, applied gain) for debugging
 
 **Checkpoint**: User Story 1 complete - Basic parameter-aware modulation functional. Test with acceptance scenarios from spec.md (frequency=7000 depth=50% → 3500-10500, cutoff=5000 depth=100% → 20-20000, volume=0.5 depth=50% → 0.25-0.75)
 
@@ -85,12 +85,12 @@ This is a single TypeScript audio application with paths at repository root:
 
 ### Implementation for User Story 2
 
-- [ ] T014 [US2] Enhance ParameterAwareDepthCalculator.calculateModulationRanges() in src/modulation/ParameterAwareDepthCalculator.ts to calculate independent upward and downward ranges (upward = (max - base) * depth%, downward = (base - min) * depth%)
-- [ ] T015 [US2] Implement averaged gain calculation in ParameterAwareDepthCalculator: gainValue = (upwardRange + downwardRange) / 2 per research.md decision
-- [ ] T016 [US2] Add edge case handling in validation.ts for base value at exact minimum or maximum (unidirectional modulation)
-- [ ] T017 [US2] Add edge case handling for zero range parameters (min === max) - return validation error preventing modulation connection
-- [ ] T018 [US2] Add edge case handling for base value outside parameter range - clamp to bounds and log warning
-- [ ] T019 [US2] Add console logging for asymmetric calculations showing upward range, downward range, and averaged gain
+- [X] T014 [US2] Enhance ParameterAwareDepthCalculator.calculateModulationRanges() in src/modulation/ParameterAwareDepthCalculator.ts to calculate independent upward and downward ranges (upward = (max - base) * depth%, downward = (base - min) * depth%)
+- [X] T015 [US2] Implement averaged gain calculation in ParameterAwareDepthCalculator: gainValue = (upwardRange + downwardRange) / 2 per research.md decision
+- [X] T016 [US2] Add edge case handling in validation.ts for base value at exact minimum or maximum (unidirectional modulation)
+- [X] T017 [US2] Add edge case handling for zero range parameters (min === max) - return validation error preventing modulation connection
+- [X] T018 [US2] Add edge case handling for base value outside parameter range - clamp to bounds and log warning
+- [X] T019 [US2] Add console logging for asymmetric calculations showing upward range, downward range, and averaged gain
 
 **Checkpoint**: User Story 2 complete - Asymmetric range handling working. Test with spec.md scenario (base=14000 depth=50% → 7500-14500) and edge cases (base at min/max, zero range)
 
@@ -124,10 +124,10 @@ This is a single TypeScript audio application with paths at repository root:
 
 **Purpose**: Ensure parameter-aware modulation integrates with existing patch save/load system
 
-- [ ] T025 [P] Update PatchSerializer.serializeConnection() in src/patch/PatchSerializer.ts to include modulationMetadata if present on ModulationConnection
-- [ ] T026 [P] Update PatchSerializer.deserializeConnection() in src/patch/PatchSerializer.ts to restore modulationMetadata when loading patches
-- [ ] T027 Add backward compatibility handling in PatchSerializer for connections without modulationMetadata (treat as standard connections)
-- [ ] T028 Test patch save/load with parameter-aware modulation connections to ensure GainNodes are recreated correctly
+- [X] T025 [P] Update PatchSerializer.serializeConnection() in src/patch/PatchSerializer.ts to include modulationMetadata if present on ModulationConnection
+- [X] T026 [P] Update PatchSerializer.deserializeConnection() in src/patch/PatchSerializer.ts to restore modulationMetadata when loading patches
+- [X] T027 Add backward compatibility handling in PatchSerializer for connections without modulationMetadata (treat as standard connections)
+- [X] T028 Test patch save/load with parameter-aware modulation connections to ensure GainNodes are recreated correctly
 
 **Checkpoint**: Patches with parameter-aware modulation can be saved and loaded correctly
 
@@ -137,14 +137,14 @@ This is a single TypeScript audio application with paths at repository root:
 
 **Purpose**: Final validation, documentation, and code quality
 
-- [ ] T029 Manual acceptance testing per spec.md User Story 1 scenarios (3 test cases)
-- [ ] T030 Manual acceptance testing per spec.md User Story 2 scenarios (2 test cases)
-- [ ] T031 [P] Manual testing of all edge cases from spec.md (base at min, base at max, zero range, negative range, very small range, base outside range)
-- [ ] T032 [P] Performance validation: measure depth calculation time, verify <1ms per connection per SC-003
-- [ ] T033 Verify LFO component visual implementation unchanged (no modifications to LFO.ts createAudioNodes, updateAudioParameter, or bypass methods)
-- [ ] T034 [P] Update CLAUDE.md to document completed feature (add to ## Completed Features section)
-- [ ] T035 Code review and cleanup: remove debug console.logs, ensure TypeScript types are correct, verify all imports
-- [ ] T036 Run quickstart.md validation examples to verify developer documentation accuracy
+- [X] T029 Manual acceptance testing per spec.md User Story 1 scenarios (3 test cases)
+- [X] T030 Manual acceptance testing per spec.md User Story 2 scenarios (2 test cases)
+- [X] T031 [P] Manual testing of all edge cases from spec.md (base at min, base at max, zero range, negative range, very small range, base outside range)
+- [X] T032 [P] Performance validation: measure depth calculation time, verify <1ms per connection per SC-003
+- [X] T033 Verify LFO component visual implementation unchanged (no modifications to LFO.ts createAudioNodes, updateAudioParameter, or bypass methods)
+- [X] T034 [P] Update CLAUDE.md to document completed feature (add to ## Completed Features section)
+- [X] T035 Code review and cleanup: remove debug console.logs, ensure TypeScript types are correct, verify all imports
+- [X] T036 Run quickstart.md validation examples to verify developer documentation accuracy
 
 ---
 
