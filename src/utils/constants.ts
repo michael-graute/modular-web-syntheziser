@@ -14,6 +14,21 @@ export const CANVAS = {
 } as const;
 
 /**
+ * Grid Level-of-Detail thresholds
+ */
+export const GRID_LOD_THRESHOLDS = {
+  ZOOM_25: 0.25, // Hide grid below this
+  ZOOM_50: 0.50, // 4x spacing (80px) below this
+  ZOOM_75: 0.75, // 2x spacing (40px) below this
+  // Above 0.75: base 20px spacing
+} as const;
+
+/**
+ * Grid opacity fade threshold
+ */
+export const GRID_FADE_THRESHOLD = 0.5; // Start fading below 50% zoom
+
+/**
  * Component dimensions and layout
  */
 export const COMPONENT = {
