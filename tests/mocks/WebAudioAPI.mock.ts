@@ -248,11 +248,37 @@ export class MockAudioContext implements Partial<BaseAudioContext> {
   sampleRate: number = 44100;
   currentTime: number = 0;
   destination: MockAudioDestinationNode;
+  baseLatency: number = 0.01;
   private nodes: Map<string, AudioNode> = new Map();
+  private eventListeners: Map<string, Function[]> = new Map();
 
   constructor() {
     this.destination = new MockAudioDestinationNode();
     this.destination.context = this;
+  }
+
+  addEventListener(event: string, callback: Function): void {
+    if (!this.eventListeners.has(event)) {
+      this.eventListeners.set(event, []);
+    }
+    this.eventListeners.get(event)!.push(callback);
+  }
+
+  removeEventListener(event: string, callback: Function): void {
+    const listeners = this.eventListeners.get(event);
+    if (listeners) {
+      const index = listeners.indexOf(callback);
+      if (index !== -1) {
+        listeners.splice(index, 1);
+      }
+    }
+  }
+
+  private dispatchEvent(event: string): void {
+    const listeners = this.eventListeners.get(event);
+    if (listeners) {
+      listeners.forEach(listener => listener());
+    }
   }
 
   createOscillator(): OscillatorNode {
@@ -285,14 +311,17 @@ export class MockAudioContext implements Partial<BaseAudioContext> {
 
   async resume(): Promise<void> {
     this.state = 'running';
+    this.dispatchEvent('statechange');
   }
 
   async suspend(): Promise<void> {
     this.state = 'suspended';
+    this.dispatchEvent('statechange');
   }
 
   async close(): Promise<void> {
     this.state = 'closed';
+    this.dispatchEvent('statechange');
   }
 
   // Test utilities
