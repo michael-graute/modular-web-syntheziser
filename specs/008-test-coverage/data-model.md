@@ -116,7 +116,7 @@ interface Patch {
 | `createSimplePatch()` | Basic oscillator → filter | 2 | 1 |
 | `createComplexPatch()` | Multi-oscillator routing | 5 | 8 |
 | `createSubtractivePatch()` | Classic subtractive synthesis | 6 | 7 |
-| `createFMPatch()` | Frequency modulation setup | 4 | 4 |
+| `createAMPatch()` | Amplitude modulation synthesis | 4 | 3 |
 
 **Simple Patch Structure**:
 ```typescript

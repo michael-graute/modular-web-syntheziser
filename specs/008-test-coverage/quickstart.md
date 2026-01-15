@@ -269,7 +269,7 @@ it('should handle complex patch with many connections', () => {
 - `createSimplePatch(overrides?)` - Oscillator → Filter (2 components, 1 connection)
 - `createComplexPatch()` - Multi-oscillator routing (5 components, 8 connections)
 - `createSubtractivePatch()` - Classic subtractive synthesis (6 components, 7 connections)
-- `createFMPatch()` - Frequency modulation setup (4 components, 4 connections)
+- `createAMPatch()` - Amplitude modulation synthesis (4 components, 3 connections)
 
 ### Creating New Fixtures
 

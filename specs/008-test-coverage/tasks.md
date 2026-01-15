@@ -26,11 +26,11 @@
 
 **Purpose**: Initialize test framework and shared infrastructure
 
-- [ ] T001 Install Vitest testing framework and coverage dependencies (@vitest/coverage-v8, happy-dom)
-- [ ] T002 Create vitest.config.ts with coverage thresholds (global: 60%, AudioEngine: 70%, PatchSerializer: 80%, Canvas: 50%)
-- [ ] T003 [P] Configure package.json test scripts (test, test:watch, test:ui, test:coverage)
-- [ ] T004 [P] Create tests/ directory structure (mocks/, fixtures/, audio/, persistence/, canvas/, utils/)
-- [ ] T005 [P] Create tests/setup.ts global test setup file with beforeEach/afterEach hooks
+- [x] T001 Install Vitest testing framework and coverage dependencies (@vitest/coverage-v8, happy-dom)
+- [x] T002 Create vitest.config.ts with coverage thresholds (global: 60%, AudioEngine: 70%, PatchSerializer: 80%, Canvas: 50%)
+- [x] T003 [P] Configure package.json test scripts (test, test:watch, test:ui, test:coverage)
+- [x] T004 [P] Create tests/ directory structure (mocks/, fixtures/, audio/, persistence/, canvas/, utils/)
+- [x] T005 [P] Create tests/setup.ts global test setup file with beforeEach/afterEach hooks
 
 ---
 
@@ -40,23 +40,23 @@
 
 **⚠️ CRITICAL**: No test writing can begin until mocks and fixtures are ready
 
-- [ ] T006 [P] Implement MockAudioContext in tests/mocks/WebAudioAPI.mock.ts
-- [ ] T007 [P] Implement MockAudioNode base class in tests/mocks/WebAudioAPI.mock.ts
-- [ ] T008 [P] Implement MockOscillatorNode in tests/mocks/WebAudioAPI.mock.ts
-- [ ] T009 [P] Implement MockGainNode in tests/mocks/WebAudioAPI.mock.ts
-- [ ] T010 [P] Implement MockBiquadFilterNode in tests/mocks/WebAudioAPI.mock.ts
-- [ ] T011 [P] Implement MockAnalyserNode in tests/mocks/WebAudioAPI.mock.ts
-- [ ] T012 [P] Implement MockAudioParam in tests/mocks/WebAudioAPI.mock.ts
-- [ ] T013 [P] Implement MockLocalStorage in tests/mocks/LocalStorage.mock.ts
-- [ ] T014 [P] Implement createMouseEvent factory in tests/mocks/DOM.mock.ts
-- [ ] T015 [P] Implement createTouchEvent factory in tests/mocks/DOM.mock.ts
-- [ ] T016 [P] Create component fixtures (createTestOscillator, createTestFilter, createTestEnvelope, createTestLFO, createTestVCA, createTestOutput, createTestKeyboard, createTestSequencer) in tests/fixtures/components.fixture.ts
-- [ ] T017 [P] Create connection fixtures (createTestConnection) in tests/fixtures/connections.fixture.ts
-- [ ] T018 [P] Create patch fixtures (createEmptyPatch, createSimplePatch, createComplexPatch, createSubtractivePatch, createFMPatch) in tests/fixtures/patches.fixture.ts
-- [ ] T019 [P] Create assertion helpers for components in tests/fixtures/assertion-helpers.ts
-- [ ] T020 [P] Create assertion helpers for connections in tests/fixtures/assertion-helpers.ts
-- [ ] T021 [P] Create assertion helpers for patches in tests/fixtures/assertion-helpers.ts
-- [ ] T022 [P] Create assertion helpers for audio in tests/fixtures/assertion-helpers.ts
+- [x] T006 [P] Implement MockAudioContext in tests/mocks/WebAudioAPI.mock.ts
+- [x] T007 [P] Implement MockAudioNode base class in tests/mocks/WebAudioAPI.mock.ts
+- [x] T008 [P] Implement MockOscillatorNode in tests/mocks/WebAudioAPI.mock.ts
+- [x] T009 [P] Implement MockGainNode in tests/mocks/WebAudioAPI.mock.ts
+- [x] T010 [P] Implement MockBiquadFilterNode in tests/mocks/WebAudioAPI.mock.ts
+- [x] T011 [P] Implement MockAnalyserNode in tests/mocks/WebAudioAPI.mock.ts
+- [x] T012 [P] Implement MockAudioParam in tests/mocks/WebAudioAPI.mock.ts
+- [x] T013 [P] Implement MockLocalStorage in tests/mocks/LocalStorage.mock.ts
+- [x] T014 [P] Implement createMouseEvent factory in tests/mocks/DOM.mock.ts
+- [x] T015 [P] Implement createTouchEvent factory in tests/mocks/DOM.mock.ts
+- [x] T016 [P] Create component fixtures (createTestOscillator, createTestFilter, createTestEnvelope, createTestLFO, createTestVCA, createTestOutput, createTestKeyboard, createTestSequencer) in tests/fixtures/components.fixture.ts
+- [x] T017 [P] Create connection fixtures (createTestConnection) in tests/fixtures/connections.fixture.ts
+- [x] T018 [P] Create patch fixtures (createEmptyPatch, createSimplePatch, createComplexPatch, createSubtractivePatch, createAMPatch) in tests/fixtures/patches.fixture.ts
+- [x] T019 [P] Create assertion helpers for components in tests/fixtures/assertion-helpers.ts
+- [x] T020 [P] Create assertion helpers for connections in tests/fixtures/assertion-helpers.ts
+- [x] T021 [P] Create assertion helpers for patches in tests/fixtures/assertion-helpers.ts
+- [x] T022 [P] Create assertion helpers for audio in tests/fixtures/assertion-helpers.ts
 
 **Checkpoint**: Foundation ready - test implementation can now begin in parallel
 
