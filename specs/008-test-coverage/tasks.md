@@ -193,18 +193,18 @@
 
 **Purpose**: Final improvements and validation across all test suites
 
-- [ ] T096 [P] Run full test suite (`npm test`) and verify all 80+ test cases pass in under 10 seconds
-- [ ] T097 [P] Run coverage report (`npm run test:coverage`) and verify global 60%+ threshold met
-- [ ] T098 [P] Verify AudioEngine module coverage is 70%+ lines per FR-009
-- [ ] T099 [P] Verify PatchSerializer module coverage is 80%+ lines per FR-009
-- [ ] T100 [P] Verify PatchStorage module coverage is 75%+ lines per FR-009
-- [ ] T101 [P] Verify Canvas module coverage is 50%+ lines per FR-009
-- [ ] T102 [P] Generate HTML coverage report and review uncovered lines in coverage/index.html
-- [ ] T103 [P] Update README.md or quickstart.md with testing workflow and coverage badge (if applicable)
-- [ ] T104 [P] Configure CI/CD pipeline to run tests and fail on coverage violations
-- [ ] T105 [P] Add pre-commit hook to run tests locally before commits (optional, per research.md decision)
-- [ ] T106 Run `npm run test:ui` to verify interactive test UI works correctly
-- [ ] T107 Validate that test suite meets all success criteria from spec.md (SC-001 through SC-010)
+- [x] T096 [P] Run full test suite (`npm test`) and verify all 80+ test cases pass in under 10 seconds
+- [x] T097 [P] Run coverage report (`npm run test:coverage`) and verify global 60%+ threshold met
+- [x] T098 [P] Verify AudioEngine module coverage is 70%+ lines per FR-009
+- [x] T099 [P] Verify PatchSerializer module coverage is 80%+ lines per FR-009
+- [x] T100 [P] Verify PatchStorage module coverage is 75%+ lines per FR-009
+- [x] T101 [P] Verify Canvas module coverage is 50%+ lines per FR-009
+- [x] T102 [P] Generate HTML coverage report and review uncovered lines in coverage/index.html
+- [x] T103 [P] Update README.md or quickstart.md with testing workflow and coverage badge (if applicable)
+- [x] T104 [P] Configure CI/CD pipeline to run tests and fail on coverage violations
+- [x] T105 [P] Add pre-commit hook to run tests locally before commits (optional, per research.md decision)
+- [x] T106 Run `npm run test:ui` to verify interactive test UI works correctly
+- [x] T107 Validate that test suite meets all success criteria from spec.md (SC-001 through SC-010)
 
 ---
 
