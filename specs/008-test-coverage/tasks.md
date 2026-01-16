@@ -175,15 +175,15 @@
 
 **Note**: Existing test files (MusicalScale.test.ts, TimingCalculator.test.ts, Vector2D.test.ts) already exist and should remain unchanged per FR-008. This phase ensures ongoing coverage.
 
-- [ ] T087 [P] [US4] Verify existing MusicalScale.test.ts covers all scale types (Major, Harmonic Minor, Natural Minor, Lydian, Mixolydian) in tests/utils/MusicalScale.test.ts
-- [ ] T088 [P] [US4] Verify existing test: "should return 261.63 Hz for C Major octave 4 note 0 (middle C)" in tests/utils/MusicalScale.test.ts
-- [ ] T089 [P] [US4] Verify existing test: "should return correct semitone intervals for Harmonic Minor scale [2,1,2,2,1,3,1]" in tests/utils/MusicalScale.test.ts
-- [ ] T090 [P] [US4] Verify existing TimingCalculator.test.ts covers all gate sizes (whole, half, quarter, eighth, sixteenth) in tests/utils/TimingCalculator.test.ts
-- [ ] T091 [P] [US4] Verify existing test: "should return 0.5 seconds gate duration for BPM 120 and quarter note" in tests/utils/TimingCalculator.test.ts
-- [ ] T092 [P] [US4] Verify existing test: "should return 0.05 seconds gate duration for BPM 300 (maximum) and sixteenth note" in tests/utils/TimingCalculator.test.ts
-- [ ] T093 [P] [US4] Add test for edge case: "should handle BPM 30 (minimum) and whole note gate duration" in tests/utils/TimingCalculator.test.ts (if not already covered)
-- [ ] T094 [P] [US4] Add test for edge case: "should validate BPM range (30-300) and throw error for invalid values" in tests/utils/TimingCalculator.test.ts (if not already covered)
-- [ ] T095 [US4] Run MusicalScale, TimingCalculator, and Vector2D tests and verify coverage maintained
+- [x] T087 [P] [US4] Verify existing MusicalScale.test.ts covers all scale types (Major, Harmonic Minor, Natural Minor, Lydian, Mixolydian) in tests/utils/MusicalScale.test.ts
+- [x] T088 [P] [US4] Verify existing test: "should return 261.63 Hz for C Major octave 4 note 0 (middle C)" in tests/utils/MusicalScale.test.ts
+- [x] T089 [P] [US4] Verify existing test: "should return correct semitone intervals for Harmonic Minor scale [2,1,2,2,1,3,1]" in tests/utils/MusicalScale.test.ts
+- [x] T090 [P] [US4] Verify existing TimingCalculator.test.ts covers all gate sizes (whole, half, quarter, eighth, sixteenth) in tests/utils/TimingCalculator.test.ts
+- [x] T091 [P] [US4] Verify existing test: "should return 0.5 seconds gate duration for BPM 120 and quarter note" in tests/utils/TimingCalculator.test.ts
+- [x] T092 [P] [US4] Verify existing test: "should return 0.05 seconds gate duration for BPM 300 (maximum) and sixteenth note" in tests/utils/TimingCalculator.test.ts
+- [x] T093 [P] [US4] Add test for edge case: "should handle BPM 30 (minimum) and whole note gate duration" in tests/utils/TimingCalculator.test.ts (if not already covered)
+- [x] T094 [P] [US4] Add test for edge case: "should validate BPM range (30-300) and throw error for invalid values" in tests/utils/TimingCalculator.test.ts (if not already covered)
+- [x] T095 [US4] Run MusicalScale, TimingCalculator, and Vector2D tests and verify coverage maintained
 
 **Checkpoint**: At this point, musical utility test suites should maintain or improve existing coverage, ensuring accurate calculations
 

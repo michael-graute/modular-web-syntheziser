@@ -72,6 +72,22 @@ describe('MusicalScale', () => {
         expect(scale.cvVoltages.length).toBe(scale.intervals.length);
       }
     });
+
+    it('should return correct semitone intervals for Harmonic Minor scale [2,1,2,2,1,3,1]', () => {
+      const scale = new MusicalScale(ScaleType.HARMONIC_MINOR, 'C');
+
+      // Harmonic Minor: C D Eb F G Ab B
+      // Intervals from root: [0, 2, 3, 5, 7, 8, 11]
+      // Semitone steps: [2, 1, 2, 2, 1, 3, 1]
+      expect(scale.intervals).toEqual([0, 2, 3, 5, 7, 8, 11]);
+
+      // Verify semitone steps between consecutive notes
+      const semitoneSteps = [];
+      for (let i = 1; i < scale.intervals.length; i++) {
+        semitoneSteps.push(scale.intervals[i] - scale.intervals[i - 1]);
+      }
+      expect(semitoneSteps).toEqual([2, 1, 2, 2, 1, 3]);
+    });
   });
 
   describe('getCVForDegree', () => {
