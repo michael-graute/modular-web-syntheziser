@@ -104,25 +104,46 @@ export class Canvas {
    */
   private setupCanvas(): void {
     this.resizeCanvas();
-    window.addEventListener('resize', () => this.resizeCanvas());
+
+    // Use ResizeObserver for more reliable resize detection
+    // This catches container size changes from layout shifts, not just window resizes
+    if (typeof ResizeObserver !== 'undefined') {
+      const resizeObserver = new ResizeObserver(() => {
+        this.resizeCanvas();
+      });
+      resizeObserver.observe(this.canvas.parentElement || this.canvas);
+    } else {
+      // Fallback for older browsers
+      window.addEventListener('resize', () => this.resizeCanvas());
+    }
   }
 
   /**
    * Resize canvas to fill container
    */
   private resizeCanvas(): void {
+    // Get the display size from CSS (which handles responsiveness)
     const rect = this.canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
 
-    this.canvas.width = rect.width * dpr;
-    this.canvas.height = rect.height * dpr;
+    // Only update if size actually changed to avoid unnecessary redraws
+    const newWidth = Math.floor(rect.width * dpr);
+    const newHeight = Math.floor(rect.height * dpr);
+
+    if (this.canvas.width === newWidth && this.canvas.height === newHeight) {
+      return;
+    }
+
+    // Set the drawing buffer size (for crisp rendering on high-DPI displays)
+    this.canvas.width = newWidth;
+    this.canvas.height = newHeight;
 
     // Reset transform before applying new scale to avoid cumulative scaling
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.scale(dpr, dpr);
 
-    this.canvas.style.width = `${rect.width}px`;
-    this.canvas.style.height = `${rect.height}px`;
+    // DON'T set canvas.style.width/height - let CSS handle display size
+    // Setting fixed pixel values would override CSS width: 100%; height: 100%
 
     // Resize grid cache to match new canvas dimensions
     if (this.gridCanvas) {
