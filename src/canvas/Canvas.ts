@@ -173,6 +173,66 @@ export class Canvas {
 
     // Keyboard shortcuts
     window.addEventListener('keydown', (e) => this.handleKeyDown(e));
+
+    // Zoom control event listeners
+    this.setupZoomControls();
+  }
+
+  /**
+   * Setup zoom control UI event listeners
+   */
+  private setupZoomControls(): void {
+    const zoomInBtn = document.getElementById('zoom-in-btn');
+    const zoomOutBtn = document.getElementById('zoom-out-btn');
+    const zoomSlider = document.getElementById('zoom-slider') as HTMLInputElement;
+
+    if (zoomInBtn) {
+      zoomInBtn.addEventListener('click', () => {
+        this.viewport.zoomIn();
+        this.onZoomChanged();
+      });
+    }
+
+    if (zoomOutBtn) {
+      zoomOutBtn.addEventListener('click', () => {
+        this.viewport.zoomOut();
+        this.onZoomChanged();
+      });
+    }
+
+    if (zoomSlider) {
+      zoomSlider.addEventListener('input', () => {
+        const zoomPercent = parseInt(zoomSlider.value, 10);
+        this.viewport.setZoom(zoomPercent / 100);
+        this.onZoomChanged();
+      });
+    }
+  }
+
+  /**
+   * Called when zoom level changes via any method (controls, wheel, keyboard)
+   */
+  private onZoomChanged(): void {
+    this.updateZoomControls();
+    this.updateComponentViewportTransforms();
+    stateManager.setViewport(this.viewport.getState());
+  }
+
+  /**
+   * Update zoom control UI to reflect current zoom level
+   */
+  private updateZoomControls(): void {
+    const zoomSlider = document.getElementById('zoom-slider') as HTMLInputElement;
+    const zoomLabel = document.getElementById('zoom-label');
+    const zoomPercent = Math.round(this.viewport.getZoom() * 100);
+
+    if (zoomSlider) {
+      zoomSlider.value = zoomPercent.toString();
+    }
+
+    if (zoomLabel) {
+      zoomLabel.textContent = `${zoomPercent}%`;
+    }
   }
 
   /**
@@ -958,13 +1018,16 @@ export class Canvas {
    * Render overlay information
    */
   private renderOverlay(): void {
-    const zoom = Math.round(this.viewport.getZoom() * 100);
     const pan = this.viewport.getPan();
     const snapStatus = this.snapToGridEnabled ? 'ON' : 'OFF';
 
+    // Update zoom controls (slider and label)
+    this.updateZoomControls();
+
+    // Update pan and snap info text
     const info = document.getElementById('canvas-info');
     if (info) {
-      info.textContent = `Zoom: ${zoom}% | Pan: ${Math.round(pan.x)}, ${Math.round(pan.y)} | Snap: ${snapStatus}`;
+      info.textContent = `Pan: ${Math.round(pan.x)}, ${Math.round(pan.y)} | Snap: ${snapStatus}`;
     }
   }
 
