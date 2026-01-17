@@ -254,6 +254,20 @@ export class HelpSidebar {
       line-height: 1.6;
     `;
 
+    // Add styles for lists
+    const style = document.createElement('style');
+    style.textContent = `
+      #help-sidebar-content ul,
+      #help-sidebar-content ol {
+        padding-left: 24px;
+        margin: 8px 0;
+      }
+      #help-sidebar-content li {
+        margin-bottom: 4px;
+      }
+    `;
+    document.head.appendChild(style);
+
     // Add initial content
     content.innerHTML = this.getContentForSection(this.currentSection);
 
