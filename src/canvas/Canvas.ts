@@ -104,25 +104,46 @@ export class Canvas {
    */
   private setupCanvas(): void {
     this.resizeCanvas();
-    window.addEventListener('resize', () => this.resizeCanvas());
+
+    // Use ResizeObserver for more reliable resize detection
+    // This catches container size changes from layout shifts, not just window resizes
+    if (typeof ResizeObserver !== 'undefined') {
+      const resizeObserver = new ResizeObserver(() => {
+        this.resizeCanvas();
+      });
+      resizeObserver.observe(this.canvas.parentElement || this.canvas);
+    } else {
+      // Fallback for older browsers
+      window.addEventListener('resize', () => this.resizeCanvas());
+    }
   }
 
   /**
    * Resize canvas to fill container
    */
   private resizeCanvas(): void {
+    // Get the display size from CSS (which handles responsiveness)
     const rect = this.canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
 
-    this.canvas.width = rect.width * dpr;
-    this.canvas.height = rect.height * dpr;
+    // Only update if size actually changed to avoid unnecessary redraws
+    const newWidth = Math.floor(rect.width * dpr);
+    const newHeight = Math.floor(rect.height * dpr);
+
+    if (this.canvas.width === newWidth && this.canvas.height === newHeight) {
+      return;
+    }
+
+    // Set the drawing buffer size (for crisp rendering on high-DPI displays)
+    this.canvas.width = newWidth;
+    this.canvas.height = newHeight;
 
     // Reset transform before applying new scale to avoid cumulative scaling
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.scale(dpr, dpr);
 
-    this.canvas.style.width = `${rect.width}px`;
-    this.canvas.style.height = `${rect.height}px`;
+    // DON'T set canvas.style.width/height - let CSS handle display size
+    // Setting fixed pixel values would override CSS width: 100%; height: 100%
 
     // Resize grid cache to match new canvas dimensions
     if (this.gridCanvas) {
@@ -152,6 +173,66 @@ export class Canvas {
 
     // Keyboard shortcuts
     window.addEventListener('keydown', (e) => this.handleKeyDown(e));
+
+    // Zoom control event listeners
+    this.setupZoomControls();
+  }
+
+  /**
+   * Setup zoom control UI event listeners
+   */
+  private setupZoomControls(): void {
+    const zoomInBtn = document.getElementById('zoom-in-btn');
+    const zoomOutBtn = document.getElementById('zoom-out-btn');
+    const zoomSlider = document.getElementById('zoom-slider') as HTMLInputElement;
+
+    if (zoomInBtn) {
+      zoomInBtn.addEventListener('click', () => {
+        this.viewport.zoomIn();
+        this.onZoomChanged();
+      });
+    }
+
+    if (zoomOutBtn) {
+      zoomOutBtn.addEventListener('click', () => {
+        this.viewport.zoomOut();
+        this.onZoomChanged();
+      });
+    }
+
+    if (zoomSlider) {
+      zoomSlider.addEventListener('input', () => {
+        const zoomPercent = parseInt(zoomSlider.value, 10);
+        this.viewport.setZoom(zoomPercent / 100);
+        this.onZoomChanged();
+      });
+    }
+  }
+
+  /**
+   * Called when zoom level changes via any method (controls, wheel, keyboard)
+   */
+  private onZoomChanged(): void {
+    this.updateZoomControls();
+    this.updateComponentViewportTransforms();
+    stateManager.setViewport(this.viewport.getState());
+  }
+
+  /**
+   * Update zoom control UI to reflect current zoom level
+   */
+  private updateZoomControls(): void {
+    const zoomSlider = document.getElementById('zoom-slider') as HTMLInputElement;
+    const zoomLabel = document.getElementById('zoom-label');
+    const zoomPercent = Math.round(this.viewport.getZoom() * 100);
+
+    if (zoomSlider) {
+      zoomSlider.value = zoomPercent.toString();
+    }
+
+    if (zoomLabel) {
+      zoomLabel.textContent = `${zoomPercent}%`;
+    }
   }
 
   /**
@@ -937,13 +1018,16 @@ export class Canvas {
    * Render overlay information
    */
   private renderOverlay(): void {
-    const zoom = Math.round(this.viewport.getZoom() * 100);
     const pan = this.viewport.getPan();
     const snapStatus = this.snapToGridEnabled ? 'ON' : 'OFF';
 
+    // Update zoom controls (slider and label)
+    this.updateZoomControls();
+
+    // Update pan and snap info text
     const info = document.getElementById('canvas-info');
     if (info) {
-      info.textContent = `Zoom: ${zoom}% | Pan: ${Math.round(pan.x)}, ${Math.round(pan.y)} | Snap: ${snapStatus}`;
+      info.textContent = `Pan: ${Math.round(pan.x)}, ${Math.round(pan.y)} | Snap: ${snapStatus}`;
     }
   }
 

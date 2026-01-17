@@ -91,8 +91,12 @@
         <!-- Canvas Area -->
         <div class="canvas-container">
           <canvas id="synth-canvas"></canvas>
-          <div class="canvas-info" id="canvas-info">
-            Zoom: 100% | Pan: 0, 0
+          <div class="canvas-controls" id="canvas-controls">
+            <button class="zoom-btn" id="zoom-out-btn" title="Zoom Out (-)">−</button>
+            <input type="range" id="zoom-slider" min="50" max="200" value="100" title="Zoom Level">
+            <button class="zoom-btn" id="zoom-in-btn" title="Zoom In (+)">+</button>
+            <span class="zoom-label" id="zoom-label">100%</span>
+            <span class="canvas-info-text" id="canvas-info">Pan: 0, 0 | Snap: ON</span>
           </div>
         </div>
       </div>
