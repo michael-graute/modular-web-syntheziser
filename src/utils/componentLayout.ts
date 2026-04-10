@@ -111,6 +111,13 @@ function getControlLayout(type: ComponentType): ControlLayout {
         displayHeight: 200, // physics simulation canvas
       };
 
+    case ComponentType.CHORD_FINDER:
+      return {
+        hasDropdown: true, // root note + scale dropdowns
+        hasDisplayArea: true,
+        displayHeight: 220, // chord circle canvas
+      };
+
     case ComponentType.KEYBOARD_INPUT:
     case ComponentType.FILTER_ENVELOPE:
     default:
@@ -174,6 +181,9 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
     case ComponentType.COLLIDER:
       return { inputs: 0, outputs: 2 }; // CV out, Gate out
 
+    case ComponentType.CHORD_FINDER:
+      return { inputs: 0, outputs: 4 }; // note1 CV, note2 CV, note3 CV, gate
+
     default:
       return { inputs: 1, outputs: 1 };
   }
@@ -185,6 +195,24 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
 export function calculateComponentHeight(type: ComponentType): number {
   const portCounts = getPortCounts(type);
   const controlLayout = getControlLayout(type);
+
+  // Special case for ChordFinder: root dropdown + scale dropdown + generate button + display
+  // Must match the actual layout computation in CanvasComponent.ts exactly:
+  //   dropdownY      = HEADER + portArea + CONTROL_MARGIN_TOP
+  //   scaleDropdownY = dropdownY + DROPDOWN_HEIGHT + CONTROL_SPACING_VERTICAL
+  //   buttonY        = scaleDropdownY + DROPDOWN_HEIGHT + CONTROL_SPACING_VERTICAL
+  //   displayY       = buttonY + 30 (buttonHeight) + CONTROL_SPACING_VERTICAL
+  //   bottom         = displayY + 220 (displayHeight) + 10 (bottom padding)
+  if (type === ComponentType.CHORD_FINDER) {
+    const maxPorts = Math.max(portCounts.inputs, portCounts.outputs);
+    const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+    const dropdownY = COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+    const scaleDropdownY = dropdownY + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
+    const buttonY = scaleDropdownY + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
+    const displayY = buttonY + 30 + COMPONENT.CONTROL_SPACING_VERTICAL;
+    return displayY + 220 + 10;
+  }
 
   // Special case for Collider: 6 knobs in 3x2 grid + button + display
   if (type === ComponentType.COLLIDER) {
@@ -301,6 +329,11 @@ export function calculateComponentWidth(type: ComponentType): number {
   // Collider needs extra width for 6 knobs in 3x2 grid + button + display area
   if (type === ComponentType.COLLIDER) {
     width = 280; // Enough for 3 knobs side by side (40px each + spacing) + margins + display area
+  }
+
+  // ChordFinder needs enough width for the circular display
+  if (type === ComponentType.CHORD_FINDER) {
+    width = 240;
   }
 
   return width;

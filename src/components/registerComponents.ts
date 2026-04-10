@@ -14,6 +14,7 @@ import { KeyboardInput } from './utilities/KeyboardInput';
 import { MasterOutput } from './utilities/MasterOutput';
 import { Mixer } from './utilities/Mixer';
 import { Collider } from './utilities/Collider';
+import { ChordFinder } from './utilities/ChordFinder';
 import { Delay } from './effects/Delay';
 import { Reverb } from './effects/Reverb';
 import { Distortion } from './effects/Distortion';
@@ -126,6 +127,15 @@ export function registerAllComponents(): void {
     'Utilities',
     (id, position) => new Collider(id, 'Collider', position),
     calculateComponentDimensions(ComponentType.COLLIDER)
+  );
+
+  componentRegistry.register(
+    ComponentType.CHORD_FINDER,
+    'Chord Finder',
+    'Diatonic chord explorer with CV/Gate outputs',
+    'Utilities',
+    (id, position) => new ChordFinder(id, position),
+    calculateComponentDimensions(ComponentType.CHORD_FINDER)
   );
 
   // Effects
