@@ -60,10 +60,15 @@ export class KeyboardController {
       return;
     }
 
-    // Ignore if typing in an input field
+    // Ignore if typing in an input field (check both event target and active element,
+    // since modals can cause e.target to point to the container rather than the input)
+    const active = document.activeElement;
     if (
       e.target instanceof HTMLInputElement ||
-      e.target instanceof HTMLTextAreaElement
+      e.target instanceof HTMLTextAreaElement ||
+      active instanceof HTMLInputElement ||
+      active instanceof HTMLTextAreaElement ||
+      (active instanceof HTMLElement && active.isContentEditable)
     ) {
       return;
     }
@@ -113,8 +118,20 @@ export class KeyboardController {
   private handleKeyUp(e: KeyboardEvent): void {
     const key = e.key.toLowerCase();
 
-    // Remove from pressed keys
+    // Remove from pressed keys regardless — ensures stuck notes are cleared
     this.pressedKeys.delete(key);
+
+    // Ignore if typing in an input field
+    const active = document.activeElement;
+    if (
+      e.target instanceof HTMLInputElement ||
+      e.target instanceof HTMLTextAreaElement ||
+      active instanceof HTMLInputElement ||
+      active instanceof HTMLTextAreaElement ||
+      (active instanceof HTMLElement && active.isContentEditable)
+    ) {
+      return;
+    }
 
     // Check for sustain pedal
     if (this.noteMapper.isSustainPedal(key)) {
