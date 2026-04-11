@@ -9,6 +9,8 @@ Auto-generated from all feature plans. Last updated: 2025-10-29
 - localStorage via existing PatchSerializer/PatchStorage pattern (006-collider-musical-physics)
 - TypeScript 5.6+ (ES2020 target, strict mode) (008-test-coverage)
 - localStorage (mocked for tests) (008-test-coverage)
+- TypeScript 5.6+ (strict, ES2020 target) + Zero runtime dependencies — Web Audio API + DOM only (010-chord-finder)
+- localStorage via existing `PatchSerializer` / `PatchStorage` pattern (010-chord-finder)
 
 - TypeScript 5.6+, ES2020 target (001-effect-bypass)
 
@@ -28,9 +30,9 @@ npm test && npm run lint
 TypeScript 5.6+, ES2020 target: Follow standard conventions
 
 ## Recent Changes
+- 010-chord-finder: Added TypeScript 5.6+ (strict, ES2020 target) + Zero runtime dependencies — Web Audio API + DOM only
 - 008-test-coverage: Added TypeScript 5.6+ (ES2020 target, strict mode)
 - 007-visual-update-scheduler: Added TypeScript 5.6+, ES2020 targe
-- 006-collider-musical-physics: ✅ COMPLETE - Musical physics simulation component implemented
 
 
 ## Completed Features

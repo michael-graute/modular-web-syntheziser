@@ -33,6 +33,7 @@ export enum ComponentType {
   OSCILLOSCOPE = 'oscilloscope',
   STEP_SEQUENCER = 'step-sequencer',
   COLLIDER = 'collider',
+  CHORD_FINDER = 'chord-finder',
 }
 
 /**

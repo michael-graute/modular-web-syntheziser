@@ -241,6 +241,28 @@ export class MockAudioDestinationNode extends MockAudioNode implements Partial<A
 }
 
 /**
+ * Mock ConstantSourceNode
+ */
+export class MockConstantSourceNode extends MockAudioNode implements Partial<ConstantSourceNode> {
+  offset: MockAudioParam;
+  isStarted: boolean = false;
+  isStopped: boolean = false;
+
+  constructor() {
+    super(0, 1);
+    this.offset = new MockAudioParam(1);
+  }
+
+  start(when: number = 0): void {
+    this.isStarted = true;
+  }
+
+  stop(when: number = 0): void {
+    this.isStopped = true;
+  }
+}
+
+/**
  * Mock AudioContext
  */
 export class MockAudioContext implements Partial<BaseAudioContext> {
@@ -304,6 +326,13 @@ export class MockAudioContext implements Partial<BaseAudioContext> {
 
   createAnalyser(): AnalyserNode {
     const node = new MockAnalyserNode();
+    node.context = this;
+    this.nodes.set(node.id, node as any);
+    return node as any;
+  }
+
+  createConstantSource(): ConstantSourceNode {
+    const node = new MockConstantSourceNode();
     node.context = this;
     this.nodes.set(node.id, node as any);
     return node as any;

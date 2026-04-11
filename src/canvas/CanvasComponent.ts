@@ -12,9 +12,11 @@ import { Button } from './controls/Button';
 import { OscilloscopeDisplay } from './displays/OscilloscopeDisplay';
 import { SequencerDisplay } from './displays/SequencerDisplay';
 import { ColliderDisplay } from './displays/ColliderDisplay';
+import { ChordFinderDisplay } from './displays/ChordFinderDisplay';
 import type { Oscilloscope } from '../components/analyzers/Oscilloscope';
 import type { StepSequencer } from '../components/utilities/StepSequencer';
 import type { Collider } from '../components/utilities/Collider';
+import type { ChordFinder } from '../components/utilities/ChordFinder';
 import { eventBus } from '../core/EventBus';
 import { EventType } from '../core/types';
 
@@ -36,6 +38,7 @@ export class CanvasComponent {
   private oscilloscopeDisplay: OscilloscopeDisplay | null = null;
   private sequencerDisplay: SequencerDisplay | null = null;
   private colliderDisplay: ColliderDisplay | null = null;
+  private chordFinderDisplay: ChordFinderDisplay | null = null;
 
   constructor(
     id: string,
@@ -989,6 +992,127 @@ export class CanvasComponent {
         this.colliderDisplay.updatePosition(displayX, displayY);
       }
     }
+
+    // ChordFinder-specific controls (T020)
+    if (this.type === ComponentType.CHORD_FINDER && this.synthComponent) {
+      const chordFinder = this.synthComponent as ChordFinder;
+
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const portAreaHeight = numOutputPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      const rootNoteParam = this.synthComponent.getParameter('rootNote');
+      const scaleTypeParam = this.synthComponent.getParameter('scaleType');
+
+      // Root note dropdown
+      const dropdownY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const noteOptions = [
+        { value: 0, label: 'C' }, { value: 1, label: 'C#' }, { value: 2, label: 'D' },
+        { value: 3, label: 'D#' }, { value: 4, label: 'E' }, { value: 5, label: 'F' },
+        { value: 6, label: 'F#' }, { value: 7, label: 'G' }, { value: 8, label: 'G#' },
+        { value: 9, label: 'A' }, { value: 10, label: 'A#' }, { value: 11, label: 'B' },
+      ];
+      if (rootNoteParam) {
+        const dropdown = new Dropdown(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
+          dropdownY,
+          this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2,
+          COMPONENT.DROPDOWN_HEIGHT,
+          rootNoteParam,
+          noteOptions,
+          'Root Note'
+        );
+        this.controls.push(dropdown);
+      }
+
+      // Scale type dropdown (0=Major, 1=Natural Minor)
+      const scaleDropdownY = dropdownY + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const scaleOptions: DropdownOption[] = [
+        { value: 0, label: 'Major' },
+        { value: 1, label: 'Natural Minor' },
+      ];
+      if (scaleTypeParam) {
+        const scaleDropdown = new Dropdown(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
+          scaleDropdownY,
+          this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2,
+          COMPONENT.DROPDOWN_HEIGHT,
+          scaleTypeParam,
+          scaleOptions,
+          'Scale'
+        );
+        this.controls.push(scaleDropdown);
+      }
+
+      // Octave dropdown (2–6)
+      const octaveParam = this.synthComponent.getParameter('octave');
+      const octaveDropdownY = scaleDropdownY + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const octaveOptions: DropdownOption[] = [
+        { value: 2, label: 'Oct 2' },
+        { value: 3, label: 'Oct 3' },
+        { value: 4, label: 'Oct 4' },
+        { value: 5, label: 'Oct 5' },
+        { value: 6, label: 'Oct 6' },
+      ];
+      if (octaveParam) {
+        const octaveDropdown = new Dropdown(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
+          octaveDropdownY,
+          this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2,
+          COMPONENT.DROPDOWN_HEIGHT,
+          octaveParam,
+          octaveOptions,
+          'Octave'
+        );
+        this.controls.push(octaveDropdown);
+      }
+
+      // Generate Progression button
+      const buttonY = octaveDropdownY + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const buttonWidth = 100;
+      const buttonHeight = 30;
+      const buttonX = this.position.x + (this.width - buttonWidth) / 2;
+
+      const generateButton = new Button(
+        buttonX,
+        buttonY,
+        buttonWidth,
+        buttonHeight,
+        'Generate',
+        () => {
+          // T041: guard — only generate if chords are loaded
+          if (chordFinder.getDiatonicChords().length === 0) {
+            console.warn('[ChordFinder] No key selected; cannot generate progression');
+            return;
+          }
+          chordFinder.generateProgression();
+        }
+      );
+      this.controls.push(generateButton);
+
+      // Create or update chord circle display
+      const displayY = buttonY + buttonHeight + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const displayX = this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL;
+      const displayWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const displayHeight = 220;
+
+      if (!this.chordFinderDisplay) {
+        this.chordFinderDisplay = new ChordFinderDisplay(
+          displayX,
+          displayY,
+          displayWidth,
+          displayHeight
+        );
+
+        // Wire press/release callbacks (T034)
+        this.chordFinderDisplay.onChordPress = (deg) => chordFinder.pressChord(deg);
+        this.chordFinderDisplay.onChordRelease = () => chordFinder.releaseChord();
+
+        // Give ChordFinder a reference to its display (T021)
+        chordFinder.chordFinderDisplay = this.chordFinderDisplay;
+      } else {
+        this.chordFinderDisplay.updatePosition(displayX, displayY);
+      }
+    }
   }
 
   /**
@@ -1117,6 +1241,13 @@ export class CanvasComponent {
         this.renderControls(ctx);
       } else {
         this.renderParameters(ctx);
+      }
+
+      // Render chord circle directly onto the main canvas (after controls,
+      // before dropdown menus which are drawn in a separate pass on top)
+      if (this.chordFinderDisplay && this.synthComponent) {
+        const chordFinder = this.synthComponent as import('../components/utilities/ChordFinder').ChordFinder;
+        this.chordFinderDisplay.render(ctx, chordFinder.getState());
       }
     }
 
@@ -1285,6 +1416,10 @@ export class CanvasComponent {
       this.colliderDisplay.destroy();
       this.colliderDisplay = null;
     }
+    if (this.chordFinderDisplay) {
+      this.chordFinderDisplay.destroy();
+      this.chordFinderDisplay = null;
+    }
   }
 
   /**
@@ -1300,6 +1435,7 @@ export class CanvasComponent {
     if (this.colliderDisplay) {
       this.colliderDisplay.updateViewportTransform(zoom, panX, panY);
     }
+    // chordFinderDisplay draws on the main canvas — no separate transform needed.
   }
 
   /**
@@ -1412,6 +1548,7 @@ export class CanvasComponent {
       [ComponentType.OSCILLOSCOPE]: 'Scope',
       [ComponentType.STEP_SEQUENCER]: 'Sequencer',
       [ComponentType.COLLIDER]: 'Collider',
+      [ComponentType.CHORD_FINDER]: 'Chord Finder',
     };
     return names[this.type] || 'Component';
   }
@@ -1450,6 +1587,12 @@ export class CanvasComponent {
         }
       }
     }
+
+    // Forward to chord circle hit detection (T033)
+    if (this.chordFinderDisplay?.handleWorldMouseDown(x, y)) {
+      return true;
+    }
+
     return false;
   }
 
@@ -1502,6 +1645,9 @@ export class CanvasComponent {
         control.handleMouseUp(x, y);
       }
     }
+
+    // Release chord on mouseup
+    this.chordFinderDisplay?.handleWorldMouseUp();
   }
 
   /**

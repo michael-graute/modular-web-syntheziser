@@ -664,6 +664,19 @@ export class HelpSidebar {
         <li><strong>16 Steps:</strong> Click to enable/disable</li>
       </ul>
 
+      <h4 style="color: var(--text-primary, #ffffff);">Chord Finder</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Displays all diatonic chords for a selected key as an interactive chord wheel.
+        Click any chord segment to emit its notes as CV and trigger a gate signal.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>Root Note:</strong> Key root (C – B)</li>
+        <li><strong>Scale:</strong> Major or Natural Minor</li>
+        <li><strong>Generate:</strong> Create a random diatonic chord progression (highlighted in teal)</li>
+        <li><strong>Chord wheel:</strong> Click a segment to press the chord, release to close the gate</li>
+        <li><strong>Outputs:</strong> Note 1 CV, Note 2 CV, Note 3 CV (1V/oct), Gate</li>
+      </ul>
+
       <h4 style="color: var(--text-primary, #ffffff);">Master Output</h4>
       <p style="color: var(--text-secondary, #cccccc);">
         Final output to speakers/headphones. Required for hearing audio.
