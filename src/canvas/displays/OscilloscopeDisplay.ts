@@ -19,9 +19,6 @@ export class OscilloscopeDisplay {
   private baseWidth: number;
   private baseHeight: number;
 
-  // 30 FPS throttle (timestamp-based, no external scheduler)
-  private lastRenderTime: number;
-  private readonly frameInterval: number;
 
   constructor(
     x: number,
@@ -36,13 +33,10 @@ export class OscilloscopeDisplay {
     this.baseY = y;
     this.baseWidth = width;
     this.baseHeight = height;
-    this.lastRenderTime = 0;
-    this.frameInterval = 1000 / 30; // ~33 ms
   }
 
   /**
    * Draw the oscilloscope visualization onto the main canvas context.
-   * Internally throttles to ~30 FPS; returns immediately on skipped frames.
    * No-ops when isFrozen is true.
    *
    * @param ctx - The main CanvasRenderingContext2D (viewport transform already applied)
@@ -57,39 +51,32 @@ export class OscilloscopeDisplay {
 
     ctx.save();
 
-    // Background and border — always drawn every frame so the display area
-    // is never blank between throttled waveform updates.
+    // Background and border
     ctx.fillStyle = '#1a1a1a';
     ctx.fillRect(x, y, w, h);
     ctx.strokeStyle = '#444444';
     ctx.lineWidth = 1;
     ctx.strokeRect(x, y, w, h);
 
-    // Throttle expensive waveform/spectrum drawing to ~30 FPS
-    const now = performance.now();
-    if (now - this.lastRenderTime >= this.frameInterval) {
-      this.lastRenderTime = now;
+    // Grid
+    this.drawGrid(ctx, x, y, w, h);
 
-      // Grid
-      this.drawGrid(ctx, x, y, w, h);
+    // Render based on display mode
+    const displayModeParam = this.oscilloscope?.getParameter('displayMode');
+    const displayMode = displayModeParam ? Math.round(displayModeParam.getValue()) : 0;
 
-      // Render based on display mode
-      const displayModeParam = this.oscilloscope?.getParameter('displayMode');
-      const displayMode = displayModeParam ? Math.round(displayModeParam.getValue()) : 0;
-
-      switch (displayMode) {
-        case 0: // Waveform only
-          this.renderWaveform(ctx, x, y, w, h);
-          break;
-        case 1: // Spectrum only
-          this.renderSpectrum(ctx, x, y, w, h);
-          break;
-        case 2: { // Both (split view)
-          const halfH = h / 2;
-          this.renderWaveform(ctx, x, y, w, halfH);
-          this.renderSpectrum(ctx, x, y + halfH, w, halfH);
-          break;
-        }
+    switch (displayMode) {
+      case 0: // Waveform only
+        this.renderWaveform(ctx, x, y, w, h);
+        break;
+      case 1: // Spectrum only
+        this.renderSpectrum(ctx, x, y, w, h);
+        break;
+      case 2: { // Both (split view)
+        const halfH = h / 2;
+        this.renderWaveform(ctx, x, y, w, halfH);
+        this.renderSpectrum(ctx, x, y + halfH, w, halfH);
+        break;
       }
     }
 
