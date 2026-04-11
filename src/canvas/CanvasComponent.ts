@@ -769,11 +769,6 @@ export class CanvasComponent {
           this.synthComponent as Oscilloscope
         );
 
-        // Add canvas to DOM (will be positioned absolutely)
-        const canvasElement = document.getElementById('synth-canvas');
-        if (canvasElement && canvasElement.parentElement) {
-          canvasElement.parentElement.appendChild(this.oscilloscopeDisplay.getCanvas());
-        }
       } else {
         // Update existing display position
         this.oscilloscopeDisplay.updatePosition(displayX, displayY);
@@ -1249,6 +1244,12 @@ export class CanvasComponent {
         const chordFinder = this.synthComponent as import('../components/utilities/ChordFinder').ChordFinder;
         this.chordFinderDisplay.render(ctx, chordFinder.getState());
       }
+
+      // Render oscilloscope display onto the main canvas (after controls,
+      // before dropdown menus which are drawn in a separate pass on top)
+      if (this.oscilloscopeDisplay) {
+        this.oscilloscopeDisplay.render(ctx);
+      }
     }
 
     // Restore context state
@@ -1426,9 +1427,7 @@ export class CanvasComponent {
    * Update viewport transform for embedded displays (like oscilloscope)
    */
   updateViewportTransform(zoom: number, panX: number, panY: number): void {
-    if (this.oscilloscopeDisplay) {
-      this.oscilloscopeDisplay.updateViewportTransform(zoom, panX, panY);
-    }
+    // oscilloscopeDisplay draws on the main canvas — no separate transform needed.
     if (this.sequencerDisplay) {
       this.sequencerDisplay.updateViewportTransform(zoom, panX, panY);
     }
