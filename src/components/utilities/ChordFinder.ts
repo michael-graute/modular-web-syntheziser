@@ -250,13 +250,17 @@ export class ChordFinder extends SynthComponent {
     const chord = this.diatonicChords[scaleDegree];
     if (!chord) return;
 
-    const octaveOffset = this.config.octave - 4;
+    // Output frequency in Hz (same convention as KeyboardInput).
+    // chord.notes contains MIDI note numbers at octave 4; shift by (octave - 4) * 12.
+    const octaveShift = (this.config.octave - 4) * 12;
+    const midiToHz = (midi: number) => 440 * Math.pow(2, (midi + octaveShift - 69) / 12);
+
     const ctx = audioEngine.getContext();
     const t = ctx?.currentTime ?? 0;
 
-    if (this.note1Output) this.note1Output.offset.setValueAtTime(chord.cvVoltages[0] + octaveOffset, t);
-    if (this.note2Output) this.note2Output.offset.setValueAtTime(chord.cvVoltages[1] + octaveOffset, t);
-    if (this.note3Output) this.note3Output.offset.setValueAtTime(chord.cvVoltages[2] + octaveOffset, t);
+    if (this.note1Output) this.note1Output.offset.setValueAtTime(midiToHz(chord.notes[0]!), t);
+    if (this.note2Output) this.note2Output.offset.setValueAtTime(midiToHz(chord.notes[1]!), t);
+    if (this.note3Output) this.note3Output.offset.setValueAtTime(midiToHz(chord.notes[2]!), t);
     if (this.gateOutput) this.gateOutput.offset.setValueAtTime(1.0, t);
 
     this.pressedDegree = scaleDegree;

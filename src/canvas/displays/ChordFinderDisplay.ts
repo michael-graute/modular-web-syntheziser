@@ -215,6 +215,8 @@ export class ChordFinderDisplay {
     if (angle < 0) angle += 2 * Math.PI;
 
     const degree = Math.floor(angle / ARC_ANGLE) % ARC_COUNT;
+    // Rapid-click guard: release any currently pressed chord before pressing the new one
+    if (this.onChordRelease) this.onChordRelease();
     if (this.onChordPress) this.onChordPress(degree);
     return true;
   }

@@ -196,20 +196,22 @@ export function calculateComponentHeight(type: ComponentType): number {
   const portCounts = getPortCounts(type);
   const controlLayout = getControlLayout(type);
 
-  // Special case for ChordFinder: root dropdown + scale dropdown + generate button + display
+  // Special case for ChordFinder: root dropdown + scale dropdown + octave dropdown + generate button + display
   // Must match the actual layout computation in CanvasComponent.ts exactly:
-  //   dropdownY      = HEADER + portArea + CONTROL_MARGIN_TOP
-  //   scaleDropdownY = dropdownY + DROPDOWN_HEIGHT + CONTROL_SPACING_VERTICAL
-  //   buttonY        = scaleDropdownY + DROPDOWN_HEIGHT + CONTROL_SPACING_VERTICAL
-  //   displayY       = buttonY + 30 (buttonHeight) + CONTROL_SPACING_VERTICAL
-  //   bottom         = displayY + 220 (displayHeight) + 10 (bottom padding)
+  //   dropdownY       = HEADER + portArea + CONTROL_MARGIN_TOP
+  //   scaleDropdownY  = dropdownY + DROPDOWN_HEIGHT + CONTROL_SPACING_VERTICAL
+  //   octaveDropdownY = scaleDropdownY + DROPDOWN_HEIGHT + CONTROL_SPACING_VERTICAL
+  //   buttonY         = octaveDropdownY + DROPDOWN_HEIGHT + CONTROL_SPACING_VERTICAL
+  //   displayY        = buttonY + 30 (buttonHeight) + CONTROL_SPACING_VERTICAL
+  //   bottom          = displayY + 220 (displayHeight) + 10 (bottom padding)
   if (type === ComponentType.CHORD_FINDER) {
     const maxPorts = Math.max(portCounts.inputs, portCounts.outputs);
     const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
 
     const dropdownY = COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
     const scaleDropdownY = dropdownY + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
-    const buttonY = scaleDropdownY + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
+    const octaveDropdownY = scaleDropdownY + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
+    const buttonY = octaveDropdownY + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
     const displayY = buttonY + 30 + COMPONENT.CONTROL_SPACING_VERTICAL;
     return displayY + 220 + 10;
   }

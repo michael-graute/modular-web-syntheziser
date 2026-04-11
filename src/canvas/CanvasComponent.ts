@@ -1043,8 +1043,31 @@ export class CanvasComponent {
         this.controls.push(scaleDropdown);
       }
 
+      // Octave dropdown (2–6)
+      const octaveParam = this.synthComponent.getParameter('octave');
+      const octaveDropdownY = scaleDropdownY + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const octaveOptions: DropdownOption[] = [
+        { value: 2, label: 'Oct 2' },
+        { value: 3, label: 'Oct 3' },
+        { value: 4, label: 'Oct 4' },
+        { value: 5, label: 'Oct 5' },
+        { value: 6, label: 'Oct 6' },
+      ];
+      if (octaveParam) {
+        const octaveDropdown = new Dropdown(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
+          octaveDropdownY,
+          this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2,
+          COMPONENT.DROPDOWN_HEIGHT,
+          octaveParam,
+          octaveOptions,
+          'Octave'
+        );
+        this.controls.push(octaveDropdown);
+      }
+
       // Generate Progression button
-      const buttonY = scaleDropdownY + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const buttonY = octaveDropdownY + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
       const buttonWidth = 100;
       const buttonHeight = 30;
       const buttonX = this.position.x + (this.width - buttonWidth) / 2;

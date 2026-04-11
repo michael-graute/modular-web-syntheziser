@@ -70,11 +70,11 @@
 
 **Independent Test**: With a key selected, click "Generate" — verify 4–8 nodes highlight in teal; click again — verify a different progression appears; change key — verify highlights clear.
 
-- [ ] T023 [US2] Implement `generateProgression()` method in `src/components/utilities/ChordFinder.ts` — calls `ChordTheory.generateProgression(this.diatonicChords)`, stores result by encoding to bitmask via `encodeProgressionBitmask` from `specs/010-chord-finder/contracts/validation.ts`, updates `progression` parameter
-- [ ] T024 [US2] Add "Generate" button control to `ChordFinder` module in `src/canvas/CanvasComponent.ts` — add a `Button` control labelled "Generate"; wire `onClick` to call `chordFinder.generateProgression()`
-- [ ] T025 [US2] Ensure `render()` in `ChordFinderDisplay` reads `state.config.progression` — decode bitmask to active degree set; apply `in-progression` colour to matching arc segments
-- [ ] T026 [US2] Verify key change clears progression highlight — confirm `selectKey()` sets `progression = 0`, and `render()` shows no highlights after a key change
-- [ ] T027 [P] [US2] Write unit tests for `generateProgression()` in `tests/unit/components/ChordFinder.test.ts` — assert progression parameter updates, two consecutive calls differ, degrees are valid 0–6, bitmask encode/decode round-trips correctly
+- [X] T023 [US2] Implement `generateProgression()` method in `src/components/utilities/ChordFinder.ts` — calls `ChordTheory.generateProgression(this.diatonicChords)`, stores result by encoding to bitmask via `encodeProgressionBitmask` from `specs/010-chord-finder/contracts/validation.ts`, updates `progression` parameter
+- [X] T024 [US2] Add "Generate" button control to `ChordFinder` module in `src/canvas/CanvasComponent.ts` — add a `Button` control labelled "Generate"; wire `onClick` to call `chordFinder.generateProgression()`
+- [X] T025 [US2] Ensure `render()` in `ChordFinderDisplay` reads `state.config.progression` — decode bitmask to active degree set; apply `in-progression` colour to matching arc segments
+- [X] T026 [US2] Verify key change clears progression highlight — confirm `selectKey()` sets `progression = 0`, and `render()` shows no highlights after a key change
+- [X] T027 [P] [US2] Write unit tests for `generateProgression()` in `tests/unit/components/ChordFinder.test.ts` — assert progression parameter updates, two consecutive calls differ, degrees are valid 0–6, bitmask encode/decode round-trips correctly
 
 **Checkpoint**: Generating a progression highlights the correct nodes. Changing key clears highlights. Consecutive generates produce different results.
 
@@ -86,15 +86,15 @@
 
 **Independent Test**: Connect Chord Finder `note1` output to an oscillator frequency input. Click and hold "C" chord node — oscillator plays C. Release — gate closes. Test with octave set to 5 — verify C outputs 1.000V.
 
-- [ ] T028 [US3] Implement audio node creation in `ChordFinder.ts` — create 4 `ConstantSourceNode` instances (`note1Output`, `note2Output`, `note3Output`, `gateOutput`) in `initAudioNodes()`; call `.start()` on each; set initial offset to 0
-- [ ] T029 [US3] Add output ports in `ChordFinder` constructor in `src/components/utilities/ChordFinder.ts` — `addOutput('note1', 'Note 1', SignalType.CV)`, `addOutput('note2', 'Note 2', SignalType.CV)`, `addOutput('note3', 'Note 3', SignalType.CV)`, `addOutput('gate', 'Gate', SignalType.GATE)`
-- [ ] T030 [US3] Override `getOutputNodeByPort(portId)` in `ChordFinder.ts` — return the matching `ConstantSourceNode` for `note1`, `note2`, `note3`, `gate`
-- [ ] T031 [US3] Implement `pressChord(scaleDegree)` in `ChordFinder.ts` — guard: return immediately (no output, no gate) if `diatonicChords` is empty (no key selected); otherwise compute `cvVoltages[i] + (octave - 4)` for each note; call `setValueAtTime` on all 3 note nodes and gate node (1.0); call `triggerGateOn()` on all registered gate targets; set `pressedDegree`
-- [ ] T032 [US3] Implement `releaseChord()` in `ChordFinder.ts` — set gate node offset to 0.0; call `triggerGateOff()` on all registered gate targets; clear `pressedDegree`
-- [ ] T033 [US3] Implement hit detection in `ChordFinderDisplay.ts` — `mousedown`: compute polar angle of click, map to scale degree (arc = 2π/7 per degree, degree 0 at −π/2), call `onChordPress(scaleDegree)`; `mouseup`/`mouseleave`: call `onChordRelease()`
-- [ ] T034 [US3] Wire `ChordFinderDisplay` press/release callbacks to `ChordFinder` in `CanvasComponent.ts` — `display.onChordPress = (deg) => chordFinder.pressChord(deg)`, `display.onChordRelease = () => chordFinder.releaseChord()`
-- [ ] T035 [US3] Implement gate target registration in `ChordFinder.ts` — `registerGateTarget(target)` / `unregisterGateTarget(target)` using a `Set<SynthComponent>`; call `triggerGateOn/Off` on all targets from `pressChord`/`releaseChord`
-- [ ] T036 [P] [US3] Write unit tests for CV output in `tests/unit/components/ChordFinder.test.ts` — assert `note1Output.offset.value` = 0.000 for C Major octave 4; = 1.000 for C Major octave 5; assert gate = 1.0 during press, 0.0 after release; assert `triggerGateOn/Off` called on registered targets; assert `pressChord()` with no key selected emits no CV and does not change gate state
+- [X] T028 [US3] Implement audio node creation in `ChordFinder.ts` — create 4 `ConstantSourceNode` instances (`note1Output`, `note2Output`, `note3Output`, `gateOutput`) in `initAudioNodes()`; call `.start()` on each; set initial offset to 0
+- [X] T029 [US3] Add output ports in `ChordFinder` constructor in `src/components/utilities/ChordFinder.ts` — `addOutput('note1', 'Note 1', SignalType.CV)`, `addOutput('note2', 'Note 2', SignalType.CV)`, `addOutput('note3', 'Note 3', SignalType.CV)`, `addOutput('gate', 'Gate', SignalType.GATE)`
+- [X] T030 [US3] Override `getOutputNodeByPort(portId)` in `ChordFinder.ts` — return the matching `ConstantSourceNode` for `note1`, `note2`, `note3`, `gate`
+- [X] T031 [US3] Implement `pressChord(scaleDegree)` in `ChordFinder.ts` — guard: return immediately (no output, no gate) if `diatonicChords` is empty (no key selected); otherwise compute `cvVoltages[i] + (octave - 4)` for each note; call `setValueAtTime` on all 3 note nodes and gate node (1.0); call `triggerGateOn()` on all registered gate targets; set `pressedDegree`
+- [X] T032 [US3] Implement `releaseChord()` in `ChordFinder.ts` — set gate node offset to 0.0; call `triggerGateOff()` on all registered gate targets; clear `pressedDegree`
+- [X] T033 [US3] Implement hit detection in `ChordFinderDisplay.ts` — `mousedown`: compute polar angle of click, map to scale degree (arc = 2π/7 per degree, degree 0 at −π/2), call `onChordPress(scaleDegree)`; `mouseup`/`mouseleave`: call `onChordRelease()`
+- [X] T034 [US3] Wire `ChordFinderDisplay` press/release callbacks to `ChordFinder` in `CanvasComponent.ts` — `display.onChordPress = (deg) => chordFinder.pressChord(deg)`, `display.onChordRelease = () => chordFinder.releaseChord()`
+- [X] T035 [US3] Implement gate target registration in `ChordFinder.ts` — `registerGateTarget(target)` / `unregisterGateTarget(target)` using a `Set<SynthComponent>`; call `triggerGateOn/Off` on all targets from `pressChord`/`releaseChord`
+- [X] T036 [P] [US3] Write unit tests for CV output in `tests/unit/components/ChordFinder.test.ts` — assert `note1Output.offset.value` = 0.000 for C Major octave 4; = 1.000 for C Major octave 5; assert gate = 1.0 during press, 0.0 after release; assert `triggerGateOn/Off` called on registered targets; assert `pressChord()` with no key selected emits no CV and does not change gate state
 
 **Checkpoint**: Patching `note1` to an oscillator and clicking a chord produces the correct pitch. Gate opens on press, closes on release.
 
@@ -106,9 +106,9 @@
 
 **Independent Test**: Set key to G Major, octave 5, generate a progression. Save patch. Reload patch. Verify key, octave, and highlighted progression nodes are identical.
 
-- [ ] T037 [US4] Implement `serialize()` in `ChordFinder.ts` — call `serializeChordFinderConfig(config)` from `specs/010-chord-finder/contracts/validation.ts`; return `ComponentData` with the 4 numeric parameters (`rootNote`, `scaleType`, `octave`, `progression`)
-- [ ] T038 [US4] Implement `deserialize(data)` in `ChordFinder.ts` — call `deserializeChordFinderConfig(params)` from `specs/010-chord-finder/contracts/validation.ts`; restore config, recompute `diatonicChords`, decode progression bitmask to `config.progression`
-- [ ] T039 [P] [US4] Write persistence tests in `tests/persistence/ChordFinder.persistence.test.ts` — serialize then deserialize: assert rootNote, scaleType, octave unchanged; assert progression bitmask round-trips; test with progression = 0 (no progression); test with all degrees active (bitmask = 127)
+- [X] T037 [US4] Implement `serialize()` in `ChordFinder.ts` — call `serializeChordFinderConfig(config)` from `specs/010-chord-finder/contracts/validation.ts`; return `ComponentData` with the 4 numeric parameters (`rootNote`, `scaleType`, `octave`, `progression`)
+- [X] T038 [US4] Implement `deserialize(data)` in `ChordFinder.ts` — call `deserializeChordFinderConfig(params)` from `specs/010-chord-finder/contracts/validation.ts`; restore config, recompute `diatonicChords`, decode progression bitmask to `config.progression`
+- [X] T039 [P] [US4] Write persistence tests in `tests/persistence/ChordFinder.persistence.test.ts` — serialize then deserialize: assert rootNote, scaleType, octave unchanged; assert progression bitmask round-trips; test with progression = 0 (no progression); test with all degrees active (bitmask = 127)
 
 **Checkpoint**: Full save/load cycle preserves all Chord Finder state. Integration with existing `PatchSerializer` verified.
 
@@ -118,14 +118,14 @@
 
 **Purpose**: Visual refinement, edge case hardening, and integration smoke-test.
 
-- [ ] T040 [P] Handle no-key-selected state in `ChordFinderDisplay.ts` — if `diatonicChords` is empty, render placeholder text "Select a key" in centre and show 7 greyed-out inactive arc segments
-- [ ] T041 [P] Disable "Generate" button when no key is selected — check `diatonicChords.length === 0` before calling `generateProgression()`; log a warning if called in invalid state
-- [ ] T042 [P] Add rapid-click guard in `ChordFinderDisplay.ts` — if a chord is already pressed (`pressedDegree !== null`), release it before pressing the new one (prevents stuck gate on rapid multi-click)
-- [ ] T043 [P] Add octave control to `ChordFinder` module in `src/canvas/CanvasComponent.ts` — add a `Dropdown` or stepped `Slider` control labelled "Oct" showing C2–C6; wire value change to `chordFinder.setOctave(value)`
-- [ ] T044 Implement `setOctave(octave)` in `ChordFinder.ts` — clamp to [2,6], update `octave` parameter; if a chord is currently pressed, immediately update CV node offsets
-- [ ] T045 [P] Add `destroy()` cleanup in `ChordFinder.ts` — unsubscribe from `visualUpdateScheduler`, stop and disconnect all 4 `ConstantSourceNode` instances, clear gate targets
-- [ ] T046 Run `npm test && npm run lint` — fix all test failures and lint warnings
-- [ ] T047 Smoke-test against quickstart.md validation scenarios — manually verify: C Major circle, A Minor circle, generate progression highlights, chord click CV values (C Major oct 4: 0.000V, 0.333V, 0.583V; oct 5: 1.000V, 1.333V, 1.583V), patch save/reload
+- [X] T040 [P] Handle no-key-selected state in `ChordFinderDisplay.ts` — if `diatonicChords` is empty, render placeholder text "Select a key" in centre and show 7 greyed-out inactive arc segments
+- [X] T041 [P] Disable "Generate" button when no key is selected — check `diatonicChords.length === 0` before calling `generateProgression()`; log a warning if called in invalid state
+- [X] T042 [P] Add rapid-click guard in `ChordFinderDisplay.ts` — if a chord is already pressed (`pressedDegree !== null`), release it before pressing the new one (prevents stuck gate on rapid multi-click)
+- [X] T043 [P] Add octave control to `ChordFinder` module in `src/canvas/CanvasComponent.ts` — add a `Dropdown` or stepped `Slider` control labelled "Oct" showing C2–C6; wire value change to `chordFinder.setOctave(value)`
+- [X] T044 Implement `setOctave(octave)` in `ChordFinder.ts` — clamp to [2,6], update `octave` parameter; if a chord is currently pressed, immediately update CV node offsets
+- [X] T045 [P] Add `destroy()` cleanup in `ChordFinder.ts` — unsubscribe from `visualUpdateScheduler`, stop and disconnect all 4 `ConstantSourceNode` instances, clear gate targets
+- [X] T046 Run `npm test && npm run lint` — fix all test failures and lint warnings
+- [X] T047 Smoke-test against quickstart.md validation scenarios — manually verify: C Major circle, A Minor circle, generate progression highlights, chord click CV values (C Major oct 4: 0.000V, 0.333V, 0.583V; oct 5: 1.000V, 1.333V, 1.583V), patch save/reload
 
 ---
 

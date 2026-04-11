@@ -7,9 +7,11 @@
  * These constructor/selectKey tests do NOT call activate() and have no audio dependency.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ChordFinder } from '../../../src/components/utilities/ChordFinder';
 import { ChordScaleType, ChordQuality } from '../../../specs/010-chord-finder/contracts/types';
+import { MockAudioContext, MockConstantSourceNode } from '../../mocks/WebAudioAPI.mock';
+import { audioEngine } from '../../../src/core/AudioEngine';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -220,5 +222,96 @@ describe('ChordFinder serialize/deserialize', () => {
     const cf2 = makeChordFinder();
     cf2.deserialize(data);
     expect(cf2.getState().config.progression).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T036 — CV output and gate tests (require activated audio nodes)
+// ---------------------------------------------------------------------------
+
+describe('ChordFinder CV output (T036)', () => {
+  let cf: ChordFinder;
+  let mockCtx: MockAudioContext;
+
+  beforeEach(async () => {
+    mockCtx = new MockAudioContext();
+    // Inject mock context into the singleton audioEngine
+    (audioEngine as any).context = mockCtx;
+    (audioEngine as any).isInitialized = true;
+
+    cf = new ChordFinder('test-cv', { x: 0, y: 0 });
+    cf.activate(); // creates ConstantSourceNodes
+  });
+
+  afterEach(() => {
+    cf.deactivate();
+    (audioEngine as any).context = null;
+    (audioEngine as any).isInitialized = false;
+    (audioEngine as any).nodes = new Map();
+  });
+
+  it('note1 CV = 0.000 for C Major degree 0, octave 4', () => {
+    cf.selectKey('C', ChordScaleType.MAJOR);
+    cf.pressChord(0); // C major chord, root = C4 = MIDI 60 → (60-60)/12 = 0.000
+    const node = (cf as any).note1Output as MockConstantSourceNode;
+    expect(node.offset.value).toBeCloseTo(0.0, 3);
+  });
+
+  it('note1 CV = 1.000 for C Major degree 0, octave 5', () => {
+    cf.selectKey('C', ChordScaleType.MAJOR);
+    cf.setOctave(5);
+    cf.pressChord(0); // octave offset = 5-4 = +1 → 0.000 + 1 = 1.000
+    const node = (cf as any).note1Output as MockConstantSourceNode;
+    expect(node.offset.value).toBeCloseTo(1.0, 3);
+  });
+
+  it('gate = 1.0 during press', () => {
+    cf.selectKey('C', ChordScaleType.MAJOR);
+    cf.pressChord(0);
+    const gate = (cf as any).gateOutput as MockConstantSourceNode;
+    expect(gate.offset.value).toBeCloseTo(1.0, 3);
+  });
+
+  it('gate = 0.0 after release', () => {
+    cf.selectKey('C', ChordScaleType.MAJOR);
+    cf.pressChord(0);
+    cf.releaseChord();
+    const gate = (cf as any).gateOutput as MockConstantSourceNode;
+    expect(gate.offset.value).toBeCloseTo(0.0, 3);
+  });
+
+  it('pressChord with no key selected emits no CV and does not open gate', () => {
+    // Bypass selectKey so diatonicChords is empty
+    (cf as any).diatonicChords = [];
+    const gate = (cf as any).gateOutput as MockConstantSourceNode;
+    const initialGate = gate.offset.value;
+    cf.pressChord(0);
+    expect(gate.offset.value).toBe(initialGate); // gate unchanged
+  });
+
+  it('calls triggerGateOn on registered gate targets on pressChord', () => {
+    cf.selectKey('C', ChordScaleType.MAJOR);
+    const target = { triggerGateOn: vi.fn(), triggerGateOff: vi.fn() } as any;
+    cf.registerGateTarget(target);
+    cf.pressChord(0);
+    expect(target.triggerGateOn).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls triggerGateOff on registered gate targets on releaseChord', () => {
+    cf.selectKey('C', ChordScaleType.MAJOR);
+    const target = { triggerGateOn: vi.fn(), triggerGateOff: vi.fn() } as any;
+    cf.registerGateTarget(target);
+    cf.pressChord(0);
+    cf.releaseChord();
+    expect(target.triggerGateOff).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not call triggerGateOn after unregisterGateTarget', () => {
+    cf.selectKey('C', ChordScaleType.MAJOR);
+    const target = { triggerGateOn: vi.fn(), triggerGateOff: vi.fn() } as any;
+    cf.registerGateTarget(target);
+    cf.unregisterGateTarget(target);
+    cf.pressChord(0);
+    expect(target.triggerGateOn).not.toHaveBeenCalled();
   });
 });
