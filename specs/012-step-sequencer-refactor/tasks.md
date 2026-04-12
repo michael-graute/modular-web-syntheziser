@@ -156,11 +156,11 @@
 
 **Purpose**: Finalize rendering quality, clean up, run all gates.
 
-- [ ] T050 [P] In `src/canvas/displays/StepSequencerDisplay.ts`: audit all magic numbers — extract to named constants at top of file: `TRANSPORT_HEIGHT`, `STEP_GRID_HEIGHT`, `STEP_CELL_GAP`, `NOTE_LABEL_HEIGHT`, `VELOCITY_KNOB_HEIGHT`, `GATE_DROPDOWN_HEIGHT`, `ACTIVE_INDICATOR_HEIGHT`, color constants following `OscilloscopeDisplay` naming convention
-- [ ] T051 [P] In `src/components/utilities/StepSequencer.ts`: remove all `console.log` debug calls (keep `console.warn` for missing parameters); matches codebase style of other components
-- [ ] T052 [P] Verify no function exceeds 50 lines (constitution rule): split any overlong render sub-functions in `StepSequencerDisplay.ts` into helper methods
-- [ ] T053 Run full validation checklist from `specs/012-step-sequencer-refactor/quickstart.md`: ✓ build passes; ✓ zoom 50%/200% crisp; ✓ dropdowns render on top; ✓ no orphaned DOM; ✓ two sequencers simultaneously; ✓ patch save/reload 100% fidelity; ✓ 120 BPM 60s timing; ✓ BPM change mid-play; ✓ tied gate legato; ✓ delete while playing cleans up; ✓ **set Length to 1, press Play — single step loops continuously without error or hang**; ✓ **set BPM to 30, play 30s — timing stable at minimum BPM**; ✓ **set BPM to 300, play 10s — no missed steps at maximum BPM**; ✓ **load an existing patch without a StepSequencer — it loads and plays correctly with no errors thrown**
-- [ ] T054 Run `npm test && npm run lint` — zero errors, zero warnings; all unit tests from T013 and T014 pass
+- [x] T050 [P] In `src/canvas/displays/StepSequencerDisplay.ts`: audit all magic numbers — extract to named constants at top of file: `TRANSPORT_HEIGHT`, `STEP_GRID_HEIGHT`, `STEP_CELL_GAP`, `NOTE_LABEL_HEIGHT`, `VELOCITY_KNOB_HEIGHT`, `GATE_DROPDOWN_HEIGHT`, `ACTIVE_INDICATOR_HEIGHT`, color constants following `OscilloscopeDisplay` naming convention
+- [x] T051 [P] In `src/components/utilities/StepSequencer.ts`: remove all `console.log` debug calls (keep `console.warn` for missing parameters); matches codebase style of other components
+- [x] T052 [P] Verify no function exceeds 50 lines (constitution rule): split any overlong render sub-functions in `StepSequencerDisplay.ts` into helper methods
+- [x] T053 Run full validation checklist from `specs/012-step-sequencer-refactor/quickstart.md`: ✓ build passes; ✓ zoom 50%/200% crisp; ✓ dropdowns render on top; ✓ no orphaned DOM; ✓ two sequencers simultaneously; ✓ patch save/reload 100% fidelity; ✓ 120 BPM 60s timing; ✓ BPM change mid-play; ✓ tied gate legato; ✓ delete while playing cleans up; ✓ **set Length to 1, press Play — single step loops continuously without error or hang**; ✓ **set BPM to 30, play 30s — timing stable at minimum BPM**; ✓ **set BPM to 300, play 10s — no missed steps at maximum BPM**; ✓ **load an existing patch without a StepSequencer — it loads and plays correctly with no errors thrown**
+- [x] T054 Run `npm test && npm run lint` — zero errors, zero warnings; all unit tests from T013 and T014 pass
 
 ---
 

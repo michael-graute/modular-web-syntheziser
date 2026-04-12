@@ -47,8 +47,14 @@ export class StepSequencer extends SynthComponent {
   private arpBaseNote: number = 60; // Base note from keyboard (C4 default)
   private arpIsKeyHeld: boolean = false; // Is keyboard key currently held
   private lastArpGateState: number = 0; // Track keyboard gate state
-  private arpCheckInterval: number | null = null; // Interval for checking arp inputs
-  private connectionCheckInterval: number | null = null; // Interval for checking connections
+  private arpCheckInterval: number | null = null; // Interval for polling arp gate input
+
+  // JS-level getter functions for arp gate and frequency, supplied by ConnectionManager
+  // when a keyboard output is wired to an arp input port.
+  // We cannot use ConstantSourceNode.offset.value because setValueAtTime() schedules
+  // changes on the audio thread only and does not update the JS-readable .value property.
+  private arpGateGetter: (() => number) | null = null;
+  private arpFreqGetter: (() => number) | null = null;
 
   // Connected components
   private connectedGateTargets: Set<SynthComponent>;
@@ -151,11 +157,9 @@ export class StepSequencer extends SynthComponent {
     this.registerAudioNode('arpFrequency', this.arpFreqInputNode);
     this.registerAudioNode('arpVelocity', this.arpVelInputNode);
 
-    // Start monitoring for arpeggiator connections
-    // This will enable arpeggiator mode when keyboard is connected
-    this.startConnectionMonitoring();
+    // Start polling for arp gate input (guards on mode + connection internally)
+    this.startArpeggiatorMonitoring();
 
-    console.log(`StepSequencer ${this.id} created`);
   }
 
   /**
@@ -198,20 +202,8 @@ export class StepSequencer extends SynthComponent {
       this.arpVelInputNode = null;
     }
 
-    // Clear arpeggiator check interval
-    if (this.arpCheckInterval !== null) {
-      clearInterval(this.arpCheckInterval);
-      this.arpCheckInterval = null;
-    }
-
-    // Clear connection check interval
-    if (this.connectionCheckInterval !== null) {
-      clearInterval(this.connectionCheckInterval);
-      this.connectionCheckInterval = null;
-    }
-
+    this.stopArpeggiatorMonitoring();
     this.connectedGateTargets.clear();
-    console.log(`StepSequencer ${this.id} destroyed`);
   }
 
   /**
@@ -306,11 +298,28 @@ export class StepSequencer extends SynthComponent {
   }
 
   /**
+   * Register JS-level getter functions for arp gate and frequency.
+   * Called by ConnectionManager when a keyboard output is wired to an arp input port.
+   * Getters read JS-state rather than Web Audio API scheduled values.
+   */
+  setArpGateGetter(fn: () => number): void {
+    this.arpGateGetter = fn;
+  }
+
+  setArpFreqGetter(fn: () => number): void {
+    this.arpFreqGetter = fn;
+  }
+
+  clearArpSources(inputId?: string): void {
+    if (!inputId || inputId === 'arpeggiate') this.arpGateGetter = null;
+    if (!inputId || inputId === 'arpFrequency') this.arpFreqGetter = null;
+  }
+
+  /**
    * Register a component connected to the gate output
    */
   registerGateTarget(target: SynthComponent): void {
     this.connectedGateTargets.add(target);
-    console.log(`Sequencer ${this.id} registered gate target: ${target.name}`);
   }
 
   /**
@@ -318,7 +327,6 @@ export class StepSequencer extends SynthComponent {
    */
   unregisterGateTarget(target: SynthComponent): void {
     this.connectedGateTargets.delete(target);
-    console.log(`Sequencer ${this.id} unregistered gate target: ${target.name}`);
   }
 
   /**
@@ -369,13 +377,6 @@ export class StepSequencer extends SynthComponent {
     this.scheduleInterval = window.setInterval(() => {
       this.scheduleNextSteps();
     }, 25); // Check every 25ms
-
-    // Start arpeggiator check interval if in arpeggiator mode
-    if (this.isArpeggiatorMode()) {
-      this.startArpeggiatorMonitoring();
-    }
-
-    console.log(`StepSequencer ${this.id} started`);
   }
 
   /**
@@ -392,9 +393,6 @@ export class StepSequencer extends SynthComponent {
       this.scheduleInterval = null;
     }
 
-    // Stop arpeggiator monitoring
-    this.stopArpeggiatorMonitoring();
-
     // Gate off
     if (this.gateNode) {
       const ctx = audioEngine.getContext();
@@ -404,8 +402,6 @@ export class StepSequencer extends SynthComponent {
     // Trigger gate off for all connected ADSR envelopes
     this.triggerGateOffForTargets();
     this.lastGateOnTime = -1;
-
-    console.log(`StepSequencer ${this.id} stopped`);
   }
 
   /**
@@ -414,7 +410,6 @@ export class StepSequencer extends SynthComponent {
   reset(): void {
     this.currentStep = 0;
     this.visualCurrentStep = 0;
-    console.log(`StepSequencer ${this.id} reset to step 1`);
   }
 
   /**
@@ -491,13 +486,12 @@ export class StepSequencer extends SynthComponent {
 
     // In arpeggiator mode, treat step note as transpose offset from keyboard base note
     if (this.isArpeggiatorMode() && this.arpIsKeyHeld) {
-      // Calculate offset: step note relative to C4 (60)
-      const transposeOffset = step.note - 60;
+      // Decode semitone offset: stored as offset + 64 (encodeArpOffset convention)
+      const transposeOffset = step.note - 64;
       finalNote = this.arpBaseNote + transposeOffset;
 
-      // Get velocity from keyboard if available
-      const keyboardVelocity = this.arpVelInputNode?.gain.value || step.velocity;
-      this.velocityNode.offset.setValueAtTime(keyboardVelocity, time);
+      // Use step velocity (keyboard velocity CV not reliably readable via GainNode)
+      this.velocityNode.offset.setValueAtTime(step.velocity, time);
     } else {
       // Standalone mode: use step velocity
       this.velocityNode.offset.setValueAtTime(step.velocity, time);
@@ -567,75 +561,45 @@ export class StepSequencer extends SynthComponent {
   }
 
   /**
-   * Returns true when a keyboard source is connected to the arpeggiator inputs.
-   * Used for the "no keyboard connected" hint in arpeggiator mode.
+   * Returns true when a gate source is connected to the arpeggiate input.
+   * The gate connection is the minimum requirement for arp triggering.
    */
   isArpeggiatorConnected(): boolean {
-    const arpFreqPort = this.inputs.get('arpFrequency');
-    const arpVelPort = this.inputs.get('arpVelocity');
-    return (arpFreqPort?.isConnected() || arpVelPort?.isConnected()) ?? false;
+    return this.arpGateGetter !== null;
   }
 
   /**
-   * Start monitoring arpeggiator CV inputs
+   * Start the arpeggiator gate-polling interval.
+   * Runs whenever audio nodes exist; checkArpeggiatorInputs() guards on mode and connection.
    */
   private startArpeggiatorMonitoring(): void {
     if (this.arpCheckInterval !== null) return;
-
-    // Check arpeggiator inputs every 10ms for responsive triggering
     this.arpCheckInterval = window.setInterval(() => {
       this.checkArpeggiatorInputs();
     }, 10);
-
-    console.log(`StepSequencer ${this.id} started arpeggiator monitoring`);
   }
 
   /**
-   * Start monitoring for arpeggiator connections.
-   * Only starts gate monitoring when BOTH mode=Arpeggiator AND a keyboard is connected.
-   * Mode is controlled explicitly by the user via the UI toggle (not auto-detected).
-   */
-  private startConnectionMonitoring(): void {
-    if (this.connectionCheckInterval !== null) return;
-
-    this.connectionCheckInterval = window.setInterval(() => {
-      const inArpMode = this.isArpeggiatorMode();
-      const keyboardConnected = this.isArpeggiatorConnected();
-
-      if (inArpMode && keyboardConnected) {
-        if (this.arpCheckInterval === null) {
-          this.startArpeggiatorMonitoring();
-        }
-      } else {
-        this.stopArpeggiatorMonitoring();
-      }
-    }, 500);
-  }
-
-  /**
-   * Stop monitoring arpeggiator CV inputs
+   * Stop the arpeggiator gate-polling interval.
    */
   private stopArpeggiatorMonitoring(): void {
     if (this.arpCheckInterval !== null) {
       clearInterval(this.arpCheckInterval);
       this.arpCheckInterval = null;
-      console.log(`StepSequencer ${this.id} stopped arpeggiator monitoring`);
     }
   }
 
   /**
-   * Check arpeggiator CV inputs and update base note
+   * Check arpeggiator CV inputs and update base note.
+   * Reads .offset.value directly from the connected ConstantSourceNode because
+   * GainNode.gain.value does not reflect values driven by audio-graph connections.
    */
   private checkArpeggiatorInputs(): void {
-    if (!this.arpGateInputNode || !this.arpFreqInputNode) {
-      return;
-    }
+    if (!this.isArpeggiatorMode() || !this.arpGateGetter) return;
 
-    // Read gate value from GainNode
-    const gateValue = this.arpGateInputNode.gain.value;
-
-    // Read frequency value to get base note
-    const freqValue = this.arpFreqInputNode.gain.value;
+    // Read gate and frequency via JS-level getters (not Web Audio API scheduled values)
+    const gateValue = this.arpGateGetter();
+    const freqValue = this.arpFreqGetter?.() ?? 440;
 
     // Convert frequency to MIDI note
     const midiNote = this.frequencyToMidi(freqValue);
@@ -648,7 +612,6 @@ export class StepSequencer extends SynthComponent {
 
       if (!this.isPlaying) {
         this.start();
-        console.log(`Arpeggiator: Auto-started sequencer with base note ${midiNote}`);
       }
     }
     // Detect gate falling edge (1 -> 0)
@@ -659,7 +622,6 @@ export class StepSequencer extends SynthComponent {
       if (this.isPlaying) {
         this.stop();
         this.reset();
-        console.log(`Arpeggiator: Auto-stopped and reset sequencer`);
       }
     }
     // While gate is held, update base note if it changes

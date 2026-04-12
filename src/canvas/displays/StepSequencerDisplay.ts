@@ -31,6 +31,13 @@ export const SEQUENCER_DISPLAY_HEIGHT = TRANSPORT_BAR_HEIGHT + STEP_CELL_HEIGHT;
 const TRANSPORT_BUTTON_WIDTH = 48;
 const TRANSPORT_BUTTON_HEIGHT = 22;
 const TRANSPORT_BUTTON_MARGIN = 4;
+const RESET_BUTTON_WIDTH = 44;
+const MODE_BUTTON_WIDTH = 36;
+const TRANSPORT_KNOB_SIZE = 22;
+const TRANSPORT_DIV_DROPDOWN_WIDTH = 40;
+const TRANSPORT_DIV_DROPDOWN_HEIGHT = 14;
+const TRANSPORT_CTRL_GAP = 4;
+const MODE_BUTTON_GAP = 6;
 
 // Sub-region vertical offsets within a step cell (relative to cell top)
 const ACTIVE_INDICATOR_BOTTOM = 6;   // 0–6px: active indicator
@@ -38,6 +45,8 @@ const NOTE_LABEL_BOTTOM = 22;        // 6–22px: note label
 const VELOCITY_KNOB_BOTTOM = 52;     // 22–52px: velocity knob
 const GATE_DROPDOWN_BOTTOM = 72;     // 52–72px: gate dropdown
 const VELOCITY_KNOB_SIZE = 20;       // small knob diameter
+const ACTIVE_INDICATOR_RADIUS = 3;   // radius of the active-step circle
+const NOTE_PICKER_PANEL_HEIGHT = 26; // height of the floating note-picker panel
 
 // Gate length label map (for inline cell rendering)
 const GATE_LABELS: Record<number, string> = {
@@ -143,13 +152,13 @@ export class StepSequencerDisplay {
 
     // Build transport controls — mirror the sequencer's actual parameter ranges
     this.bpmParam = new Parameter('transport_bpm', 'BPM', 120, 30, 300, 1, '');
-    this.bpmKnob = new Knob(x, y, 22, this.bpmParam);
+    this.bpmKnob = new Knob(x, y, TRANSPORT_KNOB_SIZE, this.bpmParam);
 
     this.noteDivParam = new Parameter('transport_noteDiv', 'Div', 2, 0, 5, 1, '');
-    this.noteDivDropdown = new Dropdown(x, y, 40, 14, this.noteDivParam, NOTE_DIV_OPTIONS, '');
+    this.noteDivDropdown = new Dropdown(x, y, TRANSPORT_DIV_DROPDOWN_WIDTH, TRANSPORT_DIV_DROPDOWN_HEIGHT, this.noteDivParam, NOTE_DIV_OPTIONS, '');
 
     this.seqLenParam = new Parameter('transport_seqLen', 'Len', 16, 2, 16, 1, '');
-    this.seqLenKnob = new Knob(x, y, 22, this.seqLenParam);
+    this.seqLenKnob = new Knob(x, y, TRANSPORT_KNOB_SIZE, this.seqLenParam);
   }
 
   // ---------------------------------------------------------------------------
@@ -180,17 +189,17 @@ export class StepSequencerDisplay {
       + TRANSPORT_BUTTON_WIDTH + TRANSPORT_BUTTON_MARGIN
       + 44 + TRANSPORT_BUTTON_MARGIN * 2;
 
-    // BPM knob (22×22, centred vertically in transport bar)
-    const knobY = y + Math.floor((TRANSPORT_BAR_HEIGHT - 22) / 2);
+    // BPM knob, centred vertically in transport bar
+    const knobY = y + Math.floor((TRANSPORT_BAR_HEIGHT - TRANSPORT_KNOB_SIZE) / 2);
     this.bpmKnob.setPosition(ctrlX, knobY);
-    ctrlX += 22 + 4;
+    ctrlX += TRANSPORT_KNOB_SIZE + TRANSPORT_CTRL_GAP;
 
-    // Division dropdown (40×14, centred vertically)
-    const ddY = y + Math.floor((TRANSPORT_BAR_HEIGHT - 14) / 2);
+    // Division dropdown, centred vertically
+    const ddY = y + Math.floor((TRANSPORT_BAR_HEIGHT - TRANSPORT_DIV_DROPDOWN_HEIGHT) / 2);
     this.noteDivDropdown.setPosition(ctrlX, ddY);
-    ctrlX += 40 + 4;
+    ctrlX += TRANSPORT_DIV_DROPDOWN_WIDTH + TRANSPORT_CTRL_GAP;
 
-    // Sequence length knob (22×22)
+    // Sequence length knob
     this.seqLenKnob.setPosition(ctrlX, knobY);
     void btnY; // btnY referenced implicitly through the layout above
   }
@@ -270,30 +279,30 @@ export class StepSequencerDisplay {
     btnX += TRANSPORT_BUTTON_WIDTH + TRANSPORT_BUTTON_MARGIN;
 
     // Reset button
-    this.drawTransportButton(ctx, btnX, btnY, 44, TRANSPORT_BUTTON_HEIGHT, 'Reset', '#555555');
-    btnX += 44 + TRANSPORT_BUTTON_MARGIN * 2;
+    this.drawTransportButton(ctx, btnX, btnY, RESET_BUTTON_WIDTH, TRANSPORT_BUTTON_HEIGHT, 'Reset', '#555555');
+    btnX += RESET_BUTTON_WIDTH + TRANSPORT_BUTTON_MARGIN * 2;
 
     // BPM knob + label
-    const knobY = y + Math.floor((TRANSPORT_BAR_HEIGHT - 22) / 2);
+    const knobY = y + Math.floor((TRANSPORT_BAR_HEIGHT - TRANSPORT_KNOB_SIZE) / 2);
     this.renderTransportLabel(ctx, btnX, knobY - 1, 'BPM');
     this.bpmKnob.render(ctx);
-    btnX += 22 + 4;
+    btnX += TRANSPORT_KNOB_SIZE + TRANSPORT_CTRL_GAP;
 
     // Division dropdown + label
-    const ddY = y + Math.floor((TRANSPORT_BAR_HEIGHT - 14) / 2);
+    const ddY = y + Math.floor((TRANSPORT_BAR_HEIGHT - TRANSPORT_DIV_DROPDOWN_HEIGHT) / 2);
     this.renderTransportLabel(ctx, btnX, ddY - 1, 'Div');
     this.noteDivDropdown.render(ctx);
-    btnX += 40 + 4;
+    btnX += TRANSPORT_DIV_DROPDOWN_WIDTH + TRANSPORT_CTRL_GAP;
 
     // Sequence length knob + label
     this.renderTransportLabel(ctx, btnX, knobY - 1, 'Len');
     this.seqLenKnob.render(ctx);
-    btnX += 22 + 6;
+    btnX += TRANSPORT_KNOB_SIZE + MODE_BUTTON_GAP;
 
     // Mode toggle button
     const isArp = state.pattern.mode === SEQUENCER_MODE.ARPEGGIATOR;
     const modeColor = isArp ? '#8b5cf6' : '#374151';
-    this.drawTransportButton(ctx, btnX, btnY, 36, TRANSPORT_BUTTON_HEIGHT,
+    this.drawTransportButton(ctx, btnX, btnY, MODE_BUTTON_WIDTH, TRANSPORT_BUTTON_HEIGHT,
       isArp ? 'ARP' : 'SEQ', modeColor);
   }
 
@@ -380,103 +389,127 @@ export class StepSequencerDisplay {
       const cellX = gridStartX + i * cellWidth;
       const isCurrent = state.transport.isPlaying && i === state.transport.visualCurrentStep;
       const isInactive = i >= seqLen;
-
-      // Cell background
-      if (isInactive) {
-        ctx.fillStyle = '#181818';
-      } else if (isCurrent) {
-        ctx.fillStyle = '#2a3a2a';
-      } else {
-        ctx.fillStyle = '#222222';
-      }
-      ctx.fillRect(cellX, gridY, cellWidth - 1, STEP_CELL_HEIGHT);
-
-      // Cell border
-      ctx.strokeStyle = isCurrent ? '#4ade80' : '#383838';
-      ctx.lineWidth = isCurrent ? 1.5 : 0.5;
-      ctx.strokeRect(cellX, gridY, cellWidth - 1, STEP_CELL_HEIGHT);
-
-      if (isInactive) return;
-
-      const cellCenterX = cellX + Math.floor(cellWidth / 2);
-
-      // Active indicator (0–6px zone)
-      const circleY = gridY + 3;
-      ctx.beginPath();
-      ctx.arc(cellCenterX, circleY, 3, 0, Math.PI * 2);
-      if (step.active) {
-        ctx.fillStyle = isCurrent ? '#4ade80' : '#22c55e';
-        ctx.fill();
-      } else {
-        ctx.strokeStyle = '#555555';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      }
-
-      // Note label (6–22px zone)
-      ctx.fillStyle = step.active ? '#eeeeee' : '#555555';
-      ctx.font = 'bold 8px monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      if (isArpMode) {
-        const offset = decodeArpOffset(step.note);
-        ctx.fillText(offset >= 0 ? `+${offset}` : String(offset), cellCenterX, gridY + 7);
-      } else {
-        const noteName = NOTE_NAMES[step.note % 12] ?? 'C';
-        const octave = Math.floor(step.note / 12) - 1;
-        ctx.fillText(`${noteName}${octave}`, cellCenterX, gridY + 7);
-      }
-
-      // Velocity bar (22–52px zone) — narrow bar on right side of cell; Knob used for hit-testing only
-      const velZoneTop = gridY + NOTE_LABEL_BOTTOM + 2;
-      const velZoneH = VELOCITY_KNOB_BOTTOM - NOTE_LABEL_BOTTOM - 4;
-      const velBarH = Math.round(step.velocity * velZoneH);
-      const velBarW = Math.max(2, Math.floor(cellWidth * 0.35)); // ~35% cell width
-      const velBarX = cellX + Math.floor((cellWidth - velBarW) / 2);
-      // Background track
-      ctx.fillStyle = '#2a2a2a';
-      ctx.fillRect(velBarX, velZoneTop, velBarW, velZoneH);
-      ctx.strokeStyle = '#444444';
-      ctx.lineWidth = 0.5;
-      ctx.strokeRect(velBarX, velZoneTop, velBarW, velZoneH);
-      // Filled portion (bottom-up)
-      ctx.fillStyle = step.active ? (isCurrent ? '#4ade80' : '#22c55e') : '#3a3a3a';
-      ctx.fillRect(velBarX, velZoneTop + velZoneH - velBarH, velBarW, velBarH);
-
-      // Gate label (52–72px zone) — drawn custom; Dropdown used for hit-testing only
-      if (!isArpMode) {
-        const gateLabel = GATE_LABELS[step.gateLength] ?? '1/4';
-        const gateZoneY = gridY + VELOCITY_KNOB_BOTTOM + 1;
-        const gateZoneH = GATE_DROPDOWN_BOTTOM - VELOCITY_KNOB_BOTTOM - 2;
-        // Background
-        ctx.fillStyle = '#2a2a2a';
-        ctx.fillRect(cellX + 1, gateZoneY, cellWidth - 3, gateZoneH);
-        ctx.strokeStyle = '#444444';
-        ctx.lineWidth = 0.5;
-        ctx.strokeRect(cellX + 1, gateZoneY, cellWidth - 3, gateZoneH);
-        // Text
-        ctx.fillStyle = step.active ? '#aaaaaa' : '#555555';
-        ctx.font = '6px monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(gateLabel, cellCenterX, gateZoneY + gateZoneH / 2);
-      }
+      this.renderStepCell(ctx, step, cellX, gridY, cellWidth, isCurrent, isInactive, isArpMode);
     });
 
-    // Arp mode: show hint when no keyboard is connected
     if (isArpMode && !this.sequencer.isArpeggiatorConnected()) {
-      const hintY = this.baseY + TRANSPORT_BAR_HEIGHT + STEP_CELL_HEIGHT / 2;
-      ctx.fillStyle = 'rgba(139, 92, 246, 0.7)';
-      ctx.font = '10px monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('Connect a Keyboard to Arp inputs to start', this.baseX + this.baseWidth / 2, hintY);
+      this.renderArpHint(ctx);
     }
 
-    // Render note picker overlay if open
     if (this.notePickerState.stepIndex >= 0) {
       this.renderNotePicker(ctx);
     }
+  }
+
+  /**
+   * Render a single step cell (background, indicator, note, velocity bar, gate label).
+   */
+  private renderStepCell(
+    ctx: CanvasRenderingContext2D,
+    step: StepSequencerDisplayState['pattern']['steps'][number],
+    cellX: number, gridY: number, cellWidth: number,
+    isCurrent: boolean, isInactive: boolean, isArpMode: boolean
+  ): void {
+    // Background
+    ctx.fillStyle = isInactive ? '#181818' : isCurrent ? '#2a3a2a' : '#222222';
+    ctx.fillRect(cellX, gridY, cellWidth - 1, STEP_CELL_HEIGHT);
+    ctx.strokeStyle = isCurrent ? '#4ade80' : '#383838';
+    ctx.lineWidth = isCurrent ? 1.5 : 0.5;
+    ctx.strokeRect(cellX, gridY, cellWidth - 1, STEP_CELL_HEIGHT);
+
+    if (isInactive) return;
+
+    const cellCenterX = cellX + Math.floor(cellWidth / 2);
+
+    // Active indicator
+    const circleY = gridY + ACTIVE_INDICATOR_RADIUS;
+    ctx.beginPath();
+    ctx.arc(cellCenterX, circleY, ACTIVE_INDICATOR_RADIUS, 0, Math.PI * 2);
+    if (step.active) {
+      ctx.fillStyle = isCurrent ? '#4ade80' : '#22c55e';
+      ctx.fill();
+    } else {
+      ctx.strokeStyle = '#555555';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    this.renderCellNoteLabel(ctx, step, cellCenterX, gridY, isArpMode);
+    this.renderCellVelocityBar(ctx, step, cellX, gridY, cellWidth, isCurrent);
+    if (!isArpMode) {
+      this.renderCellGateLabel(ctx, step, cellX, gridY, cellWidth, cellCenterX);
+    }
+  }
+
+  /** Render the note/offset label in the note zone of a step cell. */
+  private renderCellNoteLabel(
+    ctx: CanvasRenderingContext2D,
+    step: StepSequencerDisplayState['pattern']['steps'][number],
+    cellCenterX: number, gridY: number, isArpMode: boolean
+  ): void {
+    ctx.fillStyle = step.active ? '#eeeeee' : '#555555';
+    ctx.font = 'bold 8px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    if (isArpMode) {
+      const offset = decodeArpOffset(step.note);
+      ctx.fillText(offset >= 0 ? `+${offset}` : String(offset), cellCenterX, gridY + 7);
+    } else {
+      const noteName = NOTE_NAMES[step.note % 12] ?? 'C';
+      const octave = Math.floor(step.note / 12) - 1;
+      ctx.fillText(`${noteName}${octave}`, cellCenterX, gridY + 7);
+    }
+  }
+
+  /** Render the velocity bar in the velocity zone of a step cell. */
+  private renderCellVelocityBar(
+    ctx: CanvasRenderingContext2D,
+    step: StepSequencerDisplayState['pattern']['steps'][number],
+    cellX: number, gridY: number, cellWidth: number, isCurrent: boolean
+  ): void {
+    const velZoneTop = gridY + NOTE_LABEL_BOTTOM + 2;
+    const velZoneH = VELOCITY_KNOB_BOTTOM - NOTE_LABEL_BOTTOM - 4;
+    const velBarH = Math.round(step.velocity * velZoneH);
+    const velBarW = Math.max(2, Math.floor(cellWidth * 0.35));
+    const velBarX = cellX + Math.floor((cellWidth - velBarW) / 2);
+    ctx.fillStyle = '#2a2a2a';
+    ctx.fillRect(velBarX, velZoneTop, velBarW, velZoneH);
+    ctx.strokeStyle = '#444444';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(velBarX, velZoneTop, velBarW, velZoneH);
+    ctx.fillStyle = step.active ? (isCurrent ? '#4ade80' : '#22c55e') : '#3a3a3a';
+    ctx.fillRect(velBarX, velZoneTop + velZoneH - velBarH, velBarW, velBarH);
+  }
+
+  /** Render the gate label in the gate zone of a step cell (sequencer mode only). */
+  private renderCellGateLabel(
+    ctx: CanvasRenderingContext2D,
+    step: StepSequencerDisplayState['pattern']['steps'][number],
+    cellX: number, gridY: number, cellWidth: number, cellCenterX: number
+  ): void {
+    const gateLabel = GATE_LABELS[step.gateLength] ?? '1/4';
+    const gateZoneY = gridY + VELOCITY_KNOB_BOTTOM + 1;
+    const gateZoneH = GATE_DROPDOWN_BOTTOM - VELOCITY_KNOB_BOTTOM - 2;
+    ctx.fillStyle = '#2a2a2a';
+    ctx.fillRect(cellX + 1, gateZoneY, cellWidth - 3, gateZoneH);
+    ctx.strokeStyle = '#444444';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(cellX + 1, gateZoneY, cellWidth - 3, gateZoneH);
+    ctx.fillStyle = step.active ? '#aaaaaa' : '#555555';
+    ctx.font = '6px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(gateLabel, cellCenterX, gateZoneY + gateZoneH / 2);
+  }
+
+  /** Render the arpeggiator "connect keyboard" hint overlay. */
+  private renderArpHint(ctx: CanvasRenderingContext2D): void {
+    const hintY = this.baseY + TRANSPORT_BAR_HEIGHT + STEP_CELL_HEIGHT / 2;
+    ctx.fillStyle = 'rgba(139, 92, 246, 0.7)';
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Connect a Keyboard to Arp inputs to start', this.baseX + this.baseWidth / 2, hintY);
   }
 
   /**
@@ -491,12 +524,10 @@ export class StepSequencerDisplay {
     const { cellWidth, gridStartX } = this.cellLayout();
     const panelW = Math.max(cellWidth * 3, 80);
     let panelX = gridStartX + si * cellWidth - Math.floor(panelW / 2 - cellWidth / 2);
-    // Clamp to display bounds
     panelX = Math.max(this.baseX, Math.min(this.baseX + this.baseWidth - panelW, panelX));
     const panelY = this.baseY + TRANSPORT_BAR_HEIGHT + 2;
-    const panelH = 26;
+    const panelH = NOTE_PICKER_PANEL_HEIGHT;
 
-    // Panel background
     ctx.save();
     ctx.fillStyle = '#1a1a1a';
     ctx.strokeStyle = '#555555';
@@ -506,53 +537,63 @@ export class StepSequencerDisplay {
     ctx.fill();
     ctx.stroke();
 
-    const isArpMode = this.sequencer.isArpeggiatorMode();
-
-    if (isArpMode) {
-      // Single offset label
-      const offset = decodeArpOffset(Math.round(this.noteNameParam.getValue()));
-      ctx.fillStyle = '#aaaaaa';
-      ctx.font = '8px monospace';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('Offset:', panelX + 4, panelY + panelH / 2);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(offset >= 0 ? `+${offset}` : String(offset), panelX + 40, panelY + panelH / 2);
+    if (this.sequencer.isArpeggiatorMode()) {
+      this.renderNotePickerArpContent(ctx, panelX, panelY, panelH);
     } else if (this.noteOctaveParam) {
-      // Note name + octave labels
-      const nameIdx = Math.round(this.noteNameParam.getValue());
-      const oct = Math.round(this.noteOctaveParam.getValue());
-      const half = Math.floor(panelW / 2);
-
-      // Left: note name box
-      ctx.fillStyle = '#2a2a2a';
-      ctx.fillRect(panelX + 2, panelY + 3, half - 4, panelH - 6);
-      ctx.strokeStyle = '#555555';
-      ctx.lineWidth = 0.5;
-      ctx.strokeRect(panelX + 2, panelY + 3, half - 4, panelH - 6);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 9px monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(NOTE_NAMES[nameIdx] ?? 'C', panelX + half / 2, panelY + panelH / 2);
-
-      // Right: octave box
-      ctx.fillStyle = '#2a2a2a';
-      ctx.fillRect(panelX + half + 2, panelY + 3, half - 4, panelH - 6);
-      ctx.strokeStyle = '#555555';
-      ctx.lineWidth = 0.5;
-      ctx.strokeRect(panelX + half + 2, panelY + 3, half - 4, panelH - 6);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 9px monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(String(oct), panelX + half + half / 2, panelY + panelH / 2);
+      this.renderNotePickerSeqContent(ctx, panelX, panelY, panelW, panelH);
     }
 
     ctx.restore();
+    this.positionNotePickerDropdowns(panelX, panelY, panelW, panelH);
+  }
 
-    // Position the invisible hit-test dropdowns over the panel boxes
-    if (!isArpMode && this.noteOctaveDropdown) {
+  /** Render arp-mode offset label inside the note picker panel. */
+  private renderNotePickerArpContent(
+    ctx: CanvasRenderingContext2D,
+    panelX: number, panelY: number, panelH: number
+  ): void {
+    const offset = decodeArpOffset(Math.round(this.noteNameParam!.getValue()));
+    ctx.fillStyle = '#aaaaaa';
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Offset:', panelX + 4, panelY + panelH / 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(offset >= 0 ? `+${offset}` : String(offset), panelX + 40, panelY + panelH / 2);
+  }
+
+  /** Render sequencer-mode note+octave boxes inside the note picker panel. */
+  private renderNotePickerSeqContent(
+    ctx: CanvasRenderingContext2D,
+    panelX: number, panelY: number, panelW: number, panelH: number
+  ): void {
+    const nameIdx = Math.round(this.noteNameParam!.getValue());
+    const oct = Math.round(this.noteOctaveParam!.getValue());
+    const half = Math.floor(panelW / 2);
+
+    const drawBox = (bx: number, label: string): void => {
+      ctx.fillStyle = '#2a2a2a';
+      ctx.fillRect(bx + 2, panelY + 3, half - 4, panelH - 6);
+      ctx.strokeStyle = '#555555';
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(bx + 2, panelY + 3, half - 4, panelH - 6);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 9px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, bx + half / 2, panelY + panelH / 2);
+    };
+
+    drawBox(panelX, NOTE_NAMES[nameIdx] ?? 'C');
+    drawBox(panelX + half, String(oct));
+  }
+
+  /** Position the hit-test dropdowns over the rendered note picker boxes. */
+  private positionNotePickerDropdowns(
+    panelX: number, panelY: number, panelW: number, _panelH: number
+  ): void {
+    if (!this.noteNameDropdown) return;
+    if (!this.sequencer.isArpeggiatorMode() && this.noteOctaveDropdown) {
       const half = Math.floor(panelW / 2);
       this.noteNameDropdown.setPosition(panelX + 2, panelY + 3);
       this.noteOctaveDropdown.setPosition(panelX + half + 2, panelY + 3);
@@ -744,60 +785,54 @@ export class StepSequencerDisplay {
 
     // Play/Stop
     if (worldX >= btnX && worldX <= btnX + TRANSPORT_BUTTON_WIDTH) {
-      if (this.sequencer.getIsPlaying()) {
-        this.sequencer.stop();
-      } else {
-        this.sequencer.start();
-      }
+      if (this.sequencer.getIsPlaying()) { this.sequencer.stop(); } else { this.sequencer.start(); }
       return true;
     }
     btnX += TRANSPORT_BUTTON_WIDTH + TRANSPORT_BUTTON_MARGIN;
 
     // Reset
-    if (worldX >= btnX && worldX <= btnX + 44) {
+    if (worldX >= btnX && worldX <= btnX + RESET_BUTTON_WIDTH) {
       this.sequencer.reset();
       return true;
     }
-    btnX += 44 + TRANSPORT_BUTTON_MARGIN * 2;
+    btnX += RESET_BUTTON_WIDTH + TRANSPORT_BUTTON_MARGIN * 2;
 
     // BPM knob
-    if (this.bpmKnob.onMouseDown(worldX, worldY)) {
-      this.activeTransportKnob = 0;
-      return true;
-    }
-    btnX += 22 + 4;
+    if (this.bpmKnob.onMouseDown(worldX, worldY)) { this.activeTransportKnob = 0; return true; }
+    btnX += TRANSPORT_KNOB_SIZE + TRANSPORT_CTRL_GAP;
 
     // Division dropdown (closed state only — open menu handled in onMouseDown before guard)
     if (this.noteDivDropdown.containsPoint(worldX, worldY)) {
       this.noteDivDropdown.onMouseDown(worldX, worldY);
       return true;
     }
-    btnX += 40 + 4;
+    btnX += TRANSPORT_DIV_DROPDOWN_WIDTH + TRANSPORT_CTRL_GAP;
 
     // Sequence length knob
-    if (this.seqLenKnob.onMouseDown(worldX, worldY)) {
-      this.activeTransportKnob = 1;
-      return true;
-    }
-    btnX += 22 + 6;
+    if (this.seqLenKnob.onMouseDown(worldX, worldY)) { this.activeTransportKnob = 1; return true; }
+    btnX += TRANSPORT_KNOB_SIZE + MODE_BUTTON_GAP;
 
-    // Mode toggle button (36px wide)
-    if (worldX >= btnX && worldX <= btnX + 36 &&
+    // Mode toggle button
+    if (worldX >= btnX && worldX <= btnX + MODE_BUTTON_WIDTH &&
         worldY >= btnY && worldY <= btnY + TRANSPORT_BUTTON_HEIGHT) {
-      const currentMode = this.sequencer.getMode();
-      const newMode = currentMode === SEQUENCER_MODE.ARPEGGIATOR
-        ? SEQUENCER_MODE.SEQUENCER
-        : SEQUENCER_MODE.ARPEGGIATOR;
-      // Stop and reset before mode change if currently playing
-      if (this.sequencer.getIsPlaying()) {
-        this.sequencer.stop();
-        this.sequencer.reset();
-      }
-      this.sequencer.setParameterValue('mode', newMode);
-      return true;
+      return this.handleModeToggle();
     }
 
     return false;
+  }
+
+  /** Toggle sequencer/arpeggiator mode, stopping playback first if needed. */
+  private handleModeToggle(): boolean {
+    const currentMode = this.sequencer.getMode();
+    const newMode = currentMode === SEQUENCER_MODE.ARPEGGIATOR
+      ? SEQUENCER_MODE.SEQUENCER
+      : SEQUENCER_MODE.ARPEGGIATOR;
+    if (this.sequencer.getIsPlaying()) {
+      this.sequencer.stop();
+      this.sequencer.reset();
+    }
+    this.sequencer.setParameterValue('mode', newMode);
+    return true;
   }
 
   /**
