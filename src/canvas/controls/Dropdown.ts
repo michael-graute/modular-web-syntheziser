@@ -241,6 +241,14 @@ export class Dropdown implements IVisualizableControl {
 
 
   /**
+   * Update dropdown position (e.g. after parent component moves).
+   */
+  setPosition(x: number, y: number): void {
+    this.x = x;
+    this.y = y;
+  }
+
+  /**
    * Get bounds
    */
   getBounds(): { x: number; y: number; width: number; height: number } {

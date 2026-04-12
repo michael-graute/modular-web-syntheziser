@@ -243,6 +243,24 @@ export class KeyboardInput extends SynthComponent {
   }
 
   /**
+   * Get current gate value as JS number (1 if any key held, 0 otherwise).
+   * Unlike reading ConstantSourceNode.offset.value (which is not updated by
+   * setValueAtTime), this reflects the actual current state of the keyboard.
+   */
+  getGateValue(): number {
+    return this.activeNotes.size > 0 ? 1 : 0;
+  }
+
+  /**
+   * Get current frequency of the most recently pressed note (Hz).
+   * Returns 440 if no note is active.
+   */
+  getCurrentFrequency(): number {
+    if (this.activeNotes.size === 0) return 440;
+    return Array.from(this.activeNotes.values()).pop()!;
+  }
+
+  /**
    * Release all notes
    */
   releaseAll(): void {

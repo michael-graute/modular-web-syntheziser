@@ -161,6 +161,14 @@ export class Knob implements IVisualizableControl {
   }
 
   /**
+   * Update knob position (e.g. after parent component moves).
+   */
+  setPosition(x: number, y: number): void {
+    this.x = x;
+    this.y = y;
+  }
+
+  /**
    * Get parameter
    */
   getParameter(): Parameter {

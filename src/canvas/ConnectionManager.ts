@@ -7,6 +7,8 @@ import { CanvasConnection } from './Connection';
 import { CanvasComponent } from './CanvasComponent';
 import { eventBus } from '../core/EventBus';
 import { EventType, SignalType } from '../core/types';
+import { StepSequencer } from '../components/utilities/StepSequencer';
+import { KeyboardInput } from '../components/utilities/KeyboardInput';
 
 /**
  * Manages all connections in the patch
@@ -136,6 +138,19 @@ export class ConnectionManager {
       return { success: false, error: 'Failed to connect audio nodes' };
     }
 
+    // For arp connections to a StepSequencer from a KeyboardInput, register JS-level
+    // getter functions so the sequencer can read live gate/freq without relying on
+    // ConstantSourceNode.offset.value (which is not updated by setValueAtTime).
+    if (
+      targetComponent.synthComponent instanceof StepSequencer &&
+      sourceComponent.synthComponent instanceof KeyboardInput
+    ) {
+      const seq = targetComponent.synthComponent;
+      const kbd = sourceComponent.synthComponent;
+      if (targetPortId === 'arpeggiate') seq.setArpGateGetter(() => kbd.getGateValue());
+      if (targetPortId === 'arpFrequency') seq.setArpFreqGetter(() => kbd.getCurrentFrequency());
+    }
+
     console.log(
       `✅ Connected ${sourceComponent.type}:${sourcePort.name} -> ${targetComponent.type}:${targetPort.name}`
     );
@@ -178,6 +193,11 @@ export class ConnectionManager {
         );
       } catch (error) {
         console.error('Failed to disconnect audio nodes:', error);
+      }
+
+      // Clear arp source node cache when an arp port is disconnected
+      if (targetComponent.synthComponent instanceof StepSequencer) {
+        targetComponent.synthComponent.clearArpSources(connection.targetPortId);
       }
     }
 
@@ -275,6 +295,9 @@ export class ConnectionManager {
           );
         } catch (error) {
           console.error('Failed to disconnect audio nodes:', error);
+        }
+        if (targetComponent.synthComponent instanceof StepSequencer) {
+          targetComponent.synthComponent.clearArpSources();
         }
       }
     }

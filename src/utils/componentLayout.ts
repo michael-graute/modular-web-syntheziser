@@ -323,9 +323,9 @@ export function calculateComponentWidth(type: ComponentType): number {
     width = 220;
   }
 
-  // StepSequencer needs extra width for 16-step display
+  // StepSequencer needs wide display for 16 steps: 16 * 40px cells + margins
   if (type === ComponentType.STEP_SEQUENCER) {
-    width = 316; // Enough for 16 steps: 16*16px + 15*2px gaps + 2*5px margins + 20px padding
+    width = 660;
   }
 
   // Collider needs extra width for 6 knobs in 3x2 grid + button + display area

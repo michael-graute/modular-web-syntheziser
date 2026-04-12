@@ -51,7 +51,7 @@ A musician clicks on any chord node in the circle — whether from the current p
 
 **Acceptance Scenarios**:
 
-1. **Given** a chord is displayed on the circle, **When** the musician clicks the chord node, **Then** the Chord Finder emits the chord's notes as CV signals (1V/octave per note).
+1. **Given** a chord is displayed on the circle, **When** the musician clicks the chord node, **Then** the Chord Finder emits the chord's notes as frequency (Hz) signals — matching the KeyboardInput convention — so direct connection to an oscillator frequency input works without conversion.
 2. **Given** the chord C Major is clicked, **Then** three CV outputs are emitted corresponding to C, E, and G in the octave selected on the module's octave control.
 3. **Given** a chord node is being clicked and held, **Then** the gate signal remains active; releasing ends the gate.
 4. **Given** the output is connected to an oscillator, **When** a chord node is clicked, **Then** the oscillator produces the correct pitches corresponding to that chord.
@@ -92,7 +92,7 @@ A musician sets a key and generates a progression. When they save the patch and 
 - **FR-004**: The utility MUST provide a "Generate Progression" action that selects a musically coherent sequence of chords from the diatonic set. The vii° (diminished) chord MUST be assigned lower selection weight than other diatonic chords, so it appears rarely in generated progressions while remaining available on the circle.
 - **FR-005**: Generated progressions MUST be highlighted in a visually distinct color on the chord circle, clearly differentiating progression chords from non-progression chords. The circle is the sole display of the progression — no separate ordered sequence strip or list is shown.
 - **FR-006**: The user MUST be able to click any chord node to trigger CV output for that chord's notes. Every chord node MUST display a visually distinct pressed/active state for the duration the gate is open, and return to its default or progression-highlighted state on release.
-- **FR-007**: CV output MUST follow the 1V/octave standard consistent with other utilities (keyboard, sequencer).
+- **FR-007**: Note output MUST use frequency in Hz, matching the KeyboardInput convention, so chord outputs can connect directly to oscillator frequency inputs without conversion.
 - **FR-013**: The utility MUST provide a user-selectable octave control (range C2–C6) on the module itself. All CV chord output notes are transposed to the selected octave. This control is independent of any global setting.
 - **FR-008**: Gate signals MUST be active while the chord node is pressed and end on release.
 - **FR-009**: ~~REMOVED~~ MIDI output is out of scope. All signal output uses CV/Gate only, consistent with the rest of the synthesizer utilities.
