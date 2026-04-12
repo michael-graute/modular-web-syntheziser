@@ -250,19 +250,19 @@ describe('ChordFinder CV output (T036)', () => {
     (audioEngine as any).nodes = new Map();
   });
 
-  it('note1 CV = 0.000 for C Major degree 0, octave 4', () => {
+  it('note1 Hz = 261.626 for C Major degree 0, octave 4', () => {
     cf.selectKey('C', ChordScaleType.MAJOR);
-    cf.pressChord(0); // C major chord, root = C4 = MIDI 60 → (60-60)/12 = 0.000
+    cf.pressChord(0); // C major chord, root = C4 = MIDI 60 → 440 * 2^((60-69)/12) ≈ 261.626 Hz
     const node = (cf as any).note1Output as MockConstantSourceNode;
-    expect(node.offset.value).toBeCloseTo(0.0, 3);
+    expect(node.offset.value).toBeCloseTo(261.626, 0);
   });
 
-  it('note1 CV = 1.000 for C Major degree 0, octave 5', () => {
+  it('note1 Hz = 523.251 for C Major degree 0, octave 5', () => {
     cf.selectKey('C', ChordScaleType.MAJOR);
     cf.setOctave(5);
-    cf.pressChord(0); // octave offset = 5-4 = +1 → 0.000 + 1 = 1.000
+    cf.pressChord(0); // C5 = MIDI 72 → 440 * 2^((72-69)/12) ≈ 523.251 Hz
     const node = (cf as any).note1Output as MockConstantSourceNode;
-    expect(node.offset.value).toBeCloseTo(1.0, 3);
+    expect(node.offset.value).toBeCloseTo(523.251, 0);
   });
 
   it('gate = 1.0 during press', () => {
