@@ -89,27 +89,17 @@ Custom UI for editing sequencer steps.
 
 **Features:**
 - 16-step grid display
+- BPM (min 20, max 300) and tempo (1/1, 1/2, 1/4, etc.) can be set by user 
+- The overall length can be set by the user (min 2, max 16 steps)
 - Visual indicators for current step
-- Per-step editors (mini piano roll + velocity bars)
 - Click to toggle step on/off
-- Click and drag to edit notes/velocity
-- Gate length indicator per step
+- Pitch selector per setp (Notename when in standalone mode, halftone step when keyboard is attached)
+- Velocity knob selector per step
+- Gate length selector per step (1/1, 1/2, 1/4, etc.)
 
 **Layout:**
-```
-┌─────────────────────────────────────────┐
-│  Step: [1][2][3][4]...[16]  Playing: ▶  │
-├─────────────────────────────────────────┤
-│  Step Grid (visual representation)      │
-│  ┌──┬──┬──┬──┐ ... ┌──┬──┬──┬──┐        │
-│  │█ │  │█ │  │     │  │█ │  │  │        │ ← Active steps
-│  └──┴──┴──┴──┘     └──┴──┴──┴──┘        │
-├─────────────────────────────────────────┤
-│  Selected Step Editor:                  │
-│  Note: [C4]  Velocity: [▓▓▓▓▓░░] 80%    │
-│  Gate: [1/4 note ▼]                     │
-└─────────────────────────────────────────┘
-```
+An example layout can be found at ![alt text](step-sequencer-layout-example.png)
+This is only a layout example, it is *NOT* a style-guide
 
 ## Timing Engine Design
 
