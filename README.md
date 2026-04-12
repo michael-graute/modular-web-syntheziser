@@ -16,7 +16,7 @@ It is currently in ongoing development. New features and optimizations are imple
 
 #### Generators
 - **Oscillator**: Programmable waveform generator (sine, square, sawtooth, triangle) with frequency and detune controls
-- **LFO (Low Frequency Oscillator)**: Modulation source for creating time-varying effects
+- **LFO (Low Frequency Oscillator)**: Modulation source for creating time-varying effects. Supports a runtime on/off toggle — the oscillator keeps running internally so phase is maintained when re-enabled. Toggle state is persisted with the patch.
 - **Noise Generator**: White noise source for percussion and texture
 
 #### Processors
@@ -32,17 +32,22 @@ It is currently in ongoing development. New features and optimizations are imple
 - **Reverb**: Room simulation for spatial effects
 - **Distortion**: Waveshaping distortion for harmonically rich sounds
 - **Chorus**: Modulation effect for thickening sounds
+- **Effect Bypass**: All effect components support a runtime bypass toggle — click to pass audio through unmodified. Bypass state is persisted with the patch.
 
 #### Utilities
 - **Mixer**: Combine multiple audio signals
 - **Keyboard Input**: Virtual keyboard for note input with CV (Control Voltage) outputs
 - **Master Output**: Final output stage with volume and limiter controls
+- **Step Sequencer**: 16-step melodic sequencer with per-step note, velocity, and gate length controls. Supports standalone sequencing and arpeggiator mode (driven by external keyboard input). Features a canvas-native note picker popup, tied gate support, and configurable BPM and pattern length.
+- **Chord Finder**: Chord reference and progression generator. Displays all diatonic chords for a selected key in a circular layout, generates musically coherent chord progressions, and outputs chord notes as CV signals (Hz) for direct connection to oscillators.
+- **Collider**: Physics-based CV/Gate generator. Simulates bouncing balls on a 2D canvas — each collision triggers a gate and emits a CV note from a selected musical scale. Configurable ball count, speed presets, BPM, gate size, and scale (Major, Harmonic Minor, Natural Minor, Lydian, Mixolydian).
 
 #### Analyzers
 - **Oscilloscope**: Real-time audio visualization with three display modes:
   - Waveform view (time-domain)
   - Spectrum view (frequency-domain)
   - Split view (both waveform and spectrum)
+  - Rendered directly on the main canvas for pixel-crisp output at all zoom levels and high-DPI displays
 
 ### Canvas Features
 
@@ -135,6 +140,28 @@ npm run preview
 4. Adjust time scale and gain knobs to optimize the display
 5. The oscilloscope passes audio through without modification
 
+### Example: Step Sequencer Melody
+
+1. Add a **Step Sequencer** component
+2. Add an **Oscillator**, **ADSR Envelope**, **VCA**, and **Master Output**
+3. Connect:
+   - Step Sequencer Frequency Out → Oscillator Frequency CV
+   - Step Sequencer Gate Out → ADSR Gate
+   - Oscillator Audio Out → VCA Audio In
+   - ADSR Out → VCA CV
+   - VCA Out → Master Output In
+4. Click note labels in each step cell to set pitches via the canvas popup
+5. Adjust velocity knobs and gate length dropdowns per step
+6. Press Play — the sequencer loops through active steps at the configured BPM
+
+### Example: Chord Finder with Oscillators
+
+1. Add a **Chord Finder** component
+2. Set the musical key and click "Generate Progression" to create a chord sequence
+3. Connect the Chord Finder CV outputs to three **Oscillator** frequency inputs
+4. Click any chord node in the circle — the oscillators play the corresponding chord
+5. Hold a chord node to sustain; release to stop
+
 ### Saving and Loading Patches
 
 - **Save**: Click the "Save" button to save the current patch to browser storage
@@ -161,11 +188,14 @@ src/
 │   ├── processors/     # Filter, VCA
 │   ├── envelopes/      # ADSR, Filter Envelope
 │   ├── effects/        # Delay, Reverb, Distortion, Chorus
-│   ├── utilities/      # Mixer, Keyboard, Master Output
+│   ├── utilities/      # Mixer, Keyboard, Master Output, StepSequencer, ChordFinder, Collider
 │   └── analyzers/      # Oscilloscope
 ├── canvas/             # Visual canvas rendering
 │   ├── controls/       # Knobs, sliders, dropdowns
-│   └── displays/       # Oscilloscope display
+│   └── displays/       # Oscilloscope, ChordFinder, StepSequencer, Collider displays
+├── physics/            # Physics engine for Collider (PhysicsEngine, CollisionResolver)
+├── music/              # Musical utilities (MusicalScale, WeightedRandomSelector)
+├── timing/             # BPM and gate duration calculations
 ├── core/               # Core engine and types
 ├── ui/                 # User interface components
 ├── utils/              # Utility functions and constants
