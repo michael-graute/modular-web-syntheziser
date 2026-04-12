@@ -10,7 +10,7 @@ import { Dropdown, DropdownOption } from './controls/Dropdown';
 import { Slider } from './controls/Slider';
 import { Button } from './controls/Button';
 import { OscilloscopeDisplay } from './displays/OscilloscopeDisplay';
-import { SequencerDisplay } from './displays/SequencerDisplay';
+import { StepSequencerDisplay, SEQUENCER_DISPLAY_HEIGHT } from './displays/StepSequencerDisplay';
 import { ColliderDisplay } from './displays/ColliderDisplay';
 import { ChordFinderDisplay } from './displays/ChordFinderDisplay';
 import type { Oscilloscope } from '../components/analyzers/Oscilloscope';
@@ -36,7 +36,7 @@ export class CanvasComponent {
   private controls: Control[] = [];
   private bypassButton: Button | null = null;
   private oscilloscopeDisplay: OscilloscopeDisplay | null = null;
-  private sequencerDisplay: SequencerDisplay | null = null;
+  private stepSequencerDisplay: StepSequencerDisplay | null = null;
   private colliderDisplay: ColliderDisplay | null = null;
   private chordFinderDisplay: ChordFinderDisplay | null = null;
 
@@ -813,30 +813,21 @@ export class CanvasComponent {
         this.controls.push(knob);
       }
 
-      // Create or update embedded sequencer display
+      // Create or update embedded sequencer display (main-canvas pattern, no DOM element)
       const displayY = knobY + 40 + 12 + COMPONENT.CONTROL_SPACING_VERTICAL;
       const displayX = this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL;
       const displayWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
-      const displayHeight = 160; // Increased to fully show buttons, grid, and step editor
 
-      if (!this.sequencerDisplay) {
-        // Create new display
-        this.sequencerDisplay = new SequencerDisplay(
+      if (!this.stepSequencerDisplay) {
+        this.stepSequencerDisplay = new StepSequencerDisplay(
           displayX,
           displayY,
           displayWidth,
-          displayHeight,
+          SEQUENCER_DISPLAY_HEIGHT,
           this.synthComponent as StepSequencer
         );
-
-        // Add canvas to DOM (will be positioned absolutely)
-        const canvasElement = document.getElementById('synth-canvas');
-        if (canvasElement && canvasElement.parentElement) {
-          canvasElement.parentElement.appendChild(this.sequencerDisplay.getCanvas());
-        }
       } else {
-        // Update existing display position
-        this.sequencerDisplay.updatePosition(displayX, displayY);
+        this.stepSequencerDisplay.updatePosition(displayX, displayY, displayWidth, SEQUENCER_DISPLAY_HEIGHT);
       }
     }
 
@@ -1111,15 +1102,23 @@ export class CanvasComponent {
   }
 
   /**
-   * Check if a point is inside this component
+   * Check if a point is inside this component (including open dropdown menu overflow).
    */
   containsPoint(x: number, y: number): boolean {
-    return (
+    if (
       x >= this.position.x &&
       x <= this.position.x + this.width &&
       y >= this.position.y &&
       y <= this.position.y + this.height
-    );
+    ) {
+      return true;
+    }
+    // Step sequencer display dropdowns (note picker, gate dropdowns) expand below
+    // the component bounding box — include their open menu areas.
+    if (this.stepSequencerDisplay?.hasOpenMenuAt(x, y)) {
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -1250,6 +1249,11 @@ export class CanvasComponent {
       if (this.oscilloscopeDisplay) {
         this.oscilloscopeDisplay.render(ctx);
       }
+
+      // Render step sequencer display onto the main canvas
+      if (this.stepSequencerDisplay) {
+        this.stepSequencerDisplay.render(ctx);
+      }
     }
 
     // Restore context state
@@ -1274,6 +1278,9 @@ export class CanvasComponent {
         control.renderMenu(ctx);
       }
     });
+    if (this.stepSequencerDisplay) {
+      this.stepSequencerDisplay.renderDropdownMenus(ctx);
+    }
   }
 
   /**
@@ -1409,9 +1416,8 @@ export class CanvasComponent {
       this.oscilloscopeDisplay.destroy();
       this.oscilloscopeDisplay = null;
     }
-    if (this.sequencerDisplay) {
-      this.sequencerDisplay.destroy();
-      this.sequencerDisplay = null;
+    if (this.stepSequencerDisplay) {
+      this.stepSequencerDisplay = null;
     }
     if (this.colliderDisplay) {
       this.colliderDisplay.destroy();
@@ -1427,10 +1433,7 @@ export class CanvasComponent {
    * Update viewport transform for embedded displays (like oscilloscope)
    */
   updateViewportTransform(zoom: number, panX: number, panY: number): void {
-    // oscilloscopeDisplay draws on the main canvas — no separate transform needed.
-    if (this.sequencerDisplay) {
-      this.sequencerDisplay.updateViewportTransform(zoom, panX, panY);
-    }
+    // oscilloscopeDisplay and stepSequencerDisplay draw on the main canvas — no separate transform needed.
     if (this.colliderDisplay) {
       this.colliderDisplay.updateViewportTransform(zoom, panX, panY);
     }
@@ -1592,6 +1595,11 @@ export class CanvasComponent {
       return true;
     }
 
+    // Forward to step sequencer display
+    if (this.stepSequencerDisplay?.onMouseDown(x, y)) {
+      return true;
+    }
+
     return false;
   }
 
@@ -1623,6 +1631,9 @@ export class CanvasComponent {
         control.handleMouseMove(x, y);
       }
     }
+    if (this.stepSequencerDisplay?.onMouseMove(x, y)) {
+      return true;
+    }
     return false;
   }
 
@@ -1647,6 +1658,9 @@ export class CanvasComponent {
 
     // Release chord on mouseup
     this.chordFinderDisplay?.handleWorldMouseUp();
+
+    // Forward to step sequencer display
+    this.stepSequencerDisplay?.onMouseUp();
   }
 
   /**
