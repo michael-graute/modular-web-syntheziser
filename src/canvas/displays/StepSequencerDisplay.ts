@@ -24,8 +24,8 @@ import { Dropdown, type DropdownOption } from '../controls/Dropdown';
 // Layout constants
 // ---------------------------------------------------------------------------
 
-const TRANSPORT_BAR_HEIGHT = 32;
-const STEP_CELL_HEIGHT = 80;
+const TRANSPORT_BAR_HEIGHT = 52;
+const STEP_CELL_HEIGHT = 148;
 export const SEQUENCER_DISPLAY_HEIGHT = TRANSPORT_BAR_HEIGHT + STEP_CELL_HEIGHT;
 
 const TRANSPORT_BUTTON_WIDTH = 48;
@@ -40,10 +40,12 @@ const TRANSPORT_CTRL_GAP = 4;
 const MODE_BUTTON_GAP = 6;
 
 // Sub-region vertical offsets within a step cell (relative to cell top)
-const ACTIVE_INDICATOR_BOTTOM = 6;   // 0–6px: active indicator
-const NOTE_LABEL_BOTTOM = 22;        // 6–22px: note label
-const VELOCITY_KNOB_BOTTOM = 52;     // 22–52px: velocity knob
-const GATE_DROPDOWN_BOTTOM = 72;     // 52–72px: gate dropdown
+// Total cell height = 148px: padding(6) + indicator(10) + note(28) + velocity(76) + gate(24) + bottom padding(4)
+const CELL_TOP_PADDING = 6;          // gap between cell border and first element
+const ACTIVE_INDICATOR_BOTTOM = 10;  // 0–10px: active indicator dot (relative to content start)
+const NOTE_LABEL_BOTTOM = 38;        // 10–38px: note label (more breathing room)
+const VELOCITY_KNOB_BOTTOM = 114;    // 38–114px: velocity bar (tall zone)
+const GATE_DROPDOWN_BOTTOM = 138;    // 114–138px: gate dropdown
 const VELOCITY_KNOB_SIZE = 20;       // small knob diameter
 const ACTIVE_INDICATOR_RADIUS = 3;   // radius of the active-step circle
 const NOTE_PICKER_PANEL_HEIGHT = 26; // height of the floating note-picker panel
@@ -153,12 +155,14 @@ export class StepSequencerDisplay {
     // Build transport controls — mirror the sequencer's actual parameter ranges
     this.bpmParam = new Parameter('transport_bpm', 'BPM', 120, 30, 300, 1, '');
     this.bpmKnob = new Knob(x, y, TRANSPORT_KNOB_SIZE, this.bpmParam);
+    this.bpmKnob.setShowLabel(false); // label drawn manually to match Div style
 
     this.noteDivParam = new Parameter('transport_noteDiv', 'Div', 2, 0, 5, 1, '');
     this.noteDivDropdown = new Dropdown(x, y, TRANSPORT_DIV_DROPDOWN_WIDTH, TRANSPORT_DIV_DROPDOWN_HEIGHT, this.noteDivParam, NOTE_DIV_OPTIONS, '');
 
     this.seqLenParam = new Parameter('transport_seqLen', 'Len', 16, 2, 16, 1, '');
     this.seqLenKnob = new Knob(x, y, TRANSPORT_KNOB_SIZE, this.seqLenParam);
+    this.seqLenKnob.setShowLabel(false); // label drawn manually to match Div style
   }
 
   // ---------------------------------------------------------------------------
@@ -282,7 +286,7 @@ export class StepSequencerDisplay {
     this.drawTransportButton(ctx, btnX, btnY, RESET_BUTTON_WIDTH, TRANSPORT_BUTTON_HEIGHT, 'Reset', '#555555');
     btnX += RESET_BUTTON_WIDTH + TRANSPORT_BUTTON_MARGIN * 2;
 
-    // BPM knob + label
+    // BPM knob + small label
     const knobY = y + Math.floor((TRANSPORT_BAR_HEIGHT - TRANSPORT_KNOB_SIZE) / 2);
     this.renderTransportLabel(ctx, btnX, knobY - 1, 'BPM');
     this.bpmKnob.render(ctx);
@@ -294,7 +298,7 @@ export class StepSequencerDisplay {
     this.noteDivDropdown.render(ctx);
     btnX += TRANSPORT_DIV_DROPDOWN_WIDTH + TRANSPORT_CTRL_GAP;
 
-    // Sequence length knob + label
+    // Sequence length knob + small label
     this.renderTransportLabel(ctx, btnX, knobY - 1, 'Len');
     this.seqLenKnob.render(ctx);
     btnX += TRANSPORT_KNOB_SIZE + MODE_BUTTON_GAP;
@@ -351,10 +355,9 @@ export class StepSequencerDisplay {
    * Position per-step controls (velocity knobs and gate dropdowns) based on current layout.
    * Called each frame before rendering.
    */
-  private positionStepControls(state: StepSequencerDisplayState): void {
+  private positionStepControls(_state: StepSequencerDisplayState): void {
     const { cellWidth, gridStartX } = this.cellLayout();
     const gridY = this.baseY + TRANSPORT_BAR_HEIGHT;
-    const isArpMode = state.pattern.mode === SEQUENCER_MODE.ARPEGGIATOR;
 
     for (let i = 0; i < 16; i++) {
       const cellX = gridStartX + i * cellWidth;
@@ -362,15 +365,12 @@ export class StepSequencerDisplay {
 
       // Velocity knob centred in velocity zone
       const knobX = cellCenterX - VELOCITY_KNOB_SIZE / 2;
-      const knobY = gridY + NOTE_LABEL_BOTTOM + 4;
+      const knobY = gridY + CELL_TOP_PADDING + NOTE_LABEL_BOTTOM + 4;
       this.velocityKnobs[i]!.setPosition(knobX, knobY);
 
-      // Gate dropdown: only shown in sequencer mode
-      if (!isArpMode) {
-        const dropX = cellX + 2;
-        const dropY = gridY + VELOCITY_KNOB_BOTTOM + 2;
-        this.gateDropdowns[i]!.setPosition(dropX, dropY);
-      }
+      const dropX = cellX + 2;
+      const dropY = gridY + CELL_TOP_PADDING + VELOCITY_KNOB_BOTTOM + 2;
+      this.gateDropdowns[i]!.setPosition(dropX, dropY);
     }
 
     // Note picker hit-test positions are set inside renderNotePicker() each frame.
@@ -422,7 +422,7 @@ export class StepSequencerDisplay {
     const cellCenterX = cellX + Math.floor(cellWidth / 2);
 
     // Active indicator
-    const circleY = gridY + ACTIVE_INDICATOR_RADIUS;
+    const circleY = gridY + CELL_TOP_PADDING + ACTIVE_INDICATOR_RADIUS;
     ctx.beginPath();
     ctx.arc(cellCenterX, circleY, ACTIVE_INDICATOR_RADIUS, 0, Math.PI * 2);
     if (step.active) {
@@ -436,9 +436,7 @@ export class StepSequencerDisplay {
 
     this.renderCellNoteLabel(ctx, step, cellCenterX, gridY, isArpMode);
     this.renderCellVelocityBar(ctx, step, cellX, gridY, cellWidth, isCurrent);
-    if (!isArpMode) {
-      this.renderCellGateLabel(ctx, step, cellX, gridY, cellWidth, cellCenterX);
-    }
+    this.renderCellGateLabel(ctx, step, cellX, gridY, cellWidth, cellCenterX);
   }
 
   /** Render the note/offset label in the note zone of a step cell. */
@@ -450,14 +448,15 @@ export class StepSequencerDisplay {
     ctx.fillStyle = step.active ? '#eeeeee' : '#555555';
     ctx.font = 'bold 8px monospace';
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
+    ctx.textBaseline = 'middle';
+    const noteLabelY = gridY + CELL_TOP_PADDING + ACTIVE_INDICATOR_BOTTOM + Math.floor((NOTE_LABEL_BOTTOM - ACTIVE_INDICATOR_BOTTOM) / 2);
     if (isArpMode) {
       const offset = decodeArpOffset(step.note);
-      ctx.fillText(offset >= 0 ? `+${offset}` : String(offset), cellCenterX, gridY + 7);
+      ctx.fillText(offset >= 0 ? `+${offset}` : String(offset), cellCenterX, noteLabelY);
     } else {
       const noteName = NOTE_NAMES[step.note % 12] ?? 'C';
       const octave = Math.floor(step.note / 12) - 1;
-      ctx.fillText(`${noteName}${octave}`, cellCenterX, gridY + 7);
+      ctx.fillText(`${noteName}${octave}`, cellCenterX, noteLabelY);
     }
   }
 
@@ -467,7 +466,7 @@ export class StepSequencerDisplay {
     step: StepSequencerDisplayState['pattern']['steps'][number],
     cellX: number, gridY: number, cellWidth: number, isCurrent: boolean
   ): void {
-    const velZoneTop = gridY + NOTE_LABEL_BOTTOM + 2;
+    const velZoneTop = gridY + CELL_TOP_PADDING + NOTE_LABEL_BOTTOM + 2;
     const velZoneH = VELOCITY_KNOB_BOTTOM - NOTE_LABEL_BOTTOM - 4;
     const velBarH = Math.round(step.velocity * velZoneH);
     const velBarW = Math.max(2, Math.floor(cellWidth * 0.35));
@@ -488,7 +487,7 @@ export class StepSequencerDisplay {
     cellX: number, gridY: number, cellWidth: number, cellCenterX: number
   ): void {
     const gateLabel = GATE_LABELS[step.gateLength] ?? '1/4';
-    const gateZoneY = gridY + VELOCITY_KNOB_BOTTOM + 1;
+    const gateZoneY = gridY + CELL_TOP_PADDING + VELOCITY_KNOB_BOTTOM + 1;
     const gateZoneH = GATE_DROPDOWN_BOTTOM - VELOCITY_KNOB_BOTTOM - 2;
     ctx.fillStyle = '#2a2a2a';
     ctx.fillRect(cellX + 1, gateZoneY, cellWidth - 3, gateZoneH);
@@ -848,7 +847,6 @@ export class StepSequencerDisplay {
     if (stepIndex < 0 || stepIndex >= 16) return false;
 
     const cellRelY = worldY - gridY;
-    const isArpMode = this.sequencer.isArpeggiatorMode();
 
     // Priority order per T035:
     // 1. Note-label zone (6–22px)
@@ -865,8 +863,8 @@ export class StepSequencerDisplay {
       }
     }
 
-    // 3. Gate-dropdown zone (52–72px) — sequencer mode only
-    if (!isArpMode && cellRelY >= VELOCITY_KNOB_BOTTOM && cellRelY < GATE_DROPDOWN_BOTTOM) {
+    // 3. Gate-dropdown zone
+    if (cellRelY >= VELOCITY_KNOB_BOTTOM && cellRelY < GATE_DROPDOWN_BOTTOM) {
       if (this.gateDropdowns[stepIndex]!.onMouseDown(worldX, worldY)) {
         // If dropdown just closed (selection made), write back immediately
         if (!this.gateDropdowns[stepIndex]!.isDropdownOpen()) {

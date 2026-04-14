@@ -19,6 +19,7 @@ export class Knob implements IVisualizableControl {
   private controlId: string;
   private visible: boolean = true;
   private visualValue: number | null = null; // For modulation visualization
+  private showLabel: boolean = true;
 
   constructor(x: number, y: number, size: number, parameter: Parameter) {
     this.x = x;
@@ -44,6 +45,10 @@ export class Knob implements IVisualizableControl {
 
   setVisibility(visible: boolean): void {
     this.visible = visible;
+  }
+
+  setShowLabel(show: boolean): void {
+    this.showLabel = show;
   }
 
   /**
@@ -94,11 +99,13 @@ export class Knob implements IVisualizableControl {
     ctx.fill();
 
     // Draw parameter name above
-    ctx.fillStyle = '#808080';
-    ctx.font = '10px -apple-system, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    ctx.fillText(this.parameter.name, centerX, this.y - 2);
+    if (this.showLabel) {
+      ctx.fillStyle = '#808080';
+      ctx.font = '10px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(this.parameter.name, centerX, this.y - 2);
+    }
 
     // Draw value below
     ctx.fillStyle = '#ffffff';
