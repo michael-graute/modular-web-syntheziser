@@ -77,9 +77,10 @@ function getControlLayout(type: ComponentType): ControlLayout {
 
     case ComponentType.STEP_SEQUENCER:
       return {
-        numKnobs: 2, // bpm, noteValue (mode auto-detected from keyboard connection)
+        // BPM and Division are rendered inside the StepSequencerDisplay transport bar;
+        // no separate knobs are added at the component level.
         hasDisplayArea: true,
-        displayHeight: 200, // buttons (24) + gap (5) + margin (5) + grid (40) + gap (10) + editor (60) + margin (5) + extra padding (51)
+        displayHeight: 220, // transport bar (52) + step grid (80) + padding
       };
 
     case ComponentType.LFO:

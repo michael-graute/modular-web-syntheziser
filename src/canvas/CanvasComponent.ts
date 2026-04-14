@@ -777,44 +777,18 @@ export class CanvasComponent {
 
     // StepSequencer-specific controls
     if (this.type === ComponentType.STEP_SEQUENCER) {
-      const bpmParam = this.synthComponent.getParameter('bpm');
-      const noteValueParam = this.synthComponent.getParameter('noteValue');
-
       // Calculate Y position below port labels
       const numInputPorts = this.synthComponent.inputs.size;
       const numOutputPorts = this.synthComponent.outputs.size;
       const maxPorts = Math.max(numInputPorts, numOutputPorts);
       const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
 
-      // Knobs for BPM and note division (mode auto-detected from keyboard connection)
-      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
-      const knobSize = COMPONENT.KNOB_SIZE;
-      const numKnobs = 2;
-      const totalSpacing = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
-      const spacing = (totalSpacing - (numKnobs * knobSize)) / (numKnobs + 1);
-
-      if (bpmParam) {
-        const knob = new Knob(
-          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing,
-          knobY,
-          knobSize,
-          bpmParam
-        );
-        this.controls.push(knob);
-      }
-
-      if (noteValueParam) {
-        const knob = new Knob(
-          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 2 + knobSize,
-          knobY,
-          knobSize,
-          noteValueParam
-        );
-        this.controls.push(knob);
-      }
+      // BPM and Division are rendered inside the StepSequencerDisplay transport bar —
+      // do not add redundant top-level knobs here.
 
       // Create or update embedded sequencer display (main-canvas pattern, no DOM element)
-      const displayY = knobY + 40 + 12 + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const displayY = knobY;
       const displayX = this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL;
       const displayWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
 
@@ -1230,10 +1204,11 @@ export class CanvasComponent {
     if (this.synthComponent) {
       this.renderPorts(ctx);
 
-      // Render controls if available, otherwise fallback to text parameters
+      // Render controls if available, otherwise fallback to text parameters.
+      // StepSequencer has no top-level controls but owns its own display — skip the text fallback.
       if (this.controls.length > 0) {
         this.renderControls(ctx);
-      } else {
+      } else if (!this.stepSequencerDisplay) {
         this.renderParameters(ctx);
       }
 
