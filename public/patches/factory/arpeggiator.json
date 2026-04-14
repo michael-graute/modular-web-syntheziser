@@ -1,0 +1,203 @@
+{
+  "name": "Arpeggiator",
+  "version": "1.0",
+  "created": "2026-04-14T16:20:54.194Z",
+  "modified": "2026-04-14T16:20:54.194Z",
+  "components": [
+    {
+      "id": "4dbb6da2-90a7-44f2-8fc6-d07182c7a574",
+      "type": "oscillator",
+      "position": {
+        "x": 240,
+        "y": 60
+      },
+      "parameters": {
+        "waveform": 0,
+        "frequency": 0,
+        "detune": 0
+      }
+    },
+    {
+      "id": "c5e12283-4a0e-4e53-b6d6-cd137047f0ba",
+      "type": "keyboard-input",
+      "position": {
+        "x": -640,
+        "y": 60
+      },
+      "parameters": {}
+    },
+    {
+      "id": "fe23b571-8641-4c46-983e-8af23e33366e",
+      "type": "vca",
+      "position": {
+        "x": 440,
+        "y": 60
+      },
+      "parameters": {
+        "gain": 0
+      }
+    },
+    {
+      "id": "7baa5a59-ec6b-4f24-b66c-670e78029f3f",
+      "type": "adsr-envelope",
+      "position": {
+        "x": 240,
+        "y": 280
+      },
+      "parameters": {
+        "attack": 0.1,
+        "decay": 0.2,
+        "sustain": 0.7,
+        "release": 0.6249997615814207
+      }
+    },
+    {
+      "id": "4a0116e9-8228-4e13-8a50-ded69a2d1186",
+      "type": "master-output",
+      "position": {
+        "x": 620,
+        "y": 60
+      },
+      "parameters": {
+        "volume": 0.7,
+        "limiter": 1
+      }
+    },
+    {
+      "id": "32835dae-e598-430f-82e1-78ed89d4e13b",
+      "type": "step-sequencer",
+      "position": {
+        "x": -480,
+        "y": 60
+      },
+      "parameters": {
+        "bpm": 120,
+        "noteValue": 3,
+        "sequenceLength": 4,
+        "mode": 1,
+        "step_0_active": 1,
+        "step_0_note": 64,
+        "step_0_velocity": 0.8,
+        "step_0_gateLength": 3,
+        "step_1_active": 1,
+        "step_1_note": 67,
+        "step_1_velocity": 0.8,
+        "step_1_gateLength": 4,
+        "step_2_active": 1,
+        "step_2_note": 69,
+        "step_2_velocity": 0.8,
+        "step_2_gateLength": 5,
+        "step_3_active": 1,
+        "step_3_note": 67,
+        "step_3_velocity": 0.8,
+        "step_3_gateLength": 3,
+        "step_4_active": 1,
+        "step_4_note": 60,
+        "step_4_velocity": 0.8,
+        "step_4_gateLength": 3,
+        "step_5_active": 1,
+        "step_5_note": 60,
+        "step_5_velocity": 0.8,
+        "step_5_gateLength": 3,
+        "step_6_active": 1,
+        "step_6_note": 60,
+        "step_6_velocity": 0.8,
+        "step_6_gateLength": 3,
+        "step_7_active": 1,
+        "step_7_note": 60,
+        "step_7_velocity": 0.8,
+        "step_7_gateLength": 3,
+        "step_8_active": 1,
+        "step_8_note": 60,
+        "step_8_velocity": 0.8,
+        "step_8_gateLength": 3,
+        "step_9_active": 1,
+        "step_9_note": 60,
+        "step_9_velocity": 0.8,
+        "step_9_gateLength": 3,
+        "step_10_active": 1,
+        "step_10_note": 60,
+        "step_10_velocity": 0.8,
+        "step_10_gateLength": 3,
+        "step_11_active": 1,
+        "step_11_note": 60,
+        "step_11_velocity": 0.8,
+        "step_11_gateLength": 3,
+        "step_12_active": 1,
+        "step_12_note": 60,
+        "step_12_velocity": 0.8,
+        "step_12_gateLength": 3,
+        "step_13_active": 1,
+        "step_13_note": 60,
+        "step_13_velocity": 0.8,
+        "step_13_gateLength": 3,
+        "step_14_active": 1,
+        "step_14_note": 60,
+        "step_14_velocity": 0.8,
+        "step_14_gateLength": 3,
+        "step_15_active": 1,
+        "step_15_note": 60,
+        "step_15_velocity": 0.8,
+        "step_15_gateLength": 3
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "70c1f879-fe48-4ca0-bea3-ae2503df47c7",
+      "sourceComponentId": "7baa5a59-ec6b-4f24-b66c-670e78029f3f",
+      "sourcePortId": "output",
+      "targetComponentId": "fe23b571-8641-4c46-983e-8af23e33366e",
+      "targetPortId": "cv",
+      "signalType": "cv"
+    },
+    {
+      "id": "6484eab2-0c9b-4ba3-a6be-f4da56693f4c",
+      "sourceComponentId": "4dbb6da2-90a7-44f2-8fc6-d07182c7a574",
+      "sourcePortId": "output",
+      "targetComponentId": "fe23b571-8641-4c46-983e-8af23e33366e",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "74281721-2cfb-4c6b-baac-7bdd3a2b9ce8",
+      "sourceComponentId": "32835dae-e598-430f-82e1-78ed89d4e13b",
+      "sourcePortId": "frequency",
+      "targetComponentId": "4dbb6da2-90a7-44f2-8fc6-d07182c7a574",
+      "targetPortId": "frequency",
+      "signalType": "cv"
+    },
+    {
+      "id": "0de9841c-71fc-4999-a1a6-a557151844f9",
+      "sourceComponentId": "32835dae-e598-430f-82e1-78ed89d4e13b",
+      "sourcePortId": "gate",
+      "targetComponentId": "7baa5a59-ec6b-4f24-b66c-670e78029f3f",
+      "targetPortId": "gate",
+      "signalType": "gate"
+    },
+    {
+      "id": "c9ddd48d-40b5-4c44-977d-19e8aebea724",
+      "sourceComponentId": "c5e12283-4a0e-4e53-b6d6-cd137047f0ba",
+      "sourcePortId": "frequency",
+      "targetComponentId": "32835dae-e598-430f-82e1-78ed89d4e13b",
+      "targetPortId": "arpFrequency",
+      "signalType": "cv"
+    },
+    {
+      "id": "45d90b57-68c1-4508-ab1e-193e44590b0d",
+      "sourceComponentId": "c5e12283-4a0e-4e53-b6d6-cd137047f0ba",
+      "sourcePortId": "gate",
+      "targetComponentId": "32835dae-e598-430f-82e1-78ed89d4e13b",
+      "targetPortId": "arpeggiate",
+      "signalType": "gate"
+    },
+    {
+      "id": "d9d0a33b-c7c7-4fe3-9974-20b875e76fa1",
+      "sourceComponentId": "fe23b571-8641-4c46-983e-8af23e33366e",
+      "sourcePortId": "output",
+      "targetComponentId": "4a0116e9-8228-4e13-8a50-ded69a2d1186",
+      "targetPortId": "input",
+      "signalType": "audio"
+    }
+  ]
+}
