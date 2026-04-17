@@ -27,6 +27,7 @@ export class VisualUpdateScheduler implements IVisualUpdateScheduler {
   private animationFrameId: number | null = null;
 
   // Performance tracking
+  private targetFrameTime: number = 1000 / 60;
   private lastFrameTime: number = 0;
   private frameCount: number = 0;
   private fpsUpdateInterval: number = 1000; // Update FPS every 1 second
@@ -37,14 +38,15 @@ export class VisualUpdateScheduler implements IVisualUpdateScheduler {
   /**
    * Initialize the scheduler
    */
-  initialize(_targetFPS: number = 60, interpolationEnabled: boolean = true): void {
+  initialize(targetFPS: number = 60, interpolationEnabled: boolean = true): void {
     this.interpolationEnabled = interpolationEnabled;
+    this.targetFrameTime = 1000 / targetFPS;
 
     // FR-011: Setup Page Visibility API for background tab pause/resume
     this.setupVisibilityHandling();
 
     console.log(
-      `✓ VisualUpdateScheduler initialized (target: ${_targetFPS} FPS, interpolation: ${interpolationEnabled})`
+      `✓ VisualUpdateScheduler initialized (target: ${targetFPS} FPS, interpolation: ${interpolationEnabled})`
     );
   }
 
@@ -143,6 +145,13 @@ export class VisualUpdateScheduler implements IVisualUpdateScheduler {
   private onAnimationFrame(timestamp: number): void {
     // Calculate delta time
     const deltaMs = timestamp - this.lastFrameTime;
+
+    // Cap to targetFPS — skip frames that arrive too soon (e.g. 120 Hz displays)
+    if (deltaMs < this.targetFrameTime) {
+      this.scheduleNextFrame();
+      return;
+    }
+
     this.lastFrameTime = timestamp;
 
     // Update FPS tracking

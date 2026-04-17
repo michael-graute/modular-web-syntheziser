@@ -86,9 +86,10 @@ export class Collider extends SynthComponent implements TempoAware {
   private subscription: SubscriptionHandle | null = null;
   private lastUpdateTime: number = 0;
 
-  // Performance optimization: throttle rendering to 30fps (physics still updates at 60fps)
+  // Performance optimization: throttle rendering to 30fps, physics capped at 60fps
   private lastRenderTime: number = 0;
-  private renderInterval: number = 1000 / 30; // 30fps for rendering
+  private renderInterval: number = 1000 / 30;
+  private physicsInterval: number = 1000 / 60;
 
   // Engine instances
   private physicsEngine: PhysicsEngine | null = null;
@@ -571,9 +572,13 @@ export class Collider extends SynthComponent implements TempoAware {
 
     const currentTime = performance.now();
     const deltaTime = currentTime - this.lastUpdateTime;
+
+    // Cap physics at 60 Hz — prevents 120 Hz displays from doubling physics compute
+    if (deltaTime < this.physicsInterval) return;
+
     this.lastUpdateTime = currentTime;
 
-    // Always update physics at full frame rate (60fps) for smooth simulation
+    // Update physics
     const collisionEvents = this.physicsEngine!.update(deltaTime / 1000); // Convert to seconds
 
     // Process collision events

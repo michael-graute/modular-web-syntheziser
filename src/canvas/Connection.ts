@@ -92,12 +92,14 @@ export class CanvasConnection {
     ctx.lineCap = 'round';
     ctx.stroke();
 
-    // Draw glow effect if hovered
+    // Draw glow effect if hovered — wide semi-transparent stroke avoids shadowBlur GPU shader recompilation
     if (this.isHovered) {
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = color;
+      ctx.strokeStyle = color + '55';
+      ctx.lineWidth = CONNECTION.CABLE_WIDTH + 8;
       ctx.stroke();
-      ctx.shadowBlur = 0;
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = CONNECTION.CABLE_WIDTH + 2;
+      ctx.stroke();
     }
 
     ctx.restore();
