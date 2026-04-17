@@ -22,6 +22,11 @@ import { ModulationVisualizer } from './visualization';
 import { AcceptanceStorage } from './storage/AcceptanceStorage';
 import { WelcomeDialog } from './ui/WelcomeDialog';
 import { visualUpdateScheduler } from './visualization/scheduler';
+import { globalBpmController } from './core/GlobalBpmController';
+
+// Ensure globalBpmController singleton is initialized at app startup
+// (components subscribe to it via EventBus when activated)
+void globalBpmController;
 
 console.log('🎹 Modular Synth - Initializing...');
 

@@ -99,6 +99,7 @@ export interface PatchData {
   created: string;
   modified: string;
   description?: string; // Optional description for factory patches
+  globalBpm?: number; // Global BPM value; absent in legacy patches (defaults to 120 on load)
   components: ComponentData[];
   connections: Connection[];
 }
@@ -143,6 +144,7 @@ export enum EventType {
   VIEWPORT_CHANGED = 'viewport:changed',
   NOTE_ON = 'note:on',
   NOTE_OFF = 'note:off',
+  GLOBAL_BPM_CHANGED = 'global:bpm-changed',
 }
 
 /**
@@ -174,6 +176,31 @@ export interface ViewportEvent {
   zoom: number;
   panX: number;
   panY: number;
+}
+
+/**
+ * Payload emitted with GLOBAL_BPM_CHANGED event
+ */
+export interface GlobalBpmChangedPayload {
+  bpm: number;
+}
+
+/**
+ * Interface that tempo-aware components must satisfy to integrate
+ * with the GlobalBpmController subscription mechanism.
+ */
+export interface TempoAware {
+  /** Subscribe to global BPM changes. Called during component activation. */
+  subscribeToGlobalBpm(): void;
+
+  /** Unsubscribe from global BPM changes. Called during component deactivation. */
+  unsubscribeFromGlobalBpm(): void;
+
+  /**
+   * Apply a new BPM value. Only called when component is in Global mode.
+   * Takes effect at the component's next natural timing boundary.
+   */
+  applyGlobalBpm(bpm: number): void;
 }
 
 /**

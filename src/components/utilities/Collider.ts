@@ -6,8 +6,11 @@
  */
 
 import { SynthComponent } from '../base/SynthComponent';
-import { ComponentType, Position, SignalType } from '../../core/types';
+import { ComponentType, Position, SignalType, EventType } from '../../core/types';
 import { audioEngine } from '../../core/AudioEngine';
+import { globalBpmController } from '../../core/GlobalBpmController';
+import { eventBus } from '../../core/EventBus';
+import type { GlobalBpmChangedPayload } from '../../core/types';
 import type {
   ColliderConfig,
   CollisionBoundary,
@@ -99,6 +102,9 @@ export class Collider extends SynthComponent {
   // Gate targets (ADSR envelopes that should be triggered)
   private gateTargets: SynthComponent[] = [];
 
+  // Global BPM subscription
+  private _globalBpmUnsubscribe: (() => void) | null = null;
+
   // Canvas reference
   private canvas: HTMLCanvasElement | null = null;
   private ctx: CanvasRenderingContext2D | null = null;
@@ -128,6 +134,7 @@ export class Collider extends SynthComponent {
     // Additional parameters for complete configuration
     this.addParameter('speedPreset', 'Speed', 1, 0, 2, 1, ''); // 0=Slow, 1=Medium, 2=Fast
     this.addParameter('bpm', 'BPM', 120, 30, 300, 1, 'bpm');
+    this.addParameter('bpmMode', 'BPM Mode', 0, 0, 1, 1, ''); // 0=global, 1=local
     this.addParameter('gateSize', 'Gate', 2, 0, 4, 1, ''); // 0=Whole, 1=Half, 2=Quarter, 3=Eighth, 4=Sixteenth
   }
 
@@ -198,6 +205,9 @@ export class Collider extends SynthComponent {
     this.gateNode.start();
     this.registerAudioNode('gate', this.gateNode);
 
+    // Subscribe to global BPM (covers mid-playback add via activate() → createAudioNodes())
+    this.subscribeToGlobalBpm();
+
     console.log(`Collider ${this.id} audio nodes created`);
   }
 
@@ -225,7 +235,53 @@ export class Collider extends SynthComponent {
     }
 
     this.audioNodes.clear();
+    this.unsubscribeFromGlobalBpm();
     console.log(`Collider ${this.id} audio nodes destroyed`);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Global BPM integration (TempoAware)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Subscribe to global BPM changes. Called from createAudioNodes() so it runs
+   * whenever the component is activated — including mid-playback canvas adds.
+   */
+  subscribeToGlobalBpm(): void {
+    // Apply current global BPM immediately if in global mode
+    if ((this.getParameter('bpmMode')?.getValue() ?? 0) === 0) {
+      this.applyGlobalBpm(globalBpmController.getBpm());
+    }
+
+    this._globalBpmUnsubscribe = eventBus.on(
+      EventType.GLOBAL_BPM_CHANGED,
+      (data) => this.applyGlobalBpm((data as GlobalBpmChangedPayload).bpm)
+    );
+  }
+
+  /**
+   * Unsubscribe from global BPM changes. Called from destroyAudioNodes().
+   */
+  unsubscribeFromGlobalBpm(): void {
+    if (this._globalBpmUnsubscribe) {
+      this._globalBpmUnsubscribe();
+      this._globalBpmUnsubscribe = null;
+    }
+  }
+
+  /**
+   * Apply a new global BPM. Only acts when in global mode (bpmMode=0).
+   * Updates config.bpm directly to allow changes during a running simulation
+   * (setConfiguration() blocks while running, but a live BPM update is safe
+   * because the physics loop reads config.bpm each collision cycle).
+   */
+  applyGlobalBpm(bpm: number): void {
+    if ((this.getParameter('bpmMode')?.getValue() ?? 0) === 0) {
+      this.config.bpm = bpm;
+      // Keep the parameter value in sync so serialize() round-trips correctly
+      const bpmParam = this.getParameter('bpm');
+      if (bpmParam) bpmParam.setValue(bpm);
+    }
   }
 
   /**
@@ -276,6 +332,14 @@ export class Collider extends SynthComponent {
       case 'bpm':
         updates.bpm = value;
         break;
+
+      case 'bpmMode':
+        // 0 = follow global BPM; adopt current global value immediately.
+        // Guard: only when active (not during construction or deserialize).
+        if (value === 0 && this.isActive) {
+          this.applyGlobalBpm(globalBpmController.getBpm());
+        }
+        return; // No ColliderConfig field to update
 
       case 'gateSize':
         const gateSizes = [

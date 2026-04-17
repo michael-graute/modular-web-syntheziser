@@ -16,10 +16,10 @@
 
 **Purpose**: Add type contracts and event infrastructure before any component work begins.
 
-- [ ] T001 Add `GLOBAL_BPM_CHANGED = 'global:bpm-changed'` to the `EventType` enum in `src/core/types.ts`
-- [ ] T002 Add `globalBpm?: number` optional field to the `PatchData` interface in `src/core/types.ts`
-- [ ] T003 Add the `TempoAware` interface and `GlobalBpmChangedPayload` type to `src/core/types.ts` (inline from `specs/013-global-bpm/contracts/types.ts` — keeps all shared types in the canonical source file, avoids runtime imports from `specs/`)
-- [ ] T004 Create `src/core/bpmValidation.ts` with `isValidBpm`, `clampBpm`, `isValidBpmMode` inlined from `specs/013-global-bpm/contracts/validation.ts`, plus named constants `BPM_MIN = 30`, `BPM_MAX = 300`, `BPM_DEFAULT = 120`, `BpmMode` enum (depends on T001)
+- [x] T001 Add `GLOBAL_BPM_CHANGED = 'global:bpm-changed'` to the `EventType` enum in `src/core/types.ts`
+- [x] T002 Add `globalBpm?: number` optional field to the `PatchData` interface in `src/core/types.ts`
+- [x] T003 Add the `TempoAware` interface and `GlobalBpmChangedPayload` type to `src/core/types.ts` (inline from `specs/013-global-bpm/contracts/types.ts` — keeps all shared types in the canonical source file, avoids runtime imports from `specs/`)
+- [x] T004 Create `src/core/bpmValidation.ts` with `isValidBpm`, `clampBpm`, `isValidBpmMode` inlined from `specs/013-global-bpm/contracts/validation.ts`, plus named constants `BPM_MIN = 30`, `BPM_MAX = 300`, `BPM_DEFAULT = 120`, `BpmMode` enum (depends on T001)
 
 ---
 
@@ -29,7 +29,7 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T005 Create `src/core/GlobalBpmController.ts` as a class (depends on T004):
+- [x] T005 Create `src/core/GlobalBpmController.ts` as a class (depends on T004):
   - Import `clampBpm`, `BPM_DEFAULT` from `./bpmValidation`
   - Import `EventType`, `PatchData` from `./types`
   - Private `_bpm: number` field defaulting to `BPM_DEFAULT`
@@ -38,7 +38,7 @@
   - `loadFromPatch(patch: PatchData): void` — reads `patch.globalBpm ?? BPM_DEFAULT`, calls `setBpm()`
   - `saveToPatch(patch: PatchData): PatchData` — returns `{ ...patch, globalBpm: this._bpm }`
   - Export singleton: `export const globalBpmController = new GlobalBpmController()`
-- [ ] T006 Write unit tests for `GlobalBpmController` in `tests/core/GlobalBpmController.test.ts`:
+- [x] T006 Write unit tests for `GlobalBpmController` in `tests/unit/core/GlobalBpmController.test.ts`:
   - `setBpm` clamps values below 30 to 30
   - `setBpm` clamps values above 300 to 300
   - `setBpm` emits `GLOBAL_BPM_CHANGED` with the clamped value
@@ -47,7 +47,7 @@
   - `loadFromPatch` defaults to 120 when `globalBpm` is absent (legacy patch)
   - `saveToPatch` injects `globalBpm` into returned patch object
   - **SC-001 timing gate**: After `setBpm()` emits, a subscribed mock component receives the event synchronously (i.e., within the same JS call stack turn) — confirming the propagation mechanism is not async-deferred, which ensures the "within one musical measure" criterion is met at the framework level
-- [ ] T007 Write unit tests for `bpmValidation.ts` in `tests/core/bpmValidation.test.ts`:
+- [x] T007 Write unit tests for `bpmValidation.ts` in `tests/unit/core/bpmValidation.test.ts`:
   - `isValidBpm` returns true for 30, 120, 300
   - `isValidBpm` returns false for 29, 301, NaN, Infinity, non-number
   - `clampBpm` rounds and clamps correctly at boundaries
@@ -65,25 +65,25 @@
 
 ### Implementation for User Story 1
 
-- [ ] T008 [P] [US1] Add `bpmMode` parameter to `StepSequencer` in `src/components/utilities/StepSequencer.ts`:
+- [x] T008 [P] [US1] Add `bpmMode` parameter to `StepSequencer` in `src/components/utilities/StepSequencer.ts`:
   - In the constructor, after existing `addParameter('bpm', ...)`, add: `this.addParameter('bpmMode', 'BPM Mode', 0, 0, 1, 1, '')`
   - Add private field `private _globalBpmUnsubscribe: (() => void) | null = null`
-- [ ] T009 [P] [US1] Add `bpmMode` parameter to `Collider` in `src/components/utilities/Collider.ts`:
+- [x] T009 [P] [US1] Add `bpmMode` parameter to `Collider` in `src/components/utilities/Collider.ts`:
   - In the constructor, after existing `this.addParameter('bpm', ...)`, add: `this.addParameter('bpmMode', 'BPM Mode', 0, 0, 1, 1, '')`
   - Add private field `private _globalBpmUnsubscribe: (() => void) | null = null`
-- [ ] T010 [US1] Implement global BPM subscription in `StepSequencer` (depends on T008):
+- [x] T010 [US1] Implement global BPM subscription in `StepSequencer` (depends on T008):
   - Add `subscribeToGlobalBpm(): void` — calls `globalBpmController.getBpm()` immediately and sets the `bpm` parameter if `bpmMode === 0`; then subscribes via `eventBus.on(EventType.GLOBAL_BPM_CHANGED, handler)` and stores the unsubscribe function
   - Add `unsubscribeFromGlobalBpm(): void` — calls and clears `_globalBpmUnsubscribe`
   - In `activate()`: call `subscribeToGlobalBpm()` after existing setup — this covers components added mid-playback because `Canvas` calls `activate()` synchronously on every component add (verify this is still the case in `src/canvas/Canvas.ts` before completing the task; if not, subscribe at component-add time instead)
   - In `deactivate()` / `destroyAudioNodes()`: call `unsubscribeFromGlobalBpm()`
   - In `updateAudioParameter('bpmMode', value)` case: if switching to 0 (global), immediately call `this.setParameterValue('bpm', globalBpmController.getBpm())`
   - The existing BPM change handling via `case 'bpm':` already schedules the new tempo at the next step boundary — no further timing change needed
-- [ ] T011 [US1] Implement global BPM subscription in `Collider` (depends on T009):
+- [x] T011 [US1] Implement global BPM subscription in `Collider` (depends on T009):
   - Same `subscribeToGlobalBpm` / `unsubscribeFromGlobalBpm` pattern as T010
   - In `activate()`: call `subscribeToGlobalBpm()` after existing setup — mid-playback add coverage same as T010 (verify `activate()` is called synchronously on canvas add)
   - In `destroyAudioNodes()`: call `unsubscribeFromGlobalBpm()`
   - In `updateAudioParameter('bpmMode', value)` case: if switching to 0, immediately apply `globalBpmController.getBpm()` to `this.config.bpm` and restart physics timing
-- [ ] T012 [US1] Wire `GlobalBpmController` into `main.ts`:
+- [x] T012 [US1] Wire `GlobalBpmController` into `main.ts`:
   - Import `globalBpmController` from `src/core/GlobalBpmController.ts`
   - No other changes needed yet — components will subscribe automatically via `activate()`
 
@@ -99,17 +99,17 @@
 
 ### Implementation for User Story 2
 
-- [ ] T013 [US2] Expose `bpmMode` in the StepSequencer UI in `src/canvas/displays/StepSequencerDisplay.ts`:
+- [x] T013 [US2] Expose `bpmMode` in the StepSequencer UI in `src/canvas/displays/StepSequencerDisplay.ts`:
   - Add a toggle control (button or checkbox) labeled "Local BPM" that reads/writes the `bpmMode` parameter (0 = global, 1 = local)
   - When `bpmMode === 0` (global), the BPM knob/input should be visually disabled or labelled "Global" to indicate it is driven externally
   - When `bpmMode === 1` (local), the BPM knob/input is enabled for editing
-- [ ] T014 [US2] Expose `bpmMode` in the Collider UI in `src/canvas/displays/ColliderDisplay.ts` (or relevant Collider canvas control):
+- [x] T014 [US2] Expose `bpmMode` in the Collider UI in `src/canvas/displays/ColliderDisplay.ts` (or relevant Collider canvas control):
   - Same toggle pattern as T013 — "Local BPM" toggle; BPM control disabled when `bpmMode === 0`
-- [ ] T015 [P] [US2] Write unit tests for StepSequencer BPM mode in `tests/components/utilities/StepSequencer.bpmMode.test.ts`:
+- [x] T015 [P] [US2] Write unit tests for StepSequencer BPM mode in `tests/components/utilities/StepSequencer.bpmMode.test.ts`:
   - When `bpmMode = 0` and global BPM changes, component's effective BPM updates
   - When `bpmMode = 1` and global BPM changes, component's effective BPM is unaffected
   - Switching from `bpmMode = 1` to `bpmMode = 0` immediately adopts the current global BPM
-- [ ] T016 [P] [US2] Write unit tests for Collider BPM mode in `tests/components/utilities/Collider.bpmMode.test.ts`:
+- [x] T016 [P] [US2] Write unit tests for Collider BPM mode in `tests/components/utilities/Collider.bpmMode.test.ts`:
   - Same three scenarios as T015, applied to Collider
 
 **Checkpoint**: Each tempo-aware component can independently follow global BPM or run at its own local tempo.
