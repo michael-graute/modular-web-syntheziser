@@ -7,10 +7,10 @@
 
 import { SynthComponent } from '../base/SynthComponent';
 import { ComponentType, Position, SignalType, EventType } from '../../core/types';
+import type { GlobalBpmChangedPayload, TempoAware } from '../../core/types';
 import { audioEngine } from '../../core/AudioEngine';
 import { globalBpmController } from '../../core/GlobalBpmController';
 import { eventBus } from '../../core/EventBus';
-import type { GlobalBpmChangedPayload } from '../../core/types';
 import type {
   ColliderConfig,
   CollisionBoundary,
@@ -74,7 +74,7 @@ const DEGREE_COLORS = [
  * Simulates colliding circles that trigger musical notes.
  * Each collision generates CV/Gate output based on the collider's assigned note.
  */
-export class Collider extends SynthComponent {
+export class Collider extends SynthComponent implements TempoAware {
   // Configuration
   private config: ColliderConfig;
 

@@ -10,6 +10,7 @@ import { eventBus } from '../core/EventBus';
 import type { Canvas } from '../canvas/Canvas';
 import { CanvasComponent } from '../canvas/CanvasComponent';
 import { calculateComponentDimensions } from '../utils/componentLayout';
+import { globalBpmController } from '../core/GlobalBpmController';
 
 /**
  * Manages the complete patch lifecycle
@@ -256,6 +257,9 @@ export class PatchManager {
           );
         }
       }
+
+      // Restore global BPM (emits GLOBAL_BPM_CHANGED so subscribed components update)
+      globalBpmController.loadFromPatch(patchData);
 
       // Set as current patch
       this.currentPatch = patchData;

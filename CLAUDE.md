@@ -35,8 +35,8 @@ TypeScript 5.6+, ES2020 target: Follow standard conventions
 
 ## Recent Changes
 - 013-global-bpm: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero new runtime dependencies
+- 013-global-bpm: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero new runtime dependencies
 - 012-step-sequencer-refactor: Added TypeScript 5.6+, ES2020 target, strict mode
-- 011-oscilloscope-main-canvas: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API (AnalyserNode), Canvas 2D API — zero new runtime dependencies
 
 
 ## Completed Features

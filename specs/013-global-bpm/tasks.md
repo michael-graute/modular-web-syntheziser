@@ -124,14 +124,14 @@
 
 ### Implementation for User Story 3
 
-- [ ] T017 [US3] Modify `PatchSerializer.serializePatch()` in `src/patch/PatchSerializer.ts`:
+- [x] T017 [US3] Modify `PatchSerializer.serializePatch()` in `src/patch/PatchSerializer.ts`:
   - Import `globalBpmController`
   - Before returning the `PatchData` object, call `globalBpmController.saveToPatch(patch)` and return the result, so `globalBpm` is included in the serialized output
-- [ ] T018 [US3] Modify `PatchManager` in `src/patch/PatchManager.ts` to restore global BPM on load:
+- [x] T018 [US3] Modify `PatchManager` in `src/patch/PatchManager.ts` to restore global BPM on load:
   - Import `globalBpmController`
   - After components are instantiated and `deserialize()` is called on each, call `globalBpmController.loadFromPatch(patch)`
   - The emitted `GLOBAL_BPM_CHANGED` event will update any already-subscribed components; components added afterwards via `activate()` will read the current value directly
-- [ ] T019 [P] [US3] Write serialization round-trip tests in `tests/patch/PatchSerializer.globalBpm.test.ts`:
+- [x] T019 [P] [US3] Write serialization round-trip tests in `tests/patch/PatchSerializer.globalBpm.test.ts`:
   - Serialized patch includes `globalBpm` field matching `globalBpmController.getBpm()`
   - Deserializing a patch with `globalBpm: 95` sets `globalBpmController` to 95
   - Deserializing a legacy patch (no `globalBpm`) sets `globalBpmController` to 120 without error
@@ -145,18 +145,18 @@
 
 **Purpose**: Surface global BPM to the user via the toolbar.
 
-- [ ] T020 Add BPM widget container to `index.html`:
+- [x] T020 Add BPM widget container to `index.html`:
   - Inside `.top-bar-actions` (before or after the patch-name input), add: `<div id="global-bpm-control"></div>`
-- [ ] T021 Create `src/ui/GlobalBpmControl.ts`:
+- [x] T021 Create `src/ui/GlobalBpmControl.ts`:
   - Constructor accepts a container element (`HTMLElement`)
   - Renders: a `<label>` "BPM", a `<input type="number" min="30" max="300" step="1">` bound to `globalBpmController.getBpm()`, and a `<button>` "Tap"
   - On input `change`/`input`: call `globalBpmController.setBpm(Number(input.value))`
   - On `GLOBAL_BPM_CHANGED` event: update the input display (e.g., when a patch is loaded)
   - Tap tempo logic: push `Date.now()` to a `tapTimes` array; discard entries older than 3000ms; if ≥ 2 taps remain, compute average interval in ms, convert to BPM (`60000 / avgIntervalMs`), call `globalBpmController.setBpm(calculatedBpm)`
-- [ ] T022 Instantiate `GlobalBpmControl` in `src/main.ts`:
+- [x] T022 Instantiate `GlobalBpmControl` in `src/main.ts`:
   - Import `GlobalBpmControl`
   - After DOM is ready, find `document.getElementById('global-bpm-control')` and pass it to `new GlobalBpmControl(el)`
-- [ ] T023 [P] Write unit tests for `GlobalBpmControl` in `tests/ui/GlobalBpmControl.test.ts`:
+- [x] T023 [P] Write unit tests for `GlobalBpmControl` in `tests/ui/GlobalBpmControl.test.ts`:
   - Numeric input change calls `globalBpmController.setBpm()` with the entered value
   - `GLOBAL_BPM_CHANGED` event updates the displayed input value
   - Tap tempo: 2 taps 500ms apart → ~120 BPM
@@ -167,10 +167,10 @@
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T024 [P] Import `TempoAware` from `../../core/types` and add `implements TempoAware` to `StepSequencer` in `src/components/utilities/StepSequencer.ts` and to `Collider` in `src/components/utilities/Collider.ts` — enforces the subscription contract at compile time (depends on T003)
-- [ ] T025 [P] Update `CLAUDE.md` via the `.specify` agent context pipeline (already handled by `update-agent-context.sh`; verify the entry was written correctly)
-- [ ] T026 Run `vitest run` and confirm all new and existing tests pass
-- [ ] T027 Run `npm run lint` and fix any warnings introduced by the feature
+- [x] T024 [P] Import `TempoAware` from `../../core/types` and add `implements TempoAware` to `StepSequencer` in `src/components/utilities/StepSequencer.ts` and to `Collider` in `src/components/utilities/Collider.ts` — enforces the subscription contract at compile time (depends on T003)
+- [x] T025 [P] Update `CLAUDE.md` via the `.specify` agent context pipeline (already handled by `update-agent-context.sh`; verify the entry was written correctly)
+- [x] T026 Run `vitest run` and confirm all new and existing tests pass
+- [x] T027 Run `npm run lint` and fix any warnings introduced by the feature (no lint script configured in this project — tsc --noEmit passes clean)
 - [ ] T028 Manually verify the quickstart.md test scenario end-to-end in the browser, including SC-002: confirm that setting global BPM and adding three tempo-aware components to the patch takes under 60 seconds from a fresh page load
 
 ---

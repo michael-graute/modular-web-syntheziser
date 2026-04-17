@@ -23,6 +23,7 @@ import { AcceptanceStorage } from './storage/AcceptanceStorage';
 import { WelcomeDialog } from './ui/WelcomeDialog';
 import { visualUpdateScheduler } from './visualization/scheduler';
 import { globalBpmController } from './core/GlobalBpmController';
+import { GlobalBpmControl } from './ui/GlobalBpmControl';
 
 // Ensure globalBpmController singleton is initialized at app startup
 // (components subscribe to it via EventBus when activated)
@@ -306,6 +307,12 @@ async function init(): Promise<void> {
 
     // Setup patch management UI
     setupPatchManagement();
+
+    // Initialize global BPM toolbar widget
+    const bpmContainer = document.getElementById('global-bpm-control');
+    if (bpmContainer) {
+      new GlobalBpmControl(bpmContainer);
+    }
 
     // Test components removed - canvas starts empty
     // Users can now drag components from the sidebar

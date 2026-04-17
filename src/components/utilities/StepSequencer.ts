@@ -4,10 +4,10 @@
 
 import { SynthComponent } from '../base/SynthComponent';
 import { ComponentType, Position, SignalType, EventType } from '../../core/types';
+import type { GlobalBpmChangedPayload, TempoAware } from '../../core/types';
 import { audioEngine } from '../../core/AudioEngine';
 import { globalBpmController } from '../../core/GlobalBpmController';
 import { eventBus } from '../../core/EventBus';
-import type { GlobalBpmChangedPayload } from '../../core/types';
 import type {
   StepSequencerDisplayState,
   SequencerMode,
@@ -26,7 +26,7 @@ export interface SequencerStep {
 /**
  * Step Sequencer component
  */
-export class StepSequencer extends SynthComponent {
+export class StepSequencer extends SynthComponent implements TempoAware {
   private frequencyNode: ConstantSourceNode | null;
   private gateNode: ConstantSourceNode | null;
   private velocityNode: ConstantSourceNode | null;
