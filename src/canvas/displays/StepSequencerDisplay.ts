@@ -38,6 +38,8 @@ const TRANSPORT_DIV_DROPDOWN_WIDTH = 40;
 const TRANSPORT_DIV_DROPDOWN_HEIGHT = 14;
 const TRANSPORT_CTRL_GAP = 4;
 const MODE_BUTTON_GAP = 6;
+const LOCAL_BPM_BUTTON_WIDTH = 44;
+const LOCAL_BPM_BUTTON_GAP = 6;
 
 // Sub-region vertical offsets within a step cell (relative to cell top)
 // Total cell height = 148px: padding(6) + indicator(10) + note(28) + velocity(76) + gate(24) + bottom padding(4)
@@ -286,10 +288,18 @@ export class StepSequencerDisplay {
     this.drawTransportButton(ctx, btnX, btnY, RESET_BUTTON_WIDTH, TRANSPORT_BUTTON_HEIGHT, 'Reset', '#555555');
     btnX += RESET_BUTTON_WIDTH + TRANSPORT_BUTTON_MARGIN * 2;
 
-    // BPM knob + small label
+    // BPM knob + small label (greyed out when following global BPM)
     const knobY = y + Math.floor((TRANSPORT_BAR_HEIGHT - TRANSPORT_KNOB_SIZE) / 2);
-    this.renderTransportLabel(ctx, btnX, knobY - 1, 'BPM');
+    const isLocalBpmMode = (this.sequencer.getParameter('bpmMode')?.getValue() ?? 0) === 1;
+    this.renderTransportLabel(ctx, btnX, knobY - 1, isLocalBpmMode ? 'BPM' : 'BPM↑');
     this.bpmKnob.render(ctx);
+    if (!isLocalBpmMode) {
+      // Overlay a semi-transparent mask to indicate the knob is driven by global BPM
+      ctx.fillStyle = 'rgba(37, 37, 37, 0.6)';
+      ctx.beginPath();
+      ctx.arc(btnX + TRANSPORT_KNOB_SIZE / 2, knobY + TRANSPORT_KNOB_SIZE / 2, TRANSPORT_KNOB_SIZE / 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
     btnX += TRANSPORT_KNOB_SIZE + TRANSPORT_CTRL_GAP;
 
     // Division dropdown + label
@@ -308,6 +318,13 @@ export class StepSequencerDisplay {
     const modeColor = isArp ? '#8b5cf6' : '#374151';
     this.drawTransportButton(ctx, btnX, btnY, MODE_BUTTON_WIDTH, TRANSPORT_BUTTON_HEIGHT,
       isArp ? 'ARP' : 'SEQ', modeColor);
+    btnX += MODE_BUTTON_WIDTH + LOCAL_BPM_BUTTON_GAP;
+
+    // BPM Mode toggle: "Global" (blue) or "Local" (amber)
+    const isLocalBpm = (this.sequencer.getParameter('bpmMode')?.getValue() ?? 0) === 1;
+    const bpmModeColor = isLocalBpm ? '#d97706' : '#1d4ed8';
+    this.drawTransportButton(ctx, btnX, btnY, LOCAL_BPM_BUTTON_WIDTH, TRANSPORT_BUTTON_HEIGHT,
+      isLocalBpm ? 'Local' : 'Global', bpmModeColor);
   }
 
   /**
@@ -796,8 +813,9 @@ export class StepSequencerDisplay {
     }
     btnX += RESET_BUTTON_WIDTH + TRANSPORT_BUTTON_MARGIN * 2;
 
-    // BPM knob
-    if (this.bpmKnob.onMouseDown(worldX, worldY)) { this.activeTransportKnob = 0; return true; }
+    // BPM knob — only interactive in local BPM mode
+    const bpmModeActive = (this.sequencer.getParameter('bpmMode')?.getValue() ?? 0) === 1;
+    if (bpmModeActive && this.bpmKnob.onMouseDown(worldX, worldY)) { this.activeTransportKnob = 0; return true; }
     btnX += TRANSPORT_KNOB_SIZE + TRANSPORT_CTRL_GAP;
 
     // Division dropdown (closed state only — open menu handled in onMouseDown before guard)
@@ -816,8 +834,22 @@ export class StepSequencerDisplay {
         worldY >= btnY && worldY <= btnY + TRANSPORT_BUTTON_HEIGHT) {
       return this.handleModeToggle();
     }
+    btnX += MODE_BUTTON_WIDTH + LOCAL_BPM_BUTTON_GAP;
+
+    // Local BPM toggle button
+    if (worldX >= btnX && worldX <= btnX + LOCAL_BPM_BUTTON_WIDTH &&
+        worldY >= btnY && worldY <= btnY + TRANSPORT_BUTTON_HEIGHT) {
+      return this.handleBpmModeToggle();
+    }
 
     return false;
+  }
+
+  /** Toggle BPM mode between global (0) and local (1). */
+  private handleBpmModeToggle(): boolean {
+    const current = this.sequencer.getParameter('bpmMode')?.getValue() ?? 0;
+    this.sequencer.setParameterValue('bpmMode', current === 0 ? 1 : 0);
+    return true;
   }
 
   /** Toggle sequencer/arpeggiator mode, stopping playback first if needed. */

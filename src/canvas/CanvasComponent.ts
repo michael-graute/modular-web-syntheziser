@@ -890,8 +890,33 @@ export class CanvasComponent {
         this.controls.push(knob);
       }
 
+      // BPM Mode toggle button (Global / Local BPM)
+      const bpmModeButtonY = knobY2 + knobSize + 20 + COMPONENT.CONTROL_SPACING_VERTICAL; // 20px for label
+      const bpmModeButtonWidth = 90;
+      const bpmModeButtonHeight = 24;
+      const bpmModeButtonX = this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + knobSize + knobSpacing - (bpmModeButtonWidth - knobSize) / 2;
+
+      const bpmModeButton = new Button(
+        bpmModeButtonX,
+        bpmModeButtonY,
+        bpmModeButtonWidth,
+        bpmModeButtonHeight,
+        'Local BPM',
+        () => {
+          const bpmModeParam = this.synthComponent?.getParameter('bpmMode');
+          if (!bpmModeParam) return;
+          const current = bpmModeParam.getValue();
+          this.synthComponent?.setParameterValue('bpmMode', current === 0 ? 1 : 0);
+        },
+        () => {
+          // Active (lit) when in local mode (value === 1)
+          return (this.synthComponent?.getParameter('bpmMode')?.getValue() ?? 0) === 1;
+        }
+      );
+      this.controls.push(bpmModeButton);
+
       // Start/Stop button
-      const buttonY = knobY2 + knobSize + 20 + COMPONENT.CONTROL_SPACING_VERTICAL; // 20px for label
+      const buttonY = bpmModeButtonY + bpmModeButtonHeight + COMPONENT.CONTROL_SPACING_VERTICAL;
       const buttonWidth = 80;
       const buttonHeight = 30;
       const buttonX = this.position.x + (this.width - buttonWidth) / 2;

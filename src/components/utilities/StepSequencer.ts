@@ -3,8 +3,11 @@
  */
 
 import { SynthComponent } from '../base/SynthComponent';
-import { ComponentType, Position, SignalType } from '../../core/types';
+import { ComponentType, Position, SignalType, EventType } from '../../core/types';
+import type { GlobalBpmChangedPayload, TempoAware } from '../../core/types';
 import { audioEngine } from '../../core/AudioEngine';
+import { globalBpmController } from '../../core/GlobalBpmController';
+import { eventBus } from '../../core/EventBus';
 import type {
   StepSequencerDisplayState,
   SequencerMode,
@@ -23,7 +26,7 @@ export interface SequencerStep {
 /**
  * Step Sequencer component
  */
-export class StepSequencer extends SynthComponent {
+export class StepSequencer extends SynthComponent implements TempoAware {
   private frequencyNode: ConstantSourceNode | null;
   private gateNode: ConstantSourceNode | null;
   private velocityNode: ConstantSourceNode | null;
@@ -58,6 +61,9 @@ export class StepSequencer extends SynthComponent {
 
   // Connected components
   private connectedGateTargets: Set<SynthComponent>;
+
+  // Global BPM subscription
+  private _globalBpmUnsubscribe: (() => void) | null = null;
 
   constructor(id: string, position: Position) {
     super(id, ComponentType.STEP_SEQUENCER, 'Sequencer', position);
@@ -98,6 +104,7 @@ export class StepSequencer extends SynthComponent {
 
     // Add global parameters
     this.addParameter('bpm', 'BPM', 120, 30, 300, 1, '');
+    this.addParameter('bpmMode', 'BPM Mode', 0, 0, 1, 1, ''); // 0=global, 1=local
     this.addParameter('noteValue', 'Division', 2, 0, 5, 1, '');
     // Note values: 0=whole, 1=1/2, 2=1/4, 3=1/8, 4=1/16, 5=1/32
     this.addParameter('sequenceLength', 'Length', 16, 2, 16, 1, '');
@@ -160,6 +167,8 @@ export class StepSequencer extends SynthComponent {
     // Start polling for arp gate input (guards on mode + connection internally)
     this.startArpeggiatorMonitoring();
 
+    // Subscribe to global BPM (takes effect at next step boundary via existing scheduling)
+    this.subscribeToGlobalBpm();
   }
 
   /**
@@ -204,6 +213,7 @@ export class StepSequencer extends SynthComponent {
 
     this.stopArpeggiatorMonitoring();
     this.connectedGateTargets.clear();
+    this.unsubscribeFromGlobalBpm();
   }
 
   /**
@@ -216,6 +226,13 @@ export class StepSequencer extends SynthComponent {
       case 'sequenceLength':
       case 'mode':
         // Handled live in scheduling / display
+        break;
+      case 'bpmMode':
+        // 0 = follow global BPM; adopt current global value immediately.
+        // Guard: only when active (not during construction or deserialize).
+        if (value === 0 && this.isActive) {
+          this.setParameterValue('bpm', globalBpmController.getBpm());
+        }
         break;
       default:
         // Per-step parameter: sync the matching step field
@@ -327,6 +344,49 @@ export class StepSequencer extends SynthComponent {
    */
   unregisterGateTarget(target: SynthComponent): void {
     this.connectedGateTargets.delete(target);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Global BPM integration (TempoAware)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Subscribe to global BPM changes. Called from createAudioNodes() so it runs
+   * whenever the component is activated — including mid-playback canvas adds.
+   * The new BPM is applied via setParameterValue('bpm') which feeds into the
+   * existing scheduling loop and takes effect at the next step boundary.
+   */
+  subscribeToGlobalBpm(): void {
+    // Apply current global BPM immediately if in global mode
+    if ((this.getParameter('bpmMode')?.getValue() ?? 0) === 0) {
+      this.setParameterValue('bpm', globalBpmController.getBpm());
+    }
+
+    // Subscribe for future changes
+    this._globalBpmUnsubscribe = eventBus.on(
+      EventType.GLOBAL_BPM_CHANGED,
+      (data) => this.applyGlobalBpm((data as GlobalBpmChangedPayload).bpm)
+    );
+  }
+
+  /**
+   * Unsubscribe from global BPM changes. Called from destroyAudioNodes().
+   */
+  unsubscribeFromGlobalBpm(): void {
+    if (this._globalBpmUnsubscribe) {
+      this._globalBpmUnsubscribe();
+      this._globalBpmUnsubscribe = null;
+    }
+  }
+
+  /**
+   * Apply a new global BPM value. Only acts when in global mode (bpmMode=0).
+   * Takes effect at the next step boundary via the existing scheduling loop.
+   */
+  applyGlobalBpm(bpm: number): void {
+    if ((this.getParameter('bpmMode')?.getValue() ?? 0) === 0) {
+      this.setParameterValue('bpm', bpm);
+    }
   }
 
   /**

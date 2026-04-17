@@ -11,37 +11,35 @@
 
 ## Technical Context
 
-**Language/Version**: TypeScript (latest), Node.js (latest LTS)
-**Primary Dependencies**:
-- Backend: NestJS (latest), Drizzle ORM or TypeORM, PostgreSQL
-- Frontend: Angular (latest), Bootstrap (latest), ag-Grid
-**Storage**: PostgreSQL (latest) with multi-tenancy via `company_id` foreign keys
-**Testing**: Jest (backend), Jasmine/Karma (frontend), Playwright (E2E - if required)
-**Target Platform**: Kubernetes (production), Docker Compose (local development)
-**Project Type**: Web application (monorepo with backend/ and frontend/ directories)
-**Performance Goals**: Handle moderate frontend load + high automated process load (data imports, external API calls)
+**Language/Version**: TypeScript 5.6+, ES2020 target, strict mode
+**Primary Dependencies**: Web Audio API, DOM — zero runtime dependencies
+**Storage**: `localStorage` via existing `PatchSerializer` / `PatchStorage` pattern
+**Testing**: Vitest (run via `vitest run`)
+**Target Platform**: Browser (Vite dev server / static build)
+**Project Type**: Single-page modular synthesizer app (`src/` flat structure with `core/`, `components/`, `ui/`, `patch/`, `canvas/`, `timing/` directories)
+**Performance Goals**: 60 FPS canvas rendering; audio parameter changes take effect within one Web Audio scheduler tick (~128 samples)
 **Constraints**:
-- Small team (1-2 developers)
-- Multi-language support (EN, DE, HU+)
-- Multi-tenancy (company-level data isolation)
-- Audit trail for all data modifications
-**Scale/Scope**: Sea freight container management, 6 core workflows (data import, release approvals, drop-off/pick-up, street-turn, export)
+- Zero new runtime dependencies — Web Audio API + DOM only
+- TypeScript strict mode enforced
+- Follows existing singleton export pattern (`audioEngine`, `patchManager`, `eventBus`)
+- Patch format changes must be backward-compatible (legacy patches must load without error)
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-**Constitution Version**: 1.0.0
+**Constitution Version**: 1.0
 
-Verify feature compliance with VisiMatch Constitution principles:
+Verify feature compliance with project constitution principles:
 
-- [ ] **I. Rapid Prototyping with Quality Foundation**: Does feature enable single-developer context switching? Are types self-documenting? Are automated quality gates included?
-- [ ] **II. Monorepo Strategy with Modular Architecture**: Is feature organized by functionality (not layers)? Is module independently testable?
-- [ ] **III. Multi-Tenancy is Non-Negotiable**: Does every data model/query/endpoint enforce company-level isolation? Is `company_id` included in relevant models?
-- [ ] **IV. Observability and Audit Trail**: Are all data modifications logged with user ID, timestamp, and company context? Is Sentry integration included?
-- [ ] **V. Progressive Enhancement for UX Complexity**: Does UI match user type (Request/Approval UI = mobile-responsive wizard, Admin UI = desktop ag-Grid style)?
-- [ ] **VI. Deferred DevOps Complexity**: Does feature work in Docker Compose locally? Does it support multistage deployment (dev/test/prod)?
-- [ ] **VII. Security by Default**: Are sensitive configs in `.env`/secrets? Do JWT tokens include company context? Is HTTPS enforced?
+- [ ] **Readability & Maintainability**: Are types self-documenting? Do functions stay under 50 lines? Is nesting ≤ 3 levels?
+- [ ] **Code Organization**: Is new code grouped by responsibility (not layer)? Does it follow the existing `core/` / `components/` / `ui/` / `patch/` / `canvas/` split?
+- [ ] **Code Standards**: Does all code pass linting without warnings? Are magic numbers replaced with named constants? Is TypeScript strict mode satisfied?
+- [ ] **Test Coverage**: Does critical logic reach ≥ 80% coverage? Do utility/validation functions reach 100%? Do all public APIs have tests?
+- [ ] **Test Quality**: Are tests isolated (no shared state)? Do they follow AAA pattern? Are they named descriptively?
+- [ ] **UI Consistency**: Does new UI match existing top-bar / sidebar / canvas widget patterns? Are no new design tokens introduced without justification?
+- [ ] **User Feedback**: Do user actions receive synchronous visual feedback? Are loading states shown for operations > 300ms?
+- [ ] **Performance**: Is canvas rendering still ≥ 60 FPS after the change? Are audio-thread operations non-blocking?
 
 If any principle is violated, document in **Complexity Tracking** section below.
 
@@ -56,63 +54,51 @@ specs/[###-feature]/
 ├── data-model.md        # Phase 1 output (/speckit.plan command)
 ├── quickstart.md        # Phase 1 output (/speckit.plan command)
 ├── contracts/           # Phase 1 output (/speckit.plan command)
+│   ├── types.ts         # TypeScript type contracts
+│   └── validation.ts    # Validation helpers
 └── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
 ```
 
 ### Source Code (repository root)
 
 ```text
-backend/
-├── src/
-│   ├── [feature-name]/              # Feature-based organization
-│   │   ├── entities/                 # Database models with company_id
-│   │   ├── dto/                      # Data transfer objects
-│   │   ├── services/                 # Business logic
-│   │   ├── controllers/              # API endpoints
-│   │   └── [feature-name].module.ts  # NestJS module
-│   ├── common/                       # Shared utilities
-│   │   ├── guards/                   # Auth guards (multi-tenancy)
-│   │   ├── interceptors/             # Logging, error handling
-│   │   └── types/                    # Shared types
-│   └── main.ts
-├── tests/
-│   ├── contract/                     # API contract tests (if required)
-│   ├── integration/                  # User journey tests (if required)
-│   └── unit/                         # Business logic tests (if required)
-└── package.json
+src/
+├── core/                    # App-wide singletons and types
+│   ├── types.ts             # EventType enum, PatchData, ComponentData, etc.
+│   ├── EventBus.ts          # Publish-subscribe event system (singleton: eventBus)
+│   └── AudioEngine.ts       # Web Audio context wrapper (singleton: audioEngine)
+├── components/
+│   ├── base/
+│   │   └── SynthComponent.ts  # Abstract base class for all components
+│   ├── generators/          # Oscillator, LFO, NoiseGenerator, etc.
+│   ├── effects/             # Delay, Reverb, Distortion, Chorus
+│   ├── processors/          # Filter, VCA, ADSR, etc.
+│   ├── utilities/           # StepSequencer, Collider, ChordFinder, etc.
+│   └── analyzers/           # Oscilloscope, etc.
+├── ui/                      # Non-canvas UI widgets (Sidebar, modals, toolbar controls)
+├── patch/
+│   ├── PatchSerializer.ts   # Serialize/deserialize PatchData ↔ JSON
+│   ├── PatchStorage.ts      # localStorage read/write
+│   └── PatchManager.ts      # Patch lifecycle (new/save/load/export) — singleton: patchManager
+├── canvas/                  # Canvas rendering and CanvasComponent wrapper
+├── timing/                  # TimingCalculator (BPM ↔ ms conversions)
+├── music/                   # MusicalScale, WeightedRandomSelector, ScaleTypes
+├── physics/                 # PhysicsEngine, CollisionResolver, Vector2D
+├── storage/                 # AcceptanceStorage (localStorage wrappers)
+├── visualization/           # ModulationVisualizer, visual update scheduler
+├── styles/                  # main.css, components.css, canvas.css
+└── main.ts                  # App entry point — wires singletons and UI
 
-frontend/
-├── src/
-│   ├── app/
-│   │   ├── [feature-name]/           # Feature-based organization
-│   │   │   ├── components/           # Feature components
-│   │   │   ├── services/             # API clients
-│   │   │   ├── models/               # Frontend types
-│   │   │   └── [feature-name].module.ts
-│   │   ├── request-ui/               # Customer-facing wizard UI
-│   │   ├── admin-ui/                 # Power user ag-Grid UI
-│   │   ├── shared/                   # Shared components
-│   │   └── core/                     # Auth, guards, interceptors
-│   ├── environments/
-│   └── main.ts
-├── tests/
-│   └── e2e/                          # Playwright tests (if required)
-└── package.json
-
-shared/
-└── contracts/                        # Shared API types (TypeScript)
-
-docker-compose.yml                    # Local development (Traefik + services)
-.env.example                          # Environment template
+tests/                       # Vitest test files mirroring src/ structure
+index.html                   # Single HTML page; .top-bar + .main-content layout
 ```
 
-**Structure Decision**: Web application monorepo with feature-based organization. Backend (NestJS) and frontend (Angular) are independently buildable. Shared contracts ensure type safety across API boundaries.
+**Structure Decision**: Single-page browser app with no build-time server. All state is in-memory or `localStorage`. New features add files under the relevant `src/` subdirectory and are wired up in `main.ts`. Patch persistence uses the `PatchSerializer` → `PatchStorage` pipeline; no changes to this pipeline are needed unless a feature adds top-level `PatchData` fields.
 
 ## Complexity Tracking
 
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+|-----------|------------|--------------------------------------|
+| [describe violation] | [current need] | [why simpler approach is insufficient] |

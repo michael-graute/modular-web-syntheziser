@@ -19,12 +19,12 @@ function makeSequencer(): StepSequencer {
 }
 
 describe('StepSequencer parameter registration', () => {
-  it('registers exactly 70 parameters (2 global + 4 step × 16 + bpm + noteValue)', () => {
+  it('registers exactly 69 parameters (5 global + 4 step × 16)', () => {
     const seq = makeSequencer();
-    // bpm, noteValue, sequenceLength, mode = 4 global
+    // bpm, bpmMode, noteValue, sequenceLength, mode = 5 global
     // 16 steps × 4 fields = 64 per-step
-    // Total = 68
-    expect(seq.parameters.size).toBe(68);
+    // Total = 69
+    expect(seq.parameters.size).toBe(69);
   });
 
   it('registers sequenceLength parameter with default 16', () => {
@@ -98,12 +98,13 @@ describe('StepSequencer serialization round-trip', () => {
     expect(seq2.getMode()).toBe(1);
   });
 
-  it('serialized parameters map contains all 68 keys', () => {
+  it('serialized parameters map contains all 69 keys', () => {
     const seq = makeSequencer();
     const data = seq.serialize();
     // Count keys in serialized parameters
+    // 69 = 4 global params (bpm, bpmMode, noteValue, sequenceLength, mode) + 16*4 step params
     const paramKeys = Object.keys(data.parameters);
-    expect(paramKeys.length).toBe(68);
+    expect(paramKeys.length).toBe(69);
   });
 
   it('serialized parameters include all step_N_* keys', () => {

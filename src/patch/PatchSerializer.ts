@@ -5,6 +5,7 @@
 import { PatchData, ComponentData, Connection as ConnectionType } from '../core/types';
 import type { SynthComponent } from '../components/base/SynthComponent';
 import type { Connection } from '../core/Connection';
+import { globalBpmController } from '../core/GlobalBpmController';
 
 /**
  * Serializes patch data to JSON format
@@ -30,7 +31,7 @@ export class PatchSerializer {
       connection.serialize()
     );
 
-    return {
+    const patch: PatchData = {
       name,
       version: '1.0',
       created: now,
@@ -38,6 +39,8 @@ export class PatchSerializer {
       components: componentData,
       connections: connectionData,
     };
+
+    return globalBpmController.saveToPatch(patch);
   }
 
   /**
@@ -121,8 +124,8 @@ export class PatchSerializer {
       }
     }
 
-    // Return validated patch data
-    return {
+    // Return validated patch data (globalBpm is optional — preserved when present)
+    const validated: PatchData = {
       name: data.name,
       version: data.version || '1.0',
       created: data.created || new Date().toISOString(),
@@ -130,6 +133,12 @@ export class PatchSerializer {
       components: data.components,
       connections: data.connections,
     };
+
+    if (typeof data.globalBpm === 'number') {
+      validated.globalBpm = data.globalBpm;
+    }
+
+    return validated;
   }
 
   /**
