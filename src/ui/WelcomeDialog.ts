@@ -108,11 +108,11 @@ export class WelcomeDialog extends Modal {
               This software is open source and distributed under the MIT License. You are free to use, modify, and distribute this software in accordance with the terms of the license.
             </p>
 
-            <h4 style="margin: 16px 0 8px 0; font-size: 0.9rem; font-weight: 600;">4. User Responsibility</h4>
-            <p style="margin: 0 0 12px 0;">
+            <h4 style="margin: 16px 0 8px 0; font-size: 0.9rem; font-weight: 600; color: #FFC107;">4. User Responsibility</h4>
+            <p style="margin: 0 0 12px 0; color: #FFC107;">
               You are responsible for your use of this software. Please be mindful of audio levels to protect your hearing and equipment.
             </p>
-            <p style="margin: 0;">
+            <p style="margin: 0; color:#FF9800";>
               Audio synthesis can produce loud or unexpected sounds. Start with low volume levels and adjust carefully.
             </p>
           </div>
