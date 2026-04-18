@@ -44,7 +44,7 @@ const INDEX_TO_SCALE_TYPE: Record<number, ChordScaleType> = {
  * Parameters (all stored as numbers for serialization compatibility):
  * - rootNote: 0–11 (C=0 … B=11)
  * - scaleType: 0=MAJOR, 1=NATURAL_MINOR
- * - octave: 2–6 (default 4)
+ * - octave: 2–6 (default 3)
  * - progression: 7-bit bitmask (0 = no active progression)
  */
 export class ChordFinder extends SynthComponent {
@@ -71,18 +71,18 @@ export class ChordFinder extends SynthComponent {
   constructor(id: string, position: Position) {
     super(id, ComponentType.CHORD_FINDER, 'Chord Finder', position);
 
-    // Default config: C Major, octave 4, no progression
+    // Default config: C Major, octave 3, no progression
     this.config = {
       rootNote: 'C',
       scaleType: ChordScaleType.MAJOR,
-      octave: 4,
+      octave: 3,
       progression: [],
     };
 
     // Register parameters (numeric, for patch serialization)
     this.addParameter('rootNote', 'Root', 0, 0, 11, 1, '');
     this.addParameter('scaleType', 'Scale', 0, 0, 1, 1, '');
-    this.addParameter('octave', 'Oct', 4, 2, 6, 1, '');
+    this.addParameter('octave', 'Oct', 3, 2, 6, 1, '');
     this.addParameter('progression', 'Prog', 0, 0, 127, 1, '');
 
     // Register output ports (T029)
@@ -370,7 +370,7 @@ export class ChordFinder extends SynthComponent {
     const restoredConfig = deserializeChordFinderConfig({
       rootNote: p['rootNote'] ?? 0,
       scaleType: p['scaleType'] ?? 0,
-      octave: p['octave'] ?? 4,
+      octave: p['octave'] ?? 3,
       progression: p['progression'] ?? 0,
     });
 
@@ -380,7 +380,7 @@ export class ChordFinder extends SynthComponent {
     // Sync numeric parameters
     this.parameters.get('rootNote')?.setValue(p['rootNote'] ?? 0);
     this.parameters.get('scaleType')?.setValue(p['scaleType'] ?? 0);
-    this.parameters.get('octave')?.setValue(p['octave'] ?? 4);
+    this.parameters.get('octave')?.setValue(p['octave'] ?? 3);
     this.parameters.get('progression')?.setValue(p['progression'] ?? 0);
   }
 

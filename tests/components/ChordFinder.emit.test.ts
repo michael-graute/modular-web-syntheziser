@@ -109,14 +109,14 @@ describe('ChordFinder: CHORD_NOTES_ON event emission', () => {
     expect(receivedPayloads[0]!.sourceId).toBe('cf-1');
   });
 
-  it('payload notes are octave-shifted MIDI values (octave 4: C4=60, E4=64, G4=67)', () => {
-    cf.pressChord(0); // C Major I chord at octave 4
+  it('payload notes are octave-shifted MIDI values (octave 3: C3=48, E3=52, G3=55)', () => {
+    cf.pressChord(0); // C Major I chord at octave 3 (default)
     const notes = receivedPayloads[0]!.notes;
-    // C Major diatonic degree 0 = C-E-G at octave 4
+    // C Major diatonic degree 0 = C-E-G at octave 3
     expect(notes).toHaveLength(3);
-    expect(notes[0]).toBe(60); // C4
-    expect(notes[1]).toBe(64); // E4
-    expect(notes[2]).toBe(67); // G4
+    expect(notes[0]).toBe(48); // C3
+    expect(notes[1]).toBe(52); // E3
+    expect(notes[2]).toBe(55); // G3
   });
 
   it('octave shift is applied: octave 5 shifts all notes up by 12', () => {
