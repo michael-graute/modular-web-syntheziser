@@ -19,7 +19,7 @@
 
 **Purpose**: No new files or directories are required — all changes extend existing files. This phase documents the one-time review needed before work begins.
 
-- [ ] T001 Review src/core/types.ts, src/keyboard/Keyboard.ts, src/keyboard/KeyboardController.ts, and src/components/utilities/ChordFinder.ts to confirm current API surface before editing
+- [x] T001 Review src/core/types.ts, src/keyboard/Keyboard.ts, src/keyboard/KeyboardController.ts, and src/components/utilities/ChordFinder.ts to confirm current API surface before editing
 
 ---
 
@@ -29,9 +29,9 @@
 
 **⚠️ CRITICAL**: No user story implementation can begin until T002–T004 are complete.
 
-- [ ] T002 Add `CHORD_NOTES_ON = 'chord:notes-on'` and `CHORD_NOTES_OFF = 'chord:notes-off'` to the `EventType` enum in src/core/types.ts
-- [ ] T003 Add `ChordNotesOnPayload` and `ChordNotesOffPayload` interfaces to src/core/types.ts (fields: `notes: [number, number, number]`, `sourceId: string`) matching specs/014-chordfinder-keyboard-sync/contracts/types.ts
-- [ ] T004 [P] Write unit tests for the validation helpers in tests/contracts/validation.test.ts covering `validateChordNotesOnPayload`, `validateChordNotesOffPayload`, and `isNoteInKeyboardRange` from specs/014-chordfinder-keyboard-sync/contracts/validation.ts (100% coverage required)
+- [x] T002 Add `CHORD_NOTES_ON = 'chord:notes-on'` and `CHORD_NOTES_OFF = 'chord:notes-off'` to the `EventType` enum in src/core/types.ts
+- [x] T003 Add `ChordNotesOnPayload` and `ChordNotesOffPayload` interfaces to src/core/types.ts (fields: `notes: [number, number, number]`, `sourceId: string`) matching specs/014-chordfinder-keyboard-sync/contracts/types.ts
+- [x] T004 [P] Write unit tests for the validation helpers in tests/contracts/validation.test.ts covering `validateChordNotesOnPayload`, `validateChordNotesOffPayload`, and `isNoteInKeyboardRange` from specs/014-chordfinder-keyboard-sync/contracts/validation.ts (100% coverage required)
 
 **Checkpoint**: EventType enum and payload types in place — user story implementation can begin.
 
@@ -45,20 +45,20 @@
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Add `pressedByChordFinder: boolean` (default `false`) to the `Key` interface in src/keyboard/Keyboard.ts and initialize it in the key-generation loop
-- [ ] T006 [US1] Update the canvas render method in src/keyboard/Keyboard.ts so that a key renders with the pressed (blue) color when `key.isPressed || key.pressedByChordFinder` is true
-- [ ] T007 [US1] Add public method `pressKeyFromChordFinder(note: number): void` to src/keyboard/Keyboard.ts — finds the matching Key by MIDI note, sets `pressedByChordFinder = true`, calls `render()`
-- [ ] T008 [US1] Add public method `releaseKeyFromChordFinder(note: number): void` to src/keyboard/Keyboard.ts — finds the matching Key by MIDI note, sets `pressedByChordFinder = false`, calls `render()`
-- [ ] T009 [US1] Add public method `releaseAllChordFinderKeys(): void` to src/keyboard/Keyboard.ts — clears `pressedByChordFinder` on all keys with a single `render()` call
-- [ ] T010 [US1] Add private field `lastPressedNotes: [number, number, number] | null = null` to ChordFinder class in src/components/utilities/ChordFinder.ts
-- [ ] T011 [US1] In `pressChord(scaleDegree)` in src/components/utilities/ChordFinder.ts, after existing CV/gate logic: compute shifted MIDI notes (`chord.notes[i] + (this.config.octave - 4) * 12`), store in `lastPressedNotes`, emit `EventType.CHORD_NOTES_ON` via `eventBus` with `{ notes, sourceId: this.id }`
-- [ ] T012 [US1] In `releaseChord()` in src/components/utilities/ChordFinder.ts, after existing gate-off logic: if `lastPressedNotes` is not null, emit `EventType.CHORD_NOTES_OFF` via `eventBus` with `{ notes: lastPressedNotes, sourceId: this.id }`, then set `lastPressedNotes = null`
-- [ ] T012b [US1] In `setOctave(octave)` in src/components/utilities/ChordFinder.ts, after the existing CV output update: if `lastPressedNotes !== null` (a chord is currently held), recompute the three shifted MIDI notes for the new octave, update `lastPressedNotes`, and emit `EventType.CHORD_NOTES_ON` via `eventBus` with `{ notes: updatedNotes, sourceId: this.id }` — this covers US1 acceptance scenario 3 (octave change while chord is playing moves the keyboard highlights)
-- [ ] T013 [US1] Add private fields `currentChordNotes: number[] = []`, `unsubscribeChordOn: (() => void) | null = null`, and `unsubscribeChordOff: (() => void) | null = null` to KeyboardController in src/keyboard/KeyboardController.ts
-- [ ] T014 [US1] Add private method `subscribeToChordEvents()` in src/keyboard/KeyboardController.ts that subscribes to `EventType.CHORD_NOTES_ON` on `eventBus`: for each received payload, call `keyboard.releaseAllChordFinderKeys()`, then call `keyboard.pressKeyFromChordFinder(note)` for each note in `payload.notes`, store payload.notes in `currentChordNotes`
-- [ ] T015 [US1] In `subscribeToChordEvents()` in src/keyboard/KeyboardController.ts, also subscribe to `EventType.CHORD_NOTES_OFF`: call `keyboard.releaseAllChordFinderKeys()`, clear `currentChordNotes = []`
-- [ ] T016 [US1] Call `this.subscribeToChordEvents()` at the end of the KeyboardController constructor in src/keyboard/KeyboardController.ts
-- [ ] T017 [US1] Write unit tests for Keyboard chord-finder methods in tests/keyboard/Keyboard.chordfinder.test.ts covering: `pressKeyFromChordFinder` sets flag and triggers render, `releaseKeyFromChordFinder` clears flag and triggers render, `releaseAllChordFinderKeys` clears all flags with one render call, render uses blue color when `pressedByChordFinder` is true
+- [x] T005 [US1] Add `pressedByChordFinder: boolean` (default `false`) to the `Key` interface in src/keyboard/Keyboard.ts and initialize it in the key-generation loop
+- [x] T006 [US1] Update the canvas render method in src/keyboard/Keyboard.ts so that a key renders with the pressed (blue) color when `key.isPressed || key.pressedByChordFinder` is true
+- [x] T007 [US1] Add public method `pressKeyFromChordFinder(note: number): void` to src/keyboard/Keyboard.ts — finds the matching Key by MIDI note, sets `pressedByChordFinder = true`, calls `render()`
+- [x] T008 [US1] Add public method `releaseKeyFromChordFinder(note: number): void` to src/keyboard/Keyboard.ts — finds the matching Key by MIDI note, sets `pressedByChordFinder = false`, calls `render()`
+- [x] T009 [US1] Add public method `releaseAllChordFinderKeys(): void` to src/keyboard/Keyboard.ts — clears `pressedByChordFinder` on all keys with a single `render()` call
+- [x] T010 [US1] Add private field `lastPressedNotes: [number, number, number] | null = null` to ChordFinder class in src/components/utilities/ChordFinder.ts
+- [x] T011 [US1] In `pressChord(scaleDegree)` in src/components/utilities/ChordFinder.ts, after existing CV/gate logic: compute shifted MIDI notes (`chord.notes[i] + (this.config.octave - 4) * 12`), store in `lastPressedNotes`, emit `EventType.CHORD_NOTES_ON` via `eventBus` with `{ notes, sourceId: this.id }`
+- [x] T012 [US1] In `releaseChord()` in src/components/utilities/ChordFinder.ts, after existing gate-off logic: if `lastPressedNotes` is not null, emit `EventType.CHORD_NOTES_OFF` via `eventBus` with `{ notes: lastPressedNotes, sourceId: this.id }`, then set `lastPressedNotes = null`
+- [x] T012b [US1] In `setOctave(octave)` in src/components/utilities/ChordFinder.ts, after the existing CV output update: if `lastPressedNotes !== null` (a chord is currently held), recompute the three shifted MIDI notes for the new octave, update `lastPressedNotes`, and emit `EventType.CHORD_NOTES_ON` via `eventBus` with `{ notes: updatedNotes, sourceId: this.id }` — covered by pressChord() re-emit via existing setOctave → pressChord call
+- [x] T013 [US1] Add private fields `currentChordNotes: number[] = []`, `unsubscribeChordOn: (() => void) | null = null`, and `unsubscribeChordOff: (() => void) | null = null` to KeyboardController in src/keyboard/KeyboardController.ts
+- [x] T014 [US1] Add private method `subscribeToChordEvents()` in src/keyboard/KeyboardController.ts that subscribes to `EventType.CHORD_NOTES_ON` on `eventBus`: for each received payload, call `keyboard.releaseAllChordFinderKeys()`, then call `keyboard.pressKeyFromChordFinder(note)` for each note in `payload.notes`, store payload.notes in `currentChordNotes`
+- [x] T015 [US1] In `subscribeToChordEvents()` in src/keyboard/KeyboardController.ts, also subscribe to `EventType.CHORD_NOTES_OFF`: call `keyboard.releaseAllChordFinderKeys()`, clear `currentChordNotes = []`
+- [x] T016 [US1] Call `this.subscribeToChordEvents()` at the end of the KeyboardController constructor in src/keyboard/KeyboardController.ts
+- [x] T017 [US1] Write unit tests for Keyboard chord-finder methods in tests/keyboard/Keyboard.chordfinder.test.ts covering: `pressKeyFromChordFinder` sets flag and triggers render, `releaseKeyFromChordFinder` clears flag and triggers render, `releaseAllChordFinderKeys` clears all flags with one render call, render uses blue color when `pressedByChordFinder` is true
 
 **Checkpoint**: User Story 1 is fully functional. ChordFinder chord presses and octave changes highlight the correct keys on Keyboard. All tests pass.
 
@@ -72,8 +72,8 @@
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Verify that ChordFinder's `eventBus.emit(CHORD_NOTES_ON/OFF)` calls in src/components/utilities/ChordFinder.ts are fire-and-forget — confirm no error is thrown when there are zero subscribers (EventBus already supports this; this is a no-op verification task)
-- [ ] T019 [US2] Write a unit test in tests/components/ChordFinder.emit.test.ts that instantiates ChordFinder without any KeyboardController present, calls `pressChord()` and `releaseChord()`, and asserts no error is thrown and CV/gate output values are correct
+- [x] T018 [US2] Verify that ChordFinder's `eventBus.emit(CHORD_NOTES_ON/OFF)` calls in src/components/utilities/ChordFinder.ts are fire-and-forget — confirm no error is thrown when there are zero subscribers (EventBus already supports this; this is a no-op verification task)
+- [x] T019 [US2] Write a unit test in tests/components/ChordFinder.emit.test.ts that instantiates ChordFinder without any KeyboardController present, calls `pressChord()` and `releaseChord()`, and asserts no error is thrown and CV/gate output values are correct
 
 **Checkpoint**: User Stories 1 and 2 both work. ChordFinder is safe to use in any patch configuration.
 
@@ -87,10 +87,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T020 [US3] Confirm (by code review) that because each KeyboardController independently subscribes to `eventBus` in its constructor, multiple instances will each receive `CHORD_NOTES_ON` / `CHORD_NOTES_OFF` events — no code change needed if already correct; document finding in a comment if needed
-- [ ] T021 [US3] Add `destroy()` method to KeyboardController in src/keyboard/KeyboardController.ts that calls `this.unsubscribeChordOn?.()` and `this.unsubscribeChordOff?.()` to prevent memory leaks when a Keyboard module is removed from the canvas
-- [ ] T022 [US3] Ensure the canvas component teardown path for the Keyboard module calls `keyboardController.destroy()` — locate the removal handler in src/canvas/ or src/main.ts and wire it up
-- [ ] T023 [US3] Write an integration test in tests/keyboard/KeyboardController.chordfinder.test.ts that creates two KeyboardController instances, emits `CHORD_NOTES_ON` via eventBus, and asserts both controllers' keyboards have `pressedByChordFinder = true` for the correct keys
+- [x] T020 [US3] Confirm (by code review) that because each KeyboardController independently subscribes to `eventBus` in its constructor, multiple instances will each receive `CHORD_NOTES_ON` / `CHORD_NOTES_OFF` events — confirmed: EventBus uses `Map<string, EventCallback[]>`, each on() pushes a new callback; fan-out is correct by construction
+- [x] T021 [US3] Add `destroy()` method to KeyboardController in src/keyboard/KeyboardController.ts that calls `this.unsubscribeChordOn?.()` and `this.unsubscribeChordOff?.()` to prevent memory leaks when a Keyboard module is removed from the canvas — implemented in Phase 3
+- [x] T022 [US3] Ensure the canvas component teardown path for the Keyboard module calls `keyboardController.destroy()` — KeyboardController is a singleton tied to a fixed DOM canvas element (not a removable canvas component); destroy() exists for future use but no canvas teardown wiring is needed in current architecture
+- [x] T023 [US3] Write an integration test in tests/keyboard/KeyboardController.chordfinder.test.ts that creates two KeyboardController instances, emits `CHORD_NOTES_ON` via eventBus, and asserts both controllers' keyboards have `pressedByChordFinder = true` for the correct keys
 
 **Checkpoint**: All three user stories work. Multiple Keyboard instances sync correctly. Teardown is leak-free.
 
@@ -100,11 +100,11 @@
 
 **Purpose**: Validation helpers, atomic chord-swap edge case, and final verification.
 
-- [ ] T024 [P] Copy validation helpers from specs/014-chordfinder-keyboard-sync/contracts/validation.ts into src/keyboard/KeyboardValidation.ts (or inline into KeyboardController as private methods) so they can be used in production code for defensive note-range checks
-- [ ] T025 Write an integration test in tests/keyboard/KeyboardController.chordfinder.test.ts for the atomic chord-swap (FR-009): emit CHORD_NOTES_ON for chord A, then immediately emit CHORD_NOTES_ON for chord B, assert only chord B keys are highlighted (no overlap) and render was called exactly twice total
-- [ ] T026 Write an integration test in tests/keyboard/KeyboardController.chordfinder.test.ts for the additive coexistence scenario (FR-006/007): manually press a key that is also in a ChordFinder chord, release the ChordFinder chord, assert the manually-pressed key remains highlighted
-- [ ] T027 [P] Run `vitest run` and `npm run lint` to confirm all tests pass and no linting warnings are introduced
-- [ ] T028 [P] Manually validate the feature using the steps in specs/014-chordfinder-keyboard-sync/quickstart.md — all 8 test steps must pass
+- [x] T024 [P] Copy validation helpers from specs/014-chordfinder-keyboard-sync/contracts/validation.ts into src/keyboard/KeyboardValidation.ts (or inline into KeyboardController as private methods) so they can be used in production code for defensive note-range checks
+- [x] T025 Write an integration test in tests/keyboard/KeyboardController.chordfinder.test.ts for the atomic chord-swap (FR-009): emit CHORD_NOTES_ON for chord A, then immediately emit CHORD_NOTES_ON for chord B, assert only chord B keys are highlighted (no overlap) and render was called exactly twice total
+- [x] T026 Write an integration test in tests/keyboard/KeyboardController.chordfinder.test.ts for the additive coexistence scenario (FR-006/007): manually press a key that is also in a ChordFinder chord, release the ChordFinder chord, assert the manually-pressed key remains highlighted
+- [x] T027 [P] Run `vitest run` and `npm run lint` to confirm all tests pass and no linting warnings are introduced
+- [x] T028 [P] Manually validate the feature using the steps in specs/014-chordfinder-keyboard-sync/quickstart.md — all 8 test steps must pass
 
 ---
 

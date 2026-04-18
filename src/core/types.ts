@@ -145,6 +145,8 @@ export enum EventType {
   NOTE_ON = 'note:on',
   NOTE_OFF = 'note:off',
   GLOBAL_BPM_CHANGED = 'global:bpm-changed',
+  CHORD_NOTES_ON = 'chord:notes-on',
+  CHORD_NOTES_OFF = 'chord:notes-off',
 }
 
 /**
@@ -183,6 +185,25 @@ export interface ViewportEvent {
  */
 export interface GlobalBpmChangedPayload {
   bpm: number;
+}
+
+/**
+ * Payload emitted with CHORD_NOTES_ON event.
+ * Carries the three octave-shifted MIDI note numbers of the pressed chord
+ * and the ID of the ChordFinder that emitted the event.
+ */
+export interface ChordNotesOnPayload {
+  notes: [number, number, number];
+  sourceId: string;
+}
+
+/**
+ * Payload emitted with CHORD_NOTES_OFF event.
+ * Mirrors ChordNotesOnPayload — carries the same notes that were pressed.
+ */
+export interface ChordNotesOffPayload {
+  notes: [number, number, number];
+  sourceId: string;
 }
 
 /**

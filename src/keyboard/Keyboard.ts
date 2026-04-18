@@ -14,6 +14,7 @@ interface Key {
   x: number;
   width: number;
   isPressed: boolean;
+  pressedByChordFinder: boolean; // ChordFinder-sourced highlight (independent of manual press)
 }
 
 /**
@@ -103,6 +104,7 @@ export class Keyboard {
           x: whiteKeyIndex * whiteKeyWidth,
           width: whiteKeyWidth,
           isPressed: false,
+          pressedByChordFinder: false,
         };
         this.keys.push(whiteKey);
         whiteKeyIndex++;
@@ -119,6 +121,7 @@ export class Keyboard {
             x: whiteKey.x + whiteKeyWidth - KEYBOARD.BLACK_KEY_WIDTH / 2,
             width: KEYBOARD.BLACK_KEY_WIDTH,
             isPressed: false,
+            pressedByChordFinder: false,
           };
           this.keys.push(blackKey);
         }
@@ -269,6 +272,41 @@ export class Keyboard {
   }
 
   /**
+   * Highlight a key from a ChordFinder chord press (does not trigger audio callbacks).
+   * No-op if the note is outside the visible range.
+   */
+  pressKeyFromChordFinder(note: number): void {
+    const key = this.keys.find((k) => k.note === note);
+    if (key) {
+      key.pressedByChordFinder = true;
+      this.render();
+    }
+  }
+
+  /**
+   * Remove ChordFinder highlight from a key (does not trigger audio callbacks).
+   * The key remains highlighted if isPressed is still true (manual press active).
+   */
+  releaseKeyFromChordFinder(note: number): void {
+    const key = this.keys.find((k) => k.note === note);
+    if (key) {
+      key.pressedByChordFinder = false;
+      this.render();
+    }
+  }
+
+  /**
+   * Remove all ChordFinder highlights in a single render call.
+   * Used for atomic chord swap and chord release.
+   */
+  releaseAllChordFinderKeys(): void {
+    this.keys.forEach((key) => {
+      key.pressedByChordFinder = false;
+    });
+    this.render();
+  }
+
+  /**
    * Set octave (shifts all keys)
    */
   setOctave(octave: number): void {
@@ -342,11 +380,12 @@ export class Keyboard {
       ? KEYBOARD.BLACK_KEY_HEIGHT
       : this.canvas.clientHeight;
 
-    // Fill key
+    // Fill key — highlighted when pressed manually OR by ChordFinder
+    const highlighted = key.isPressed || key.pressedByChordFinder;
     if (key.isBlack) {
-      this.ctx.fillStyle = key.isPressed ? '#4a9eff' : '#2a2a2a';
+      this.ctx.fillStyle = highlighted ? '#4a9eff' : '#2a2a2a';
     } else {
-      this.ctx.fillStyle = key.isPressed ? '#60a5fa' : '#ffffff';
+      this.ctx.fillStyle = highlighted ? '#60a5fa' : '#ffffff';
     }
     this.ctx.fillRect(key.x, 0, key.width, height);
 
@@ -357,7 +396,7 @@ export class Keyboard {
 
     // Draw note name on white keys
     if (!key.isBlack) {
-      this.ctx.fillStyle = key.isPressed ? '#ffffff' : '#808080';
+      this.ctx.fillStyle = highlighted ? '#ffffff' : '#808080';
       this.ctx.font = '10px -apple-system, sans-serif';
       this.ctx.textAlign = 'center';
       this.ctx.textBaseline = 'bottom';
