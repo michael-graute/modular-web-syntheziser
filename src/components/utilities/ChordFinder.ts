@@ -7,8 +7,10 @@
  */
 
 import { SynthComponent } from '../base/SynthComponent';
-import { ComponentType, Position, SignalType } from '../../core/types';
+import { ComponentType, EventType, Position, SignalType } from '../../core/types';
+import type { ChordNotesOnPayload, ChordNotesOffPayload } from '../../core/types';
 import { audioEngine } from '../../core/AudioEngine';
+import { eventBus } from '../../core/EventBus';
 import { getDiatonicChords, generateProgression } from '../../music/ChordTheory';
 import type {
   ChordFinderConfig,
@@ -42,7 +44,7 @@ const INDEX_TO_SCALE_TYPE: Record<number, ChordScaleType> = {
  * Parameters (all stored as numbers for serialization compatibility):
  * - rootNote: 0–11 (C=0 … B=11)
  * - scaleType: 0=MAJOR, 1=NATURAL_MINOR
- * - octave: 2–6 (default 4)
+ * - octave: 2–6 (default 3)
  * - progression: 7-bit bitmask (0 = no active progression)
  */
 export class ChordFinder extends SynthComponent {
@@ -50,6 +52,7 @@ export class ChordFinder extends SynthComponent {
   private config: ChordFinderConfig;
   private diatonicChords: DiatonicChord[] = [];
   private pressedDegree: number | null = null;
+  private lastPressedNotes: [number, number, number] | null = null;
 
   // Audio nodes
   private note1Output: ConstantSourceNode | null = null;
@@ -68,18 +71,18 @@ export class ChordFinder extends SynthComponent {
   constructor(id: string, position: Position) {
     super(id, ComponentType.CHORD_FINDER, 'Chord Finder', position);
 
-    // Default config: C Major, octave 4, no progression
+    // Default config: C Major, octave 3, no progression
     this.config = {
       rootNote: 'C',
       scaleType: ChordScaleType.MAJOR,
-      octave: 4,
+      octave: 3,
       progression: [],
     };
 
     // Register parameters (numeric, for patch serialization)
     this.addParameter('rootNote', 'Root', 0, 0, 11, 1, '');
     this.addParameter('scaleType', 'Scale', 0, 0, 1, 1, '');
-    this.addParameter('octave', 'Oct', 4, 2, 6, 1, '');
+    this.addParameter('octave', 'Oct', 3, 2, 6, 1, '');
     this.addParameter('progression', 'Prog', 0, 0, 127, 1, '');
 
     // Register output ports (T029)
@@ -265,6 +268,16 @@ export class ChordFinder extends SynthComponent {
 
     this.pressedDegree = scaleDegree;
 
+    // Compute octave-shifted MIDI notes and emit for keyboard visual sync
+    const shiftedNotes: [number, number, number] = [
+      chord.notes[0]! + octaveShift,
+      chord.notes[1]! + octaveShift,
+      chord.notes[2]! + octaveShift,
+    ];
+    this.lastPressedNotes = shiftedNotes;
+    const onPayload: ChordNotesOnPayload = { notes: shiftedNotes, sourceId: this.id };
+    eventBus.emit(EventType.CHORD_NOTES_ON, onPayload);
+
     // Trigger all registered gate targets
     this.gateTargets.forEach((target) => {
       const method = (target as unknown as Record<string, unknown>)['triggerGateOn'];
@@ -283,6 +296,13 @@ export class ChordFinder extends SynthComponent {
 
     if (this.gateOutput) this.gateOutput.offset.setValueAtTime(0.0, t);
     this.pressedDegree = null;
+
+    // Emit keyboard visual sync event before clearing lastPressedNotes
+    if (this.lastPressedNotes !== null) {
+      const offPayload: ChordNotesOffPayload = { notes: this.lastPressedNotes, sourceId: this.id };
+      eventBus.emit(EventType.CHORD_NOTES_OFF, offPayload);
+      this.lastPressedNotes = null;
+    }
 
     this.gateTargets.forEach((target) => {
       const method = (target as unknown as Record<string, unknown>)['triggerGateOff'];
@@ -350,7 +370,7 @@ export class ChordFinder extends SynthComponent {
     const restoredConfig = deserializeChordFinderConfig({
       rootNote: p['rootNote'] ?? 0,
       scaleType: p['scaleType'] ?? 0,
-      octave: p['octave'] ?? 4,
+      octave: p['octave'] ?? 3,
       progression: p['progression'] ?? 0,
     });
 
@@ -360,7 +380,7 @@ export class ChordFinder extends SynthComponent {
     // Sync numeric parameters
     this.parameters.get('rootNote')?.setValue(p['rootNote'] ?? 0);
     this.parameters.get('scaleType')?.setValue(p['scaleType'] ?? 0);
-    this.parameters.get('octave')?.setValue(p['octave'] ?? 4);
+    this.parameters.get('octave')?.setValue(p['octave'] ?? 3);
     this.parameters.get('progression')?.setValue(p['progression'] ?? 0);
   }
 

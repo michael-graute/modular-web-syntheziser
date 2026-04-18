@@ -6,6 +6,9 @@ import { Keyboard } from './Keyboard';
 import { NoteMapper } from './NoteMapper';
 import { VoiceManager } from './VoiceManager';
 import { KEYBOARD } from '../utils/constants';
+import { EventType } from '../core/types';
+import type { ChordNotesOnPayload, ChordNotesOffPayload } from '../core/types';
+import { eventBus } from '../core/EventBus';
 
 /**
  * Manages keyboard input and note triggering
@@ -15,6 +18,9 @@ export class KeyboardController {
   private noteMapper: NoteMapper;
   private voiceManager: VoiceManager;
   private pressedKeys: Set<string>;
+  private currentChordNotes: number[] = [];
+  private unsubscribeChordOn: (() => void) | null = null;
+  private unsubscribeChordOff: (() => void) | null = null;
 
   constructor(
     keyboardCanvas: HTMLCanvasElement,
@@ -27,6 +33,42 @@ export class KeyboardController {
 
     this.setupKeyboard();
     this.setupQwertyInput();
+    this.subscribeToChordEvents();
+  }
+
+  /**
+   * Subscribe to ChordFinder chord events for keyboard visual sync.
+   * On CHORD_NOTES_ON: atomically replace previous chord highlights with the new ones.
+   * On CHORD_NOTES_OFF: clear all ChordFinder highlights.
+   */
+  private subscribeToChordEvents(): void {
+    this.unsubscribeChordOn = eventBus.on(EventType.CHORD_NOTES_ON, (data) => {
+      const payload = data as ChordNotesOnPayload;
+      // Atomic swap: clear previous chord, apply new one, single render via releaseAllChordFinderKeys
+      this.keyboard.releaseAllChordFinderKeys();
+      payload.notes.forEach((note) => this.keyboard.pressKeyFromChordFinder(note));
+      this.currentChordNotes = [...payload.notes];
+    });
+
+    this.unsubscribeChordOff = eventBus.on(EventType.CHORD_NOTES_OFF, (_data: unknown) => {
+      const payload = _data as ChordNotesOffPayload;
+      void payload; // notes already cleared atomically; we clear all for safety
+      this.keyboard.releaseAllChordFinderKeys();
+      this.currentChordNotes = [];
+    });
+  }
+
+  /**
+   * Release EventBus subscriptions and clear chord highlight state.
+   * Call when removing the Keyboard module from the canvas.
+   */
+  destroy(): void {
+    this.unsubscribeChordOn?.();
+    this.unsubscribeChordOff?.();
+    this.unsubscribeChordOn = null;
+    this.unsubscribeChordOff = null;
+    this.keyboard.releaseAllChordFinderKeys();
+    this.currentChordNotes = [];
   }
 
   /**
@@ -213,5 +255,12 @@ export class KeyboardController {
    */
   getNoteMapper(): NoteMapper {
     return this.noteMapper;
+  }
+
+  /**
+   * Get the MIDI notes currently highlighted by ChordFinder (for testing/inspection).
+   */
+  getCurrentChordNotes(): number[] {
+    return [...this.currentChordNotes];
   }
 }
