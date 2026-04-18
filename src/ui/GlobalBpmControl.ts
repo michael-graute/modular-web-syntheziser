@@ -55,7 +55,7 @@ export class GlobalBpmControl {
     });
 
     // Assemble
-    this.container.style.cssText = 'display:flex;align-items:center;gap:4px;';
+    this.container.style.cssText = 'display:flex;align-items:center;gap:4px;margin-right:50px';
     this.container.appendChild(label);
     this.container.appendChild(this.input);
     this.container.appendChild(tapBtn);
