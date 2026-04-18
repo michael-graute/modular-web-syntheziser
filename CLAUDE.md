@@ -15,6 +15,7 @@ Auto-generated from all feature plans. Last updated: 2025-10-29
 - None — display is stateless; audio data pulled from `Oscilloscope` component each frame (011-oscilloscope-main-canvas)
 - `localStorage` via existing `PatchSerializer` / `PatchStorage` pattern (012-step-sequencer-refactor)
 - TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero new runtime dependencies (013-global-bpm)
+- TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero runtime dependencies (014-chordfinder-keyboard-sync)
 
 - TypeScript 5.6+, ES2020 target (001-effect-bypass)
 
@@ -34,9 +35,9 @@ npm test && npm run lint
 TypeScript 5.6+, ES2020 target: Follow standard conventions
 
 ## Recent Changes
+- 014-chordfinder-keyboard-sync: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero runtime dependencies
 - 013-global-bpm: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero new runtime dependencies
 - 013-global-bpm: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero new runtime dependencies
-- 012-step-sequencer-refactor: Added TypeScript 5.6+, ES2020 target, strict mode
 
 
 ## Completed Features
