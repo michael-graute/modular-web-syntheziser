@@ -152,6 +152,9 @@ export enum EventType {
   LOOPER_KEY_RECORD = 'looper:key-record',
   LOOPER_KEY_STOP = 'looper:key-stop',
   LOOPER_KEY_CLEAR = 'looper:key-clear',
+  TRANSPORT_PLAY = 'transport:play',
+  TRANSPORT_STOP = 'transport:stop',
+  TRANSPORT_BEAT = 'transport:beat',
 }
 
 /**
@@ -209,6 +212,14 @@ export interface ChordNotesOnPayload {
 export interface ChordNotesOffPayload {
   notes: [number, number, number];
   sourceId: string;
+}
+
+/**
+ * Payload emitted with TRANSPORT_BEAT event.
+ */
+export interface TransportBeatPayload {
+  bar: number;
+  beat: number;
 }
 
 /**
