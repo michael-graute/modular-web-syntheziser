@@ -29,7 +29,8 @@ export class FactoryPatchLoader {
       'pad-sound.json',
       'two-oscillator-setup-with-lfos-filter-and-mixer.json',
       'chord-finder.json',
-      'arpeggiator.json'
+      'arpeggiator.json',
+      'looper.json'
     ];
 
     try {
