@@ -119,6 +119,12 @@ function getControlLayout(type: ComponentType): ControlLayout {
         displayHeight: 220, // chord circle canvas
       };
 
+    case ComponentType.LOOPER:
+      return {
+        hasDisplayArea: true,
+        displayHeight: 300, // doughnut ring canvas (240w × 300h)
+      };
+
     case ComponentType.KEYBOARD_INPUT:
     case ComponentType.FILTER_ENVELOPE:
     default:
@@ -184,6 +190,9 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
 
     case ComponentType.CHORD_FINDER:
       return { inputs: 0, outputs: 4 }; // note1 CV, note2 CV, note3 CV, gate
+
+    case ComponentType.LOOPER:
+      return { inputs: 1, outputs: 1 }; // audio in / audio out
 
     default:
       return { inputs: 1, outputs: 1 };
@@ -337,6 +346,11 @@ export function calculateComponentWidth(type: ComponentType): number {
   // ChordFinder needs enough width for the circular display
   if (type === ComponentType.CHORD_FINDER) {
     width = 240;
+  }
+
+  // Looper: 240px canvas + 10px margin each side
+  if (type === ComponentType.LOOPER) {
+    width = 260;
   }
 
   return width;

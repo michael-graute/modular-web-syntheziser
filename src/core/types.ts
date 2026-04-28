@@ -34,6 +34,7 @@ export enum ComponentType {
   STEP_SEQUENCER = 'step-sequencer',
   COLLIDER = 'collider',
   CHORD_FINDER = 'chord-finder',
+  LOOPER = 'looper',
 }
 
 /**
@@ -88,6 +89,7 @@ export interface ComponentData {
   position: Position;
   parameters: Record<string, number>;
   isBypassed?: boolean;
+  audioBlob?: string; // Base64-encoded Float32 PCM — used by Looper; ignored by all other components
 }
 
 /**
@@ -147,6 +149,9 @@ export enum EventType {
   GLOBAL_BPM_CHANGED = 'global:bpm-changed',
   CHORD_NOTES_ON = 'chord:notes-on',
   CHORD_NOTES_OFF = 'chord:notes-off',
+  LOOPER_KEY_RECORD = 'looper:key-record',
+  LOOPER_KEY_STOP = 'looper:key-stop',
+  LOOPER_KEY_CLEAR = 'looper:key-clear',
 }
 
 /**

@@ -19,7 +19,7 @@
 
 **Purpose**: No new directories are required — all changes extend existing files or follow established `src/` patterns. This phase documents the one-time review needed before work begins.
 
-- [ ] T001 Review src/components/base/SynthComponent.ts, src/canvas/displays/ColliderDisplay.ts, src/keyboard/KeyboardController.ts, src/core/types.ts, and src/patch/PatchSerializer.ts to confirm current API surface before editing
+- [x] T001 Review src/components/base/SynthComponent.ts, src/canvas/displays/ColliderDisplay.ts, src/keyboard/KeyboardController.ts, src/core/types.ts, and src/patch/PatchSerializer.ts to confirm current API surface before editing
 
 ---
 
@@ -29,11 +29,11 @@
 
 **⚠️ CRITICAL**: No user story implementation can begin until T002–T006 are complete.
 
-- [ ] T002 Add `LOOPER = 'looper'` to the `ComponentType` enum in src/core/types.ts
-- [ ] T003 Add optional `audioBlob?: string` field to the `ComponentData` interface in src/core/types.ts — backward-compatible (no existing code sets it)
-- [ ] T004 [P] Write unit tests for all validation helpers in tests/contracts/looper-validation.test.ts covering every function in specs/015-bpm-looper/contracts/validation.ts: `isValidBarCount`, `validateBarCount`, `validateBpm`, `isValidLooperState`, `stateIndexToLooperState`, `looperStateToIndex`, `validateLooperSerializedParams`, `isValidBase64`, `validateAudioBlob`, `validateLoopDuration`, `isValidStateTransition` (100% coverage required)
-- [ ] T005 [P] Write unit tests for pure helper functions in tests/contracts/looper-types.test.ts covering `computeLoopDurationSeconds`, `computeLoopDurationSamples`, `normalizePlayHead`, and `playHeadToAngle` from specs/015-bpm-looper/contracts/types.ts (100% coverage required)
-- [ ] T006 Add `LOOPER_SHORTCUT_RECORD`, `LOOPER_SHORTCUT_STOP`, `LOOPER_SHORTCUT_CLEAR`, `LOOPER_RESERVED_KEYS`, and `LOOPER_STATE_COLORS` constants from specs/015-bpm-looper/contracts/types.ts into a new production file src/components/utilities/LooperConstants.ts — these constants are shared between Looper.ts, LooperDisplay.ts, and KeyboardController.ts
+- [x] T002 Add `LOOPER = 'looper'` to the `ComponentType` enum in src/core/types.ts
+- [x] T003 Add optional `audioBlob?: string` field to the `ComponentData` interface in src/core/types.ts — backward-compatible (no existing code sets it)
+- [x] T004 [P] Write unit tests for all validation helpers in tests/contracts/looper-validation.test.ts covering every function in specs/015-bpm-looper/contracts/validation.ts: `isValidBarCount`, `validateBarCount`, `validateBpm`, `isValidLooperState`, `stateIndexToLooperState`, `looperStateToIndex`, `validateLooperSerializedParams`, `isValidBase64`, `validateAudioBlob`, `validateLoopDuration`, `isValidStateTransition` (100% coverage required)
+- [x] T005 [P] Write unit tests for pure helper functions in tests/contracts/looper-types.test.ts covering `computeLoopDurationSeconds`, `computeLoopDurationSamples`, `normalizePlayHead`, and `playHeadToAngle` from specs/015-bpm-looper/contracts/types.ts (100% coverage required)
+- [x] T006 Add `LOOPER_SHORTCUT_RECORD`, `LOOPER_SHORTCUT_STOP`, `LOOPER_SHORTCUT_CLEAR`, `LOOPER_RESERVED_KEYS`, and `LOOPER_STATE_COLORS` constants from specs/015-bpm-looper/contracts/types.ts into a new production file src/components/utilities/LooperConstants.ts — these constants are shared between Looper.ts, LooperDisplay.ts, and KeyboardController.ts
 
 **Checkpoint**: Types and constants in place — user story implementation can begin.
 
@@ -47,21 +47,21 @@
 
 ### Implementation for User Story 1
 
-- [ ] T007 [US1] Create src/components/utilities/Looper.ts — define the `Looper` class extending `SynthComponent` implementing `TempoAware`: private fields (`config: LooperConfig`, `loopBuffer: Float32Array | null`, `loopLengthSamples: number`, `writeHead: number`, `playHead: number`, `filled: boolean`, `state: LooperState`, `currentBpm: number`, `sourceStartTime: number` (set to `audioCtx.currentTime` when `_startPlayback()` is called — used to derive `playHead` since `AudioBufferSourceNode` does not expose current position), `playbackSource: AudioBufferSourceNode | null`, `captureNode: ScriptProcessorNode | null`, `inputGain: GainNode | null`, `outputMix: GainNode | null`, `unsubscribeBpm: (() => void) | null`). Include empty stubs for all required methods.
-- [ ] T008 [US1] Implement `createAudioNodes()` in src/components/utilities/Looper.ts: create `inputGain` (GainNode, gain=1), `captureNode` (ScriptProcessorNode, bufferSize=4096, 1 input/1 output channel), `outputMix` (GainNode). Wire: `inputGain → captureNode → outputMix`. Wire passthrough: `inputGain → outputMix` (always-on, FR-019). Register nodes with `audioEngine`.
-- [ ] T009 [US1] Implement `destroyAudioNodes()` in src/components/utilities/Looper.ts: stop and disconnect `playbackSource`, `captureNode`, `inputGain`, `outputMix`. Null all node references. Clear `unsubscribeBpm`.
-- [ ] T010 [US1] Implement `subscribeToGlobalBpm()` and `unsubscribeFromGlobalBpm()` and `applyGlobalBpm(bpm)` (TempoAware interface) in src/components/utilities/Looper.ts: subscribe to `EventType.GLOBAL_BPM_CHANGED`, store current BPM, do NOT alter an already-recorded loop.
-- [ ] T011 [US1] Implement `pressRecord()` in src/components/utilities/Looper.ts: guard — only callable from `IDLE` state. Compute `loopLengthSamples = computeLoopDurationSamples(config.barCount, currentBpm, audioCtx.sampleRate)`. Allocate `loopBuffer = new Float32Array(loopLengthSamples)`. Reset `writeHead = 0`. Set `captureNode.onaudioprocess` to write mode: copy `inputBuffer.getChannelData(0)` into `loopBuffer` at `writeHead`, advance `writeHead`; when `writeHead >= loopLengthSamples` call `_commitRecording()`. Set `state = RECORDING`.
-- [ ] T012 [US1] Implement `_commitRecording()` (private) in src/components/utilities/Looper.ts: set `filled = true`, call `_startPlayback()`.
-- [ ] T013 [US1] Implement `_startPlayback()` (private) in src/components/utilities/Looper.ts: create `AudioBuffer` from `loopBuffer` Float32Array. Create `AudioBufferSourceNode`, set `loop = true`, `loopStart = 0`, `loopEnd = loopLengthSamples / sampleRate`. Connect to `outputMix`. Start. Store as `playbackSource`. Set `state = PLAYING`.
-- [ ] T014 [US1] Implement `pressStop()` in src/components/utilities/Looper.ts: if `state === OVERDUBBING` → call `_commitOverdub()` then set `state = PLAYING` and return. If `state === PLAYING` → stop and null `playbackSource`, set `state = IDLE`.
-- [ ] T015 [US1] Implement `getDisplayState(): LooperDisplayState` in src/components/utilities/Looper.ts: compute `playHead` as `((audioCtx.currentTime - sourceStartTime) % loopDurationSec) * sampleRate` (derived from context clock since `AudioBufferSourceNode` does not expose current position). Return `{ state, playHeadNormalized: normalizePlayHead(playHead, loopLengthSamples), barCount: config.barCount, filled }`. When state is IDLE or RECORDING, return `playHeadNormalized: 0`.
-- [ ] T016 [US1] Create src/canvas/displays/LooperDisplay.ts — `LooperDisplay` class with: own `HTMLCanvasElement` (240×240 px logical), constructor `(x, y, w, h, looper: Looper)`. Implement `getCanvas()`, `updatePosition(x, y)`, `destroy()` (remove canvas from DOM).
-- [ ] T017 [US1] Implement `render(state: LooperDisplayState)` in src/canvas/displays/LooperDisplay.ts: `clearRect`. Call `drawRing(state.state)` — filled arc full circle, colour from `LOOPER_STATE_COLORS`, ring thickness 10 px (outer radius 90 px, inner 80 px). Call `drawPlayhead(state.playHeadNormalized)` — only when `state.filled`, thin line from centre to outer ring edge at angle `playHeadToAngle(normalized)`. Call `drawLabel(state.barCount)` — centred text.
-- [ ] T018 [US1] Wire `LooperDisplay` into `CanvasComponent` in src/canvas/CanvasComponent.ts: in `createControls()`, instantiate `LooperDisplay` when `this.synthComponent` is a `Looper`, append its canvas to the DOM parent of `#synth-canvas`. In `render()`, call `looperDisplay.render(looper.getDisplayState())`. In `destroy()`, call `looperDisplay.destroy()`. Wire `updatePosition` / `updateViewportTransform`.
-- [ ] T019 [US1] Register `Looper` in src/main.ts: import `Looper`, add `ComponentType.LOOPER` to the component factory switch, call `looper.subscribeToGlobalBpm()` on activation.
-- [ ] T020 [US1] Write unit tests in tests/components/Looper.test.ts: state transitions via `pressRecord()` / `pressStop()`, `applyGlobalBpm()` stores BPM but does not modify an existing buffer, `getDisplayState()` returns correct `playHeadNormalized`, `pressRecord()` is a no-op from any state other than idle (PLAYING, RECORDING, OVERDUBBING all leave state unchanged), after `_startPlayback()` `playbackSource.loopStart === 0` and `playbackSource.loopEnd === loopLengthSamples / sampleRate` (FR-007 seamless boundary), `pressRecord()` schedules capture start at next beat boundary by checking `sourceStartTime` offset against `audioCtx.currentTime` (FR-005 quantised start).
-- [ ] T021 [US1] [P] Write unit tests in tests/canvas/LooperDisplay.test.ts: `render()` uses correct colour for each `LooperState`, playhead not drawn when `filled = false`, `drawLabel` renders bar count, canvas is removed from DOM on `destroy()`.
+- [x] T007 [US1] Create src/components/utilities/Looper.ts — define the `Looper` class extending `SynthComponent` implementing `TempoAware`: private fields (`config: LooperConfig`, `loopBuffer: Float32Array | null`, `loopLengthSamples: number`, `writeHead: number`, `playHead: number`, `filled: boolean`, `state: LooperState`, `currentBpm: number`, `sourceStartTime: number` (set to `audioCtx.currentTime` when `_startPlayback()` is called — used to derive `playHead` since `AudioBufferSourceNode` does not expose current position), `playbackSource: AudioBufferSourceNode | null`, `captureNode: ScriptProcessorNode | null`, `inputGain: GainNode | null`, `outputMix: GainNode | null`, `unsubscribeBpm: (() => void) | null`). Include empty stubs for all required methods.
+- [x] T008 [US1] Implement `createAudioNodes()` in src/components/utilities/Looper.ts: create `inputGain` (GainNode, gain=1), `captureNode` (ScriptProcessorNode, bufferSize=4096, 1 input/1 output channel), `outputMix` (GainNode). Wire: `inputGain → captureNode → outputMix`. Wire passthrough: `inputGain → outputMix` (always-on, FR-019). Register nodes with `audioEngine`.
+- [x] T009 [US1] Implement `destroyAudioNodes()` in src/components/utilities/Looper.ts: stop and disconnect `playbackSource`, `captureNode`, `inputGain`, `outputMix`. Null all node references. Clear `unsubscribeBpm`.
+- [x] T010 [US1] Implement `subscribeToGlobalBpm()` and `unsubscribeFromGlobalBpm()` and `applyGlobalBpm(bpm)` (TempoAware interface) in src/components/utilities/Looper.ts: subscribe to `EventType.GLOBAL_BPM_CHANGED`, store current BPM, do NOT alter an already-recorded loop.
+- [x] T011 [US1] Implement `pressRecord()` in src/components/utilities/Looper.ts: guard — only callable from `IDLE` state. Compute `loopLengthSamples = computeLoopDurationSamples(config.barCount, currentBpm, audioCtx.sampleRate)`. Allocate `loopBuffer = new Float32Array(loopLengthSamples)`. Reset `writeHead = 0`. Set `captureNode.onaudioprocess` to write mode: copy `inputBuffer.getChannelData(0)` into `loopBuffer` at `writeHead`, advance `writeHead`; when `writeHead >= loopLengthSamples` call `_commitRecording()`. Set `state = RECORDING`.
+- [x] T012 [US1] Implement `_commitRecording()` (private) in src/components/utilities/Looper.ts: set `filled = true`, call `_startPlayback()`.
+- [x] T013 [US1] Implement `_startPlayback()` (private) in src/components/utilities/Looper.ts: create `AudioBuffer` from `loopBuffer` Float32Array. Create `AudioBufferSourceNode`, set `loop = true`, `loopStart = 0`, `loopEnd = loopLengthSamples / sampleRate`. Connect to `outputMix`. Start. Store as `playbackSource`. Set `state = PLAYING`.
+- [x] T014 [US1] Implement `pressStop()` in src/components/utilities/Looper.ts: if `state === OVERDUBBING` → call `_commitOverdub()` then set `state = PLAYING` and return. If `state === PLAYING` → stop and null `playbackSource`, set `state = IDLE`.
+- [x] T015 [US1] Implement `getDisplayState(): LooperDisplayState` in src/components/utilities/Looper.ts: compute `playHead` as `((audioCtx.currentTime - sourceStartTime) % loopDurationSec) * sampleRate` (derived from context clock since `AudioBufferSourceNode` does not expose current position). Return `{ state, playHeadNormalized: normalizePlayHead(playHead, loopLengthSamples), barCount: config.barCount, filled }`. When state is IDLE or RECORDING, return `playHeadNormalized: 0`.
+- [x] T016 [US1] Create src/canvas/displays/LooperDisplay.ts — `LooperDisplay` class with: own `HTMLCanvasElement` (240×240 px logical), constructor `(x, y, w, h, looper: Looper)`. Implement `getCanvas()`, `updatePosition(x, y)`, `destroy()` (remove canvas from DOM).
+- [x] T017 [US1] Implement `render(state: LooperDisplayState)` in src/canvas/displays/LooperDisplay.ts: `clearRect`. Call `drawRing(state.state)` — filled arc full circle, colour from `LOOPER_STATE_COLORS`, ring thickness 10 px (outer radius 90 px, inner 80 px). Call `drawPlayhead(state.playHeadNormalized)` — only when `state.filled`, thin line from centre to outer ring edge at angle `playHeadToAngle(normalized)`. Call `drawLabel(state.barCount)` — centred text.
+- [x] T018 [US1] Wire `LooperDisplay` into `CanvasComponent` in src/canvas/CanvasComponent.ts: in `createControls()`, instantiate `LooperDisplay` when `this.synthComponent` is a `Looper`, append its canvas to the DOM parent of `#synth-canvas`. In `render()`, call `looperDisplay.render(looper.getDisplayState())`. In `destroy()`, call `looperDisplay.destroy()`. Wire `updatePosition` / `updateViewportTransform`.
+- [x] T019 [US1] Register `Looper` in src/main.ts: import `Looper`, add `ComponentType.LOOPER` to the component factory switch, call `looper.subscribeToGlobalBpm()` on activation.
+- [x] T020 [US1] Write unit tests in tests/components/Looper.test.ts: state transitions via `pressRecord()` / `pressStop()`, `applyGlobalBpm()` stores BPM but does not modify an existing buffer, `getDisplayState()` returns correct `playHeadNormalized`, `pressRecord()` is a no-op from any state other than idle (PLAYING, RECORDING, OVERDUBBING all leave state unchanged), after `_startPlayback()` `playbackSource.loopStart === 0` and `playbackSource.loopEnd === loopLengthSamples / sampleRate` (FR-007 seamless boundary), `pressRecord()` schedules capture start at next beat boundary by checking `sourceStartTime` offset against `audioCtx.currentTime` (FR-005 quantised start).
+- [x] T021 [US1] [P] Write unit tests in tests/canvas/LooperDisplay.test.ts: `render()` uses correct colour for each `LooperState`, playhead not drawn when `filled = false`, `drawLabel` renders bar count, canvas is removed from DOM on `destroy()`.
 
 **Checkpoint**: User Story 1 fully functional. Record a signal, confirm loop plays back with green rotating playhead. Stop returns to grey idle.
 
@@ -75,10 +75,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T022 [US2] Add bar count selector UI to `LooperDisplay` in src/canvas/displays/LooperDisplay.ts: render four small tap targets labelled "1", "2", "4", "8" around the bottom of the doughnut. Highlight the active selection. Implement `handleMouseDown(x, y): 'record' | 'stop' | 'clear' | BarCount | null` — returns the selected bar count when a bar count tap target is hit.
-- [ ] T023 [US2] Add `setBarCount(barCount: BarCount): void` to `Looper` in src/components/utilities/Looper.ts: validates with `validateBarCount()`, updates `config.barCount`, no-op if a loop is already recorded (spec FR-003 — bar count only affects next recording).
-- [ ] T024 [US2] Wire bar count selection in `CanvasComponent` in src/canvas/CanvasComponent.ts: when `looperDisplay.handleMouseDown()` returns a `BarCount`, call `looper.setBarCount(barCount)`.
-- [ ] T025 [US2] Write unit tests in tests/components/Looper.test.ts (append): `setBarCount()` accepts valid values (1/2/4/8), rejects invalid values, does not alter an already-recorded loop, `computeLoopDurationSamples` produces correct length for each bar count / BPM combination.
+- [x] T022 [US2] Add bar count selector UI to `LooperDisplay` in src/canvas/displays/LooperDisplay.ts: render four small tap targets labelled "1", "2", "4", "8" around the bottom of the doughnut. Highlight the active selection. Implement `handleMouseDown(x, y): 'record' | 'stop' | 'clear' | BarCount | null` — returns the selected bar count when a bar count tap target is hit.
+- [x] T023 [US2] Add `setBarCount(barCount: BarCount): void` to `Looper` in src/components/utilities/Looper.ts: validates with `validateBarCount()`, updates `config.barCount`, no-op if a loop is already recorded (spec FR-003 — bar count only affects next recording).
+- [x] T024 [US2] Wire bar count selection in `CanvasComponent` in src/canvas/CanvasComponent.ts: when `looperDisplay.handleMouseDown()` returns a `BarCount`, call `looper.setBarCount(barCount)`.
+- [x] T025 [US2] Write unit tests in tests/components/Looper.test.ts (append): `setBarCount()` accepts valid values (1/2/4/8), rejects invalid values, does not alter an already-recorded loop, `computeLoopDurationSamples` produces correct length for each bar count / BPM combination.
 
 **Checkpoint**: User Stories 1 and 2 work together. Selecting bar count before recording produces the correct loop length.
 
@@ -92,11 +92,11 @@
 
 ### Implementation for User Story 3
 
-- [ ] T026 [US3] Add Overdub button to `LooperDisplay` in src/canvas/displays/LooperDisplay.ts: add an "OD" button to the canvas button row. Include it in `handleMouseDown()` return type: `'record' | 'stop' | 'clear' | 'overdub' | BarCount | null`.
-- [ ] T027 [US3] Implement `pressOverdub()` in src/components/utilities/Looper.ts: guard — only callable from `PLAYING` state. Set `captureNode.onaudioprocess` to mix mode: `loopBuffer[writeHead % loopLengthSamples] += inputSample` (in-place accumulation at unity gain, FR-009). Reset `writeHead = 0`. Set `state = OVERDUBBING`.
-- [ ] T028 [US3] Implement `_commitOverdub()` (private) in src/components/utilities/Looper.ts: re-create `AudioBuffer` from updated `loopBuffer`. Stop old `playbackSource`. Call `_startPlayback()` (resumes from position 0). Set `state = PLAYING`.
-- [ ] T029 [US3] Wire overdub button in `CanvasComponent` in src/canvas/CanvasComponent.ts: when `looperDisplay.handleMouseDown()` returns `'overdub'`, call `looper.pressOverdub()`.
-- [ ] T030 [US3] Write unit tests in tests/components/Looper.buffer.test.ts: overdub mixes samples additively (buffer values increase), `pressOverdub()` is a no-op when not in `PLAYING` state, `_commitOverdub()` restarts playback with updated buffer, `pressStop()` from `OVERDUBBING` transitions to `PLAYING` not `IDLE`.
+- [x] T026 [US3] Add Overdub button to `LooperDisplay` in src/canvas/displays/LooperDisplay.ts: add an "OD" button to the canvas button row. Include it in `handleMouseDown()` return type: `'record' | 'stop' | 'clear' | 'overdub' | BarCount | null`.
+- [x] T027 [US3] Implement `pressOverdub()` in src/components/utilities/Looper.ts: guard — only callable from `PLAYING` state. Set `captureNode.onaudioprocess` to mix mode: `loopBuffer[writeHead % loopLengthSamples] += inputSample` (in-place accumulation at unity gain, FR-009). Reset `writeHead = 0`. Set `state = OVERDUBBING`.
+- [x] T028 [US3] Implement `_commitOverdub()` (private) in src/components/utilities/Looper.ts: re-create `AudioBuffer` from updated `loopBuffer`. Stop old `playbackSource`. Call `_startPlayback()` (resumes from position 0). Set `state = PLAYING`.
+- [x] T029 [US3] Wire overdub button in `CanvasComponent` in src/canvas/CanvasComponent.ts: when `looperDisplay.handleMouseDown()` returns `'overdub'`, call `looper.pressOverdub()`.
+- [x] T030 [US3] Write unit tests in tests/components/Looper.buffer.test.ts: overdub mixes samples additively (buffer values increase), `pressOverdub()` is a no-op when not in `PLAYING` state, `_commitOverdub()` restarts playback with updated buffer, `pressStop()` from `OVERDUBBING` transitions to `PLAYING` not `IDLE`.
 
 **Checkpoint**: User Stories 1–3 work. Overdub layers audio additively. Stop from overdub returns to playing (not idle).
 
@@ -110,9 +110,9 @@
 
 ### Implementation for User Story 4
 
-- [ ] T031 [US4] Implement `pressClear()` in src/components/utilities/Looper.ts: stop `playbackSource` if running, set `captureNode.onaudioprocess = null`, null `loopBuffer`, set `filled = false`, `writeHead = 0`, `playHead = 0`, `loopLengthSamples = 0`, `state = IDLE`. Works from any state.
-- [ ] T032 [US4] Wire Clear button in `CanvasComponent` in src/canvas/CanvasComponent.ts: when `looperDisplay.handleMouseDown()` returns `'clear'`, call `looper.pressClear()`.
-- [ ] T033 [US4] Write unit tests in tests/components/Looper.test.ts (append): `pressClear()` from each state (idle, recording, playing, overdubbing) always transitions to idle, buffer is null after clear, `filled` is false after clear.
+- [x] T031 [US4] Implement `pressClear()` in src/components/utilities/Looper.ts: stop `playbackSource` if running, set `captureNode.onaudioprocess = null`, null `loopBuffer`, set `filled = false`, `writeHead = 0`, `playHead = 0`, `loopLengthSamples = 0`, `state = IDLE`. Works from any state.
+- [x] T032 [US4] Wire Clear button in `CanvasComponent` in src/canvas/CanvasComponent.ts: when `looperDisplay.handleMouseDown()` returns `'clear'`, call `looper.pressClear()`.
+- [x] T033 [US4] Write unit tests in tests/components/Looper.test.ts (append): `pressClear()` from each state (idle, recording, playing, overdubbing) always transitions to idle, buffer is null after clear, `filled` is false after clear.
 
 **Checkpoint**: User Stories 1–4 complete. Full record → play → overdub → clear loop works.
 
@@ -126,10 +126,10 @@
 
 ### Implementation for User Story 5
 
-- [ ] T034 [US5] Add `private static readonly RESERVED_KEYS: ReadonlySet<string> = new Set(['1', '2', '0'])` to `KeyboardController` in src/keyboard/KeyboardController.ts. In `handleKeyDown()`, add guard immediately after the input-field check: `if (KeyboardController.RESERVED_KEYS.has(e.key)) return;`
-- [ ] T035 [US5] Add `LOOPER_KEY_RECORD = 'looper:key-record'`, `LOOPER_KEY_STOP = 'looper:key-stop'`, `LOOPER_KEY_CLEAR = 'looper:key-clear'` to the `EventType` enum in src/core/types.ts. In src/main.ts add a global `window.addEventListener('keydown', (e) => { if (e.repeat) return; if (e.key === '1') eventBus.emit(EventType.LOOPER_KEY_RECORD); else if (e.key === '2') eventBus.emit(EventType.LOOPER_KEY_STOP); else if (e.key === '0') eventBus.emit(EventType.LOOPER_KEY_CLEAR); })`. In `Looper.ts` subscribe to these events in `subscribeToGlobalBpm()` (or a dedicated `subscribeToKeyboardShortcuts()`) and call the corresponding press method — this pattern supports multiple Looper instances each independently responding, matching the spec Assumption of multiple simultaneous instances.
-- [ ] T036 [US5] Add tooltip text to each button in `LooperDisplay` in src/canvas/displays/LooperDisplay.ts: render key hint below each button label (e.g. "R [1]", "■ [2]", "✕ [0]").
-- [ ] T037 [US5] [P] Write unit tests in tests/keyboard/KeyboardController.reserved.test.ts: pressing '1', '2', '0' does not trigger `noteOn` on the voice manager, pressing a non-reserved note key ('a', 's', 'd') still triggers `noteOn` normally.
+- [x] T034 [US5] Add `private static readonly RESERVED_KEYS: ReadonlySet<string> = new Set(['1', '2', '0'])` to `KeyboardController` in src/keyboard/KeyboardController.ts. In `handleKeyDown()`, add guard immediately after the input-field check: `if (KeyboardController.RESERVED_KEYS.has(e.key)) return;`
+- [x] T035 [US5] Add `LOOPER_KEY_RECORD = 'looper:key-record'`, `LOOPER_KEY_STOP = 'looper:key-stop'`, `LOOPER_KEY_CLEAR = 'looper:key-clear'` to the `EventType` enum in src/core/types.ts. In src/main.ts add a global `window.addEventListener('keydown', (e) => { if (e.repeat) return; if (e.key === '1') eventBus.emit(EventType.LOOPER_KEY_RECORD); else if (e.key === '2') eventBus.emit(EventType.LOOPER_KEY_STOP); else if (e.key === '0') eventBus.emit(EventType.LOOPER_KEY_CLEAR); })`. In `Looper.ts` subscribe to these events in `subscribeToGlobalBpm()` (or a dedicated `subscribeToKeyboardShortcuts()`) and call the corresponding press method — this pattern supports multiple Looper instances each independently responding, matching the spec Assumption of multiple simultaneous instances.
+- [x] T036 [US5] Add tooltip text to each button in `LooperDisplay` in src/canvas/displays/LooperDisplay.ts: render key hint below each button label (e.g. "R [1]", "■ [2]", "✕ [0]").
+- [x] T037 [US5] [P] Write unit tests in tests/keyboard/KeyboardController.reserved.test.ts: pressing '1', '2', '0' does not trigger `noteOn` on the voice manager, pressing a non-reserved note key ('a', 's', 'd') still triggers `noteOn` normally.
 
 **Checkpoint**: All 5 user stories complete. Keyboard shortcuts work without interfering with musical keyboard.
 
@@ -139,9 +139,9 @@
 
 **Purpose**: Save/restore the loop buffer and state across patch load/save (FR-015, SC-006).
 
-- [ ] T038 Implement `serialize()` in src/components/utilities/Looper.ts: return `ComponentData` with `parameters: { barCount: config.barCount, stateIndex: looperStateToIndex(state) }` and `audioBlob: loopBuffer ? float32ToBase64(loopBuffer) : undefined`. Add private helper `float32ToBase64(buffer: Float32Array): string` using `btoa` + `Uint8Array` view.
-- [ ] T039 Implement `deserialize(data: ComponentData)` in src/components/utilities/Looper.ts: validate params with `validateLooperSerializedParams()`. Restore `config.barCount`. Restore `state` via `stateIndexToLooperState(stateIndex)`. If `audioBlob` present and valid, decode to `Float32Array` via `base64ToFloat32(audioBlob)`, set `loopBuffer`, `loopLengthSamples`, `filled = true`, call `_startPlayback()`.
-- [ ] T040 [P] Write unit tests in tests/components/Looper.test.ts (append): `serialize()` produces valid `LooperSerializedParams`, `audioBlob` is valid Base64 when buffer exists, absent when no buffer. `deserialize()` restores bar count, restores state to `PLAYING` (not `RECORDING`/`OVERDUBBING`), restores loop for immediate playback.
+- [x] T038 Implement `serialize()` in src/components/utilities/Looper.ts: return `ComponentData` with `parameters: { barCount: config.barCount, stateIndex: looperStateToIndex(state) }` and `audioBlob: loopBuffer ? float32ToBase64(loopBuffer) : undefined`. Add private helper `float32ToBase64(buffer: Float32Array): string` using `btoa` + `Uint8Array` view.
+- [x] T039 Implement `deserialize(data: ComponentData)` in src/components/utilities/Looper.ts: validate params with `validateLooperSerializedParams()`. Restore `config.barCount`. Restore `state` via `stateIndexToLooperState(stateIndex)`. If `audioBlob` present and valid, decode to `Float32Array` via `base64ToFloat32(audioBlob)`, set `loopBuffer`, `loopLengthSamples`, `filled = true`, call `_startPlayback()`.
+- [x] T040 [P] Write unit tests in tests/components/Looper.test.ts (append): `serialize()` produces valid `LooperSerializedParams`, `audioBlob` is valid Base64 when buffer exists, absent when no buffer. `deserialize()` restores bar count, restores state to `PLAYING` (not `RECORDING`/`OVERDUBBING`), restores loop for immediate playback.
 
 **Checkpoint**: Patch save/reload works. Loop survives a browser refresh.
 
@@ -151,11 +151,11 @@
 
 **Purpose**: Edge case hardening, DPR scaling, and final validation.
 
-- [ ] T041 [P] Apply device pixel ratio (DPR) scaling to `LooperDisplay` canvas in src/canvas/displays/LooperDisplay.ts: use `window.devicePixelRatio` for `ctx.scale()` as done in `ColliderDisplay`.
-- [ ] T042 [P] Add `updateViewportTransform(zoom, panX, panY)` to `LooperDisplay` in src/canvas/displays/LooperDisplay.ts — mirrors `ColliderDisplay` to keep the embedded canvas in sync when the main canvas is panned or zoomed.
-- [ ] T043 Add `destroy()` method to `Looper` in src/components/utilities/Looper.ts that calls `unsubscribeFromGlobalBpm()`, stops all audio nodes, and clears the buffer — ensures no memory leak when the module is removed from the canvas.
-- [ ] T044 [P] Run `vitest run` and `npx tsc --noEmit` to confirm all tests pass and zero TypeScript errors.
-- [ ] T045 [P] Manually validate the feature using all 8 steps in specs/015-bpm-looper/quickstart.md.
+- [x] T041 [P] Apply device pixel ratio (DPR) scaling to `LooperDisplay` canvas in src/canvas/displays/LooperDisplay.ts: use `window.devicePixelRatio` for `ctx.scale()` as done in `ColliderDisplay`.
+- [x] T042 [P] Add `updateViewportTransform(zoom, panX, panY)` to `LooperDisplay` in src/canvas/displays/LooperDisplay.ts — mirrors `ColliderDisplay` to keep the embedded canvas in sync when the main canvas is panned or zoomed.
+- [x] T043 Add `destroy()` method to `Looper` in src/components/utilities/Looper.ts that calls `unsubscribeFromGlobalBpm()`, stops all audio nodes, and clears the buffer — ensures no memory leak when the module is removed from the canvas.
+- [x] T044 [P] Run `vitest run` and `npx tsc --noEmit` to confirm all tests pass and zero TypeScript errors.
+- [x] T045 [P] Manually validate the feature using all 8 steps in specs/015-bpm-looper/quickstart.md.
 
 ---
 

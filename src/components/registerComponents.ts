@@ -15,6 +15,7 @@ import { MasterOutput } from './utilities/MasterOutput';
 import { Mixer } from './utilities/Mixer';
 import { Collider } from './utilities/Collider';
 import { ChordFinder } from './utilities/ChordFinder';
+import { Looper } from './utilities/Looper';
 import { Delay } from './effects/Delay';
 import { Reverb } from './effects/Reverb';
 import { Distortion } from './effects/Distortion';
@@ -136,6 +137,15 @@ export function registerAllComponents(): void {
     'Utilities',
     (id, position) => new ChordFinder(id, position),
     calculateComponentDimensions(ComponentType.CHORD_FINDER)
+  );
+
+  componentRegistry.register(
+    ComponentType.LOOPER,
+    'Looper',
+    'BPM-synced audio looper with doughnut ring display',
+    'Utilities',
+    (id, position) => new Looper(id, position),
+    calculateComponentDimensions(ComponentType.LOOPER)
   );
 
   // Effects

@@ -14,6 +14,8 @@ import { eventBus } from '../core/EventBus';
  * Manages keyboard input and note triggering
  */
 export class KeyboardController {
+  private static readonly RESERVED_KEYS: ReadonlySet<string> = new Set(['1', '2', '0']);
+
   private keyboard: Keyboard;
   private noteMapper: NoteMapper;
   private voiceManager: VoiceManager;
@@ -112,6 +114,11 @@ export class KeyboardController {
       active instanceof HTMLTextAreaElement ||
       (active instanceof HTMLElement && active.isContentEditable)
     ) {
+      return;
+    }
+
+    // Skip keys reserved for Looper shortcuts (FR-017)
+    if (KeyboardController.RESERVED_KEYS.has(e.key)) {
       return;
     }
 
