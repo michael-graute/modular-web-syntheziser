@@ -132,6 +132,7 @@ export class Sidebar {
       [ComponentType.STEP_SEQUENCER]: '▦',
       [ComponentType.COLLIDER]: '●',
       [ComponentType.CHORD_FINDER]: '♬',
+      [ComponentType.LOOPER]: '⊙',
     };
     return icons[type] || '□';
   }

@@ -385,6 +385,14 @@ async function init(): Promise<void> {
     }
   }
 
+  // Looper keyboard shortcuts — emit EventBus events so all Looper instances respond (T035)
+  window.addEventListener('keydown', (e) => {
+    if (e.repeat) return;
+    if (e.key === '1') eventBus.emit(EventType.LOOPER_KEY_RECORD);
+    else if (e.key === '2') eventBus.emit(EventType.LOOPER_KEY_STOP);
+    else if (e.key === '0') eventBus.emit(EventType.LOOPER_KEY_CLEAR);
+  });
+
   // Update UI to show initialization is complete
   updateStatus('Ready - Phase 2 (Tasks 1-4) Complete - Click to enable audio');
 }
