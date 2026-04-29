@@ -18,6 +18,7 @@
   height: 100%;
   cursor: grab;
   z-index: 1; /* Main canvas layer */
+  touch-action: none; /* Prevents browser scroll/zoom from intercepting canvas gestures */
 }
 
 #synth-canvas.grabbing {

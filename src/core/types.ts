@@ -155,6 +155,7 @@ export enum EventType {
   TRANSPORT_PLAY = 'transport:play',
   TRANSPORT_STOP = 'transport:stop',
   TRANSPORT_BEAT = 'transport:beat',
+  COMPONENT_LONG_PRESS = 'component:long-press',
 }
 
 /**
