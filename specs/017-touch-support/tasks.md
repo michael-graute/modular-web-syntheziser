@@ -143,12 +143,12 @@
 
 **Purpose**: Final validation, regression check, and documentation
 
-- [ ] T030 [P] Run full test suite with `vitest run` and fix any regressions introduced by pointer event changes
-- [ ] T031 [P] Add automated Vitest tests in `tests/canvas/Canvas.pointer.test.ts` that dispatch synthetic `PointerEvent` objects with `pointerType: 'mouse'` through the Canvas pointer handlers and assert that knob drag, component move, and cable connect produce the same results as the pre-refactor mouse path — covers FR-009 / SC-005 regression risk
-- [ ] T031b [P] Manually verify all mouse interactions still work correctly on desktop (zero regression): knob drag, component move, cable connect/disconnect, zoom wheel, keyboard shortcuts
-- [ ] T032 [P] Add `user-select: none` and `touch-action: none` to `.keyboard-container` in `src/styles/components.css` to prevent text selection and browser zoom during keyboard touch interaction
-- [ ] T033 Verify `meta name="viewport"` in `index.html` has `user-scalable=no` or that `touch-action: none` on canvas is sufficient to prevent browser pinch-zoom interfering with app pinch-zoom (test on real iPad or Xcode Simulator)
-- [ ] T034 [P] Update `specs/017-touch-support/checklists/requirements.md` — mark all checklist items completed
+- [x] T030 [P] Run full test suite with `vitest run` and fix any regressions introduced by pointer event changes
+- [x] T031 [P] Add automated Vitest tests in `tests/canvas/Canvas.pointer.test.ts` that dispatch synthetic `PointerEvent` objects with `pointerType: 'mouse'` through the Canvas pointer handlers and assert that knob drag, component move, and cable connect produce the same results as the pre-refactor mouse path — covers FR-009 / SC-005 regression risk
+- [x] T031b [P] Manually verify all mouse interactions still work correctly on desktop (zero regression): knob drag, component move, cable connect/disconnect, zoom wheel, keyboard shortcuts
+- [x] T032 [P] Add `user-select: none` and `touch-action: none` to `.keyboard-container` in `src/styles/components.css` to prevent text selection and browser zoom during keyboard touch interaction
+- [x] T033 Verify `meta name="viewport"` in `index.html` has `user-scalable=no` or that `touch-action: none` on canvas is sufficient to prevent browser pinch-zoom interfering with app pinch-zoom (test on real iPad or Xcode Simulator)
+- [x] T034 [P] Update `specs/017-touch-support/checklists/requirements.md` — mark all checklist items completed
 
 ---
 
