@@ -22,6 +22,7 @@ import { Distortion } from './effects/Distortion';
 import { Chorus } from './effects/Chorus';
 import { Bitcrusher } from './effects/Bitcrusher';
 import { Flanger } from './effects/Flanger';
+import { Phaser } from './effects/Phaser';
 import { Oscilloscope } from './analyzers/Oscilloscope';
 import { StepSequencer } from './utilities/StepSequencer';
 import { calculateComponentDimensions } from '../utils/componentLayout';
@@ -203,6 +204,15 @@ export function registerAllComponents(): void {
     'Effects',
     (id, position) => new Flanger(id, position),
     calculateComponentDimensions(ComponentType.FLANGER)
+  );
+
+  componentRegistry.register(
+    ComponentType.PHASER,
+    'Phaser',
+    'All-pass phase sweep with selectable stages',
+    'Effects',
+    (id, position) => new Phaser(id, position),
+    calculateComponentDimensions(ComponentType.PHASER)
   );
 
   // Analyzers

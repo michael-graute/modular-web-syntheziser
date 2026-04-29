@@ -101,14 +101,14 @@
 
 ### Implementation for User Story 3
 
-- [ ] T015 [US3] Implement `src/components/effects/Phaser.ts`:
+- [x] T015 [US3] Implement `src/components/effects/Phaser.ts`:
   - Constructor: ports, parameters (`rate` 0.1–20 default 0.5, `depth` 0–100 default 50, `feedback` 0–95 default 0, `stages` 2–8 step 2 default 4, `mix` 0–1 default 0.5)
   - `createAudioNodes()`: `inputGain`, allpass chain (`BiquadFilterNode[]` of length `stages`, type `'allpass'`), `feedbackGain`, LFO (`OscillatorNode` + `lfoGain`), `dryGain`, `wetGain`, `outputGain`; wire chain sequentially; feedback from chain end back to chain start; LFO modulates all allpass `frequency` AudioParams
   - `destroyAudioNodes()`: stop LFO, disconnect all, clear allpass array
   - `updateAudioParameter()`: rate → LFO frequency; depth → `lfoGain.gain` via `depthToPhaserLfoGain`; feedback → `feedbackGain.gain` via `safeFeedback`; mix → crossfade; `stages` → snapshot params, call `destroyAudioNodes()` + `createAudioNodes()`, restore params
   - `getInputNode()` / `getOutputNode()` / `enableBypass()` / `disableBypass()`: follow Chorus pattern; `enableBypass` must handle variable-length allpass array
-- [ ] T016 [US3] Register `ComponentType.PHASER` in `src/components/registerComponents.ts`
-- [ ] T017 [US3] Write unit tests for Phaser in `tests/components/Phaser.test.ts`:
+- [x] T016 [US3] Register `ComponentType.PHASER` in `src/components/registerComponents.ts`
+- [x] T017 [US3] Write unit tests for Phaser in `tests/components/Phaser.test.ts`:
   - Constructor creates correct ports and parameters (stages default 4)
   - `createAudioNodes()` creates 4 allpass filters with `type === 'allpass'`
   - `updateAudioParameter('stages', 2)` triggers graph rebuild → 2 allpass filters
