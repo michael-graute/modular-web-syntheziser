@@ -17,11 +17,11 @@
 
 **Purpose**: CSS foundations and gesture helper module that everything else depends on
 
-- [ ] T001 Add `touch-action: none` to `#synth-canvas` in `src/styles/canvas.css`
-- [ ] T002 [P] Add `touch-action: manipulation` to toolbar buttons and modal buttons in `src/styles/main.css`
-- [ ] T003 [P] Add `user-select: none` to `.main-content` in `src/styles/main.css`
-- [ ] T004 Create `src/canvas/GestureHelpers.ts` with `getEventPosition`, `isDragIntent`, `pointerDistance`, `pointerMidpoint`, `isCoarsePointerDevice` — using `GESTURE_CONFIG` constants from `specs/017-touch-support/contracts/types.ts` as reference
-- [ ] T005 [P] Write unit tests for all five functions in `tests/canvas/GestureHelpers.test.ts` (pure functions, 100% coverage target)
+- [x] T001 Add `touch-action: none` to `#synth-canvas` in `src/styles/canvas.css`
+- [x] T002 [P] Add `touch-action: manipulation` to toolbar buttons and modal buttons in `src/styles/main.css`
+- [x] T003 [P] Add `user-select: none` to `.main-content` in `src/styles/main.css`
+- [x] T004 Create `src/canvas/GestureHelpers.ts` with `getEventPosition`, `isDragIntent`, `pointerDistance`, `pointerMidpoint`, `isCoarsePointerDevice` — using `GESTURE_CONFIG` constants from `specs/017-touch-support/contracts/types.ts` as reference
+- [x] T005 [P] Write unit tests for all five functions in `tests/canvas/GestureHelpers.test.ts` (pure functions, 100% coverage target)
 
 **Checkpoint**: CSS is touch-safe; gesture utilities are tested and ready
 
@@ -33,11 +33,11 @@
 
 **⚠️ CRITICAL**: Phases 3, 4, and 5 all depend on this phase
 
-- [ ] T006 Add `activePointers: Map<number, ActivePointer>` and `prevPinchDistance: number | null` fields to `Canvas` class in `src/canvas/Canvas.ts` (types defined inline matching `specs/017-touch-support/contracts/types.ts`)
-- [ ] T007 Replace the three `mousedown`/`mousemove`/`mouseup` `addEventListener` calls (lines 162–164) with `pointerdown`/`pointermove`/`pointerup`/`pointercancel` listeners in `src/canvas/Canvas.ts`; preserve the existing `handleMouseDown`/`handleMouseMove`/`handleMouseUp` method signatures by delegating from new pointer handlers — mouse path remains unchanged for now
-- [ ] T008 Implement `handlePointerDown` in `src/canvas/Canvas.ts`: extract screen position using `getEventPosition`, call `canvas.setPointerCapture(e.pointerId)`, store `ActivePointer` in map, call existing `handleMouseDown` logic with screen coords
-- [ ] T009 Implement `handlePointerMove` in `src/canvas/Canvas.ts`: update `activePointers` entry, delegate to existing single-pointer drag logic when `activePointers.size === 1` and `isDragIntent` passes
-- [ ] T010 Implement `handlePointerUp` / `handlePointerCancel` in `src/canvas/Canvas.ts`: remove pointer from map, delegate to existing `handleMouseUp` logic; treat lift with distance ≤ 8px as tap (route to existing click path)
+- [x] T006 Add `activePointers: Map<number, ActivePointer>` and `prevPinchDistance: number | null` fields to `Canvas` class in `src/canvas/Canvas.ts` (types defined inline matching `specs/017-touch-support/contracts/types.ts`)
+- [x] T007 Replace the three `mousedown`/`mousemove`/`mouseup` `addEventListener` calls (lines 162–164) with `pointerdown`/`pointermove`/`pointerup`/`pointercancel` listeners in `src/canvas/Canvas.ts`; preserve the existing `handleMouseDown`/`handleMouseMove`/`handleMouseUp` method signatures by delegating from new pointer handlers — mouse path remains unchanged for now
+- [x] T008 Implement `handlePointerDown` in `src/canvas/Canvas.ts`: extract screen position using `getEventPosition`, call `canvas.setPointerCapture(e.pointerId)`, store `ActivePointer` in map, call existing `handleMouseDown` logic with screen coords
+- [x] T009 Implement `handlePointerMove` in `src/canvas/Canvas.ts`: update `activePointers` entry, delegate to existing single-pointer drag logic when `activePointers.size === 1` and `isDragIntent` passes
+- [x] T010 Implement `handlePointerUp` / `handlePointerCancel` in `src/canvas/Canvas.ts`: remove pointer from map, delegate to existing `handleMouseUp` logic; treat lift with distance ≤ 8px as tap (route to existing click path)
 
 **Checkpoint**: Canvas responds to mouse and single-finger touch identically — existing tests pass; manually verify knob drag and component drag on iPad or DevTools touch emulation
 
@@ -49,9 +49,9 @@
 
 **Independent Test**: Place any component with a knob (e.g., Oscillator) on the canvas, open in Chrome DevTools touch emulation, press-drag vertically on the knob — value changes continuously; lift finger — value commits
 
-- [ ] T011 [US1] Verify `handleControlMouseDown`/`handleControlMouseMove`/`handleControlMouseUp` in `src/canvas/CanvasComponent.ts` receive correct world coordinates from the pointer handler introduced in Phase 2 — no code change expected; manual verification task
-- [ ] T012 [US1] Test knob drag behaviour by running `vitest run` and confirming no regressions in `tests/canvas/` — fix any failures caused by pointer event listener changes in Phase 2
-- [ ] T013 [US1] Verify slider drag in `src/canvas/controls/Slider.ts` works via the same pointer → world-coord path; confirm `onMouseDown`/`onMouseMove`/`onMouseUp` in `Slider.ts` receive correct Y delta — no code change expected unless coordinate mapping is broken
+- [x] T011 [US1] Verify `handleControlMouseDown`/`handleControlMouseMove`/`handleControlMouseUp` in `src/canvas/CanvasComponent.ts` receive correct world coordinates from the pointer handler introduced in Phase 2 — no code change expected; manual verification task
+- [x] T012 [US1] Test knob drag behaviour by running `vitest run` and confirming no regressions in `tests/canvas/` — fix any failures caused by pointer event listener changes in Phase 2
+- [x] T013 [US1] Verify slider drag in `src/canvas/controls/Slider.ts` works via the same pointer → world-coord path; confirm `onMouseDown`/`onMouseMove`/`onMouseUp` in `Slider.ts` receive correct Y delta — no code change expected unless coordinate mapping is broken
 
 **Checkpoint**: Knob and slider adjustment works on touch with same accuracy as mouse — User Story 1 independently validated
 
@@ -63,8 +63,8 @@
 
 **Independent Test**: Add two components, drag one by its header on iPad emulation — it follows the finger and settles at release position; drag state clears
 
-- [ ] T014 [US2] Verify component-drag path in `src/canvas/Canvas.ts` (`handlePointerMove` → DRAGGING mode → position update) works for single-finger touch; confirm `draggedComponents` and `dragStartPos` update correctly from pointer coords
-- [ ] T015 [US2] Verify multi-component drag (multiple selected) works via the same pointer path — no additional changes expected; manual verification on DevTools emulation
+- [x] T014 [US2] Verify component-drag path in `src/canvas/Canvas.ts` (`handlePointerMove` → DRAGGING mode → position update) works for single-finger touch; confirm `draggedComponents` and `dragStartPos` update correctly from pointer coords
+- [x] T015 [US2] Verify multi-component drag (multiple selected) works via the same pointer path — no additional changes expected; manual verification on DevTools emulation
 
 **Checkpoint**: Components move correctly on touch — User Story 2 independently validated alongside User Story 1
 
@@ -76,10 +76,10 @@
 
 **Independent Test**: Open a large patch, use two-finger drag on DevTools emulation to pan; use pinch (two-finger spread/squeeze) to zoom — viewport changes; no component accidentally moves
 
-- [ ] T016 [US3] Implement two-pointer pan in `handlePointerMove` in `src/canvas/Canvas.ts`: when `activePointers.size === 2`, compute centroid delta between current and previous frame positions, call `this.viewport.panBy(dx, dy)`; cancel any single-pointer drag state when second finger lands
-- [ ] T017 [US3] Implement pinch-zoom in `handlePointerMove` in `src/canvas/Canvas.ts`: when `activePointers.size === 2`, compute distance ratio (`currentDist / prevPinchDistance`), call `this.viewport.zoomAt(ratio, midpoint.screenX, midpoint.screenY)`; store `prevPinchDistance` on each frame; clear on `pointerup`
-- [ ] T018 [US3] Ensure `prevPinchDistance` is reset to `null` when pointer count drops below 2 in `handlePointerUp` / `handlePointerCancel` in `src/canvas/Canvas.ts`
-- [ ] T019 [US3] Write unit tests for `pointerDistance` and `pointerMidpoint` helpers used by pan/pinch in `tests/canvas/GestureHelpers.test.ts` (already created in T005; add pinch-specific cases)
+- [x] T016 [US3] Implement two-pointer pan in `handlePointerMove` in `src/canvas/Canvas.ts`: when `activePointers.size === 2`, compute centroid delta between current and previous frame positions, call `this.viewport.panBy(dx, dy)`; cancel any single-pointer drag state when second finger lands
+- [x] T017 [US3] Implement pinch-zoom in `handlePointerMove` in `src/canvas/Canvas.ts`: when `activePointers.size === 2`, compute distance ratio (`currentDist / prevPinchDistance`), call `this.viewport.zoomAt(ratio, midpoint.screenX, midpoint.screenY)`; store `prevPinchDistance` on each frame; clear on `pointerup`
+- [x] T018 [US3] Ensure `prevPinchDistance` is reset to `null` when pointer count drops below 2 in `handlePointerUp` / `handlePointerCancel` in `src/canvas/Canvas.ts`
+- [x] T019 [US3] Write unit tests for `pointerDistance` and `pointerMidpoint` helpers used by pan/pinch in `tests/canvas/GestureHelpers.test.ts` (already created in T005; add pinch-specific cases)
 
 **Checkpoint**: Two-finger pan and pinch-zoom work without triggering accidental component moves — User Story 3 independently validated
 
@@ -91,8 +91,8 @@
 
 **Independent Test**: On DevTools touch emulation, tap an oscillator output port (short press, ≤8px movement) — cable preview starts; tap a compatible input port — cable connects; tap either connected port again — cable disconnects
 
-- [ ] T020 [US4] Verify tap detection in `handlePointerUp` in `src/canvas/Canvas.ts` correctly routes to the existing port-click path (the `connectingFromPort` logic) when distance ≤ 8px — confirm port hit-test works with pointer-derived coords
-- [ ] T021 [US4] Implement disconnect-on-tap for already-connected ports in `src/canvas/Canvas.ts`: in the tap branch of `handlePointerUp`, look up the connection ID via `connectionManager.getConnectionAt(worldPos.x, worldPos.y)` and call `connectionManager.removeConnection(connectionId)` (matching FR-007: tapping connected port disconnects it — same method used by Shift+Click at line ~308)
+- [x] T020 [US4] Verify tap detection in `handlePointerUp` in `src/canvas/Canvas.ts` correctly routes to the existing port-click path (the `connectingFromPort` logic) when distance ≤ 8px — confirm port hit-test works with pointer-derived coords
+- [x] T021 [US4] Implement disconnect-on-tap for already-connected ports in `src/canvas/Canvas.ts`: in the tap branch of `handlePointerUp`, look up the connection ID via `connectionManager.getConnectionAt(worldPos.x, worldPos.y)` and call `connectionManager.removeConnection(connectionId)` (matching FR-007: tapping connected port disconnects it — same method used by Shift+Click at line ~308)
 
 **Checkpoint**: Cable connect and disconnect work via tap — User Story 4 independently validated
 
@@ -104,10 +104,10 @@
 
 **Independent Test**: Open app on iPad (or DevTools touch emulation) — sidebar is hidden, toggle button visible; tap toggle — sidebar opens; tap "Oscillator" — component appears at canvas centre; tap toggle again — sidebar closes
 
-- [ ] T022 [US5] Add `#sidebar-toggle` button to `.top-bar` in `index.html`, adjacent to existing toolbar buttons; hidden by default via CSS
-- [ ] T023 [US5] Add sidebar collapse CSS to `src/styles/main.css`: `body.touch-device .sidebar { transform: translateX(-100%); transition: transform 0.2s ease; }`, `body.touch-device .sidebar.sidebar--open { transform: translateX(0); }`, `body.touch-device #sidebar-toggle { display: block; }`, `#sidebar-toggle { display: none; }`
-- [ ] T024 [US5] Add touch device detection and sidebar toggle wiring in `src/main.ts`: call `isCoarsePointerDevice()` from `GestureHelpers.ts` on init; if true, add `touch-device` class to `document.body`; wire `#sidebar-toggle` click to toggle `sidebar--open` class on `.sidebar`
-- [ ] T025 [US5] Add touch tap-to-add in `src/ui/Sidebar.ts`: alongside existing `dragstart` listener on each item, add `pointerdown` listener guarded by `e.pointerType === 'touch'`; on touch, call `e.preventDefault()` and dispatch the existing add-component request (same event used by drag-and-drop drop handler in `Canvas.ts`)
+- [x] T022 [US5] Add `#sidebar-toggle` button to `.top-bar` in `index.html`, adjacent to existing toolbar buttons; hidden by default via CSS
+- [x] T023 [US5] Add sidebar collapse CSS to `src/styles/main.css`: `body.touch-device .sidebar { transform: translateX(-100%); transition: transform 0.2s ease; }`, `body.touch-device .sidebar.sidebar--open { transform: translateX(0); }`, `body.touch-device #sidebar-toggle { display: block; }`, `#sidebar-toggle { display: none; }`
+- [x] T024 [US5] Add touch device detection and sidebar toggle wiring in `src/main.ts`: call `isCoarsePointerDevice()` from `GestureHelpers.ts` on init; if true, add `touch-device` class to `document.body`; wire `#sidebar-toggle` click to toggle `sidebar--open` class on `.sidebar`
+- [x] T025 [US5] Add touch tap-to-add in `src/ui/Sidebar.ts`: alongside existing `dragstart` listener on each item, add `pointerdown` listener guarded by `e.pointerType === 'touch'`; on touch, call `e.preventDefault()` and dispatch the existing add-component request (same event used by drag-and-drop drop handler in `Canvas.ts`)
 
 **Checkpoint**: Collapsible sidebar and tap-to-add work on touch — User Story 5 independently validated
 
@@ -119,7 +119,7 @@
 
 **Independent Test**: On DevTools touch emulation, press and hold one piano key with one simulated finger, press a second key with another — both notes sound simultaneously; release one — that note stops; release other — silence
 
-- [ ] T026 Replace `mousedown`/`mouseup`/`mousemove`/`mouseleave` listeners on piano key elements in `src/keyboard/Keyboard.ts` with `pointerdown`/`pointerup` listeners; call `key.setPointerCapture(e.pointerId)` on `pointerdown` so each key owns its touch point independently
+- [x] T026 Replace `mousedown`/`mouseup`/`mousemove`/`mouseleave` listeners on piano key elements in `src/keyboard/Keyboard.ts` with `pointerdown`/`pointerup` listeners; call `key.setPointerCapture(e.pointerId)` on `pointerdown` so each key owns its touch point independently
 
 **Checkpoint**: Chords play correctly on touch — keyboard story independently validated
 
@@ -131,9 +131,9 @@
 
 **Independent Test**: On DevTools touch emulation, press-hold a component header for 500ms without moving — a small context menu with "Delete" appears; tap Delete — component is removed; tap outside menu — menu dismisses without action
 
-- [ ] T027 Create `src/ui/ContextMenu.ts` with `show(componentId: string, x: number, y: number): void` and `hide(): void` methods; renders a `<div id="context-menu">` appended to `#app`; positioned absolutely at `(x, y)`; "Delete" action dispatches existing component-deletion logic; dismissed by one-shot `pointerdown` listener on `document`
-- [ ] T028 Style context menu in `src/styles/main.css`: dark background matching existing modal tokens, `border-radius`, `z-index` above canvas, `touch-action: manipulation`
-- [ ] T029 Wire long-press detection in `handlePointerDown` in `src/canvas/Canvas.ts`: start `setTimeout(500ms)` stored on the `ActivePointer`; if `pointermove` crosses 8px threshold, cancel timer; if `pointerup` fires before timeout, cancel timer; if timeout fires, call `contextMenu.show(componentId, screenX, screenY)` and cancel drag state
+- [x] T027 Create `src/ui/ContextMenu.ts` with `show(componentId: string, x: number, y: number): void` and `hide(): void` methods; renders a `<div id="context-menu">` appended to `#app`; positioned absolutely at `(x, y)`; "Delete" action dispatches existing component-deletion logic; dismissed by one-shot `pointerdown` listener on `document`
+- [x] T028 Style context menu in `src/styles/main.css`: dark background matching existing modal tokens, `border-radius`, `z-index` above canvas, `touch-action: manipulation`
+- [x] T029 Wire long-press detection in `handlePointerDown` in `src/canvas/Canvas.ts`: start `setTimeout(500ms)` stored on the `ActivePointer`; if `pointermove` crosses 8px threshold, cancel timer; if `pointerup` fires before timeout, cancel timer; if timeout fires, call `contextMenu.show(componentId, screenX, screenY)` and cancel drag state
 
 **Checkpoint**: Long-press context menu works and does not interfere with normal drag or tap interactions
 

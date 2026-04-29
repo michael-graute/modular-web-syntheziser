@@ -14,6 +14,14 @@ import { CANVAS, COLORS, GRID_LOD_THRESHOLDS, GRID_FADE_THRESHOLD } from '../uti
 import { snapToGrid } from '../utils/geometry';
 import { visualUpdateScheduler } from '../visualization/scheduler';
 import type { SubscriptionHandle } from '../visualization/types';
+import {
+  getEventPosition,
+  isDragIntent,
+  pointerDistance,
+  pointerMidpoint,
+  GESTURE_CONFIG,
+  type ActivePointer,
+} from './GestureHelpers';
 
 enum InteractionMode {
   NONE = 'none',
@@ -47,6 +55,10 @@ export class Canvas {
   private connectingFromComponent: string | null;
   private connectingFromPort: string | null;
   private connectingPreview: Position | null;
+
+  // Touch / pointer state
+  private activePointers: Map<number, ActivePointer>;
+  private prevPinchDistance: number | null;
 
   // Grid rendering
   private showGrid: boolean;
@@ -84,6 +96,9 @@ export class Canvas {
     this.connectingFromComponent = null;
     this.connectingFromPort = null;
     this.connectingPreview = null;
+
+    this.activePointers = new Map();
+    this.prevPinchDistance = null;
 
     this.showGrid = true;
     this.snapToGridEnabled = true;
@@ -156,12 +171,15 @@ export class Canvas {
   }
 
   /**
-   * Setup mouse and keyboard event listeners
+   * Setup pointer (mouse + touch + stylus) and keyboard event listeners.
+   * Pointer Events API unifies all input types — mouse behaviour is preserved
+   * because pointer events fire for mouse with pointerType === 'mouse'.
    */
   private setupEventListeners(): void {
-    this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
-    this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-    this.canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
+    this.canvas.addEventListener('pointerdown', (e) => this.handlePointerDown(e), { passive: false });
+    this.canvas.addEventListener('pointermove', (e) => this.handlePointerMove(e), { passive: false });
+    this.canvas.addEventListener('pointerup', (e) => this.handlePointerUp(e));
+    this.canvas.addEventListener('pointercancel', (e) => this.handlePointerCancel(e));
     this.canvas.addEventListener('wheel', (e) => this.handleWheel(e), {
       passive: false,
     });
@@ -173,6 +191,15 @@ export class Canvas {
 
     // Keyboard shortcuts
     window.addEventListener('keydown', (e) => this.handleKeyDown(e));
+
+    // Context menu delete action (long-press on touch)
+    eventBus.on(EventType.COMPONENT_REMOVED, (data: any) => {
+      const component = this.components.find((c) => c.id === data.componentId);
+      if (component) {
+        component.getSynthComponent()?.deactivate();
+        this.removeComponent(data.componentId);
+      }
+    });
 
     // Zoom control event listeners
     this.setupZoomControls();
@@ -265,6 +292,227 @@ export class Canvas {
       this.deleteSelectedComponents();
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // Pointer event handlers (mouse + touch + stylus via Pointer Events API)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Pointer down — registers the pointer, captures it to this element, starts
+   * the long-press timer, then delegates to handleMouseDown for all interaction logic.
+   */
+  private handlePointerDown(e: PointerEvent): void {
+    e.preventDefault();
+    this.canvas.setPointerCapture(e.pointerId);
+
+    const { screenX, screenY } = getEventPosition(e, this.canvas);
+
+    const timer = setTimeout(() => {
+      this.handleLongPress(e.pointerId, screenX, screenY);
+    }, GESTURE_CONFIG.LONG_PRESS_MS);
+
+    this.activePointers.set(e.pointerId, {
+      pointerId: e.pointerId,
+      startX: screenX,
+      startY: screenY,
+      currentX: screenX,
+      currentY: screenY,
+      longPressTimer: timer,
+    });
+
+    // When a second finger arrives cancel any single-pointer drag/long-press state
+    if (this.activePointers.size === 2) {
+      this.cancelLongPressTimer(e.pointerId);
+      // Also cancel the first pointer's timer
+      for (const [id, ptr] of this.activePointers) {
+        if (id !== e.pointerId) this.cancelLongPressTimer(id, ptr);
+      }
+      this.prevPinchDistance = null;
+      // Clear single-finger drag state so two-finger gestures don't move components
+      this.draggedComponents = [];
+      this.dragStartPos = null;
+      this.interactionMode = InteractionMode.NONE;
+      return;
+    }
+
+    // Synthesise a MouseEvent-compatible call for all existing interaction logic
+    this.handleMouseDown(this.syntheticMouseEvent(e, screenX, screenY));
+  }
+
+  /**
+   * Pointer move — updates tracking state, handles two-finger pan/pinch,
+   * and delegates single-finger moves to handleMouseMove.
+   */
+  private handlePointerMove(e: PointerEvent): void {
+    const ptr = this.activePointers.get(e.pointerId);
+    if (!ptr) return;
+
+    const { screenX, screenY } = getEventPosition(e, this.canvas);
+    ptr.currentX = screenX;
+    ptr.currentY = screenY;
+
+    // Cancel long-press if the finger has drifted far enough
+    if (isDragIntent(ptr)) {
+      this.cancelLongPressTimer(e.pointerId, ptr);
+    }
+
+    if (this.activePointers.size === 2) {
+      const pointers = [...this.activePointers.values()];
+      const [a, b] = pointers as [ActivePointer, ActivePointer];
+      const posA = { screenX: a.currentX, screenY: a.currentY };
+      const posB = { screenX: b.currentX, screenY: b.currentY };
+
+      const currentDist = pointerDistance(posA, posB);
+      const mid = pointerMidpoint(posA, posB);
+
+      if (this.prevPinchDistance !== null && this.prevPinchDistance > 0) {
+        const scaleFactor = currentDist / this.prevPinchDistance;
+        // Zoom at pinch midpoint (pass as additive delta — zoomAt adds to current zoom)
+        const zoomDelta = (scaleFactor - 1) * this.viewport.getZoom();
+        this.viewport.zoomAt(zoomDelta, mid.screenX, mid.screenY);
+        this.updateComponentViewportTransforms();
+        stateManager.setViewport(this.viewport.getState());
+      }
+      this.prevPinchDistance = currentDist;
+
+      // Pan by centroid delta — compare against lastMousePos which tracks prior centroid
+      const prevCentroidX = this.lastMousePos?.x ?? mid.screenX;
+      const prevCentroidY = this.lastMousePos?.y ?? mid.screenY;
+      const dx = mid.screenX - prevCentroidX;
+      const dy = mid.screenY - prevCentroidY;
+      if (dx !== 0 || dy !== 0) {
+        this.viewport.panBy(dx, dy);
+        stateManager.setViewport(this.viewport.getState());
+        this.updateComponentViewportTransforms();
+      }
+      this.lastMousePos = { x: mid.screenX, y: mid.screenY };
+      return;
+    }
+
+    // Single pointer — delegate to existing mouse logic
+    this.handleMouseMove(this.syntheticMouseEvent(e, screenX, screenY));
+  }
+
+  /**
+   * Pointer up — clears tracking state, resets pinch distance when fewer than
+   * two pointers remain, then delegates tap or drag completion to handleMouseUp.
+   */
+  private handlePointerUp(e: PointerEvent): void {
+    const ptr = this.activePointers.get(e.pointerId);
+    if (!ptr) return;
+
+    this.cancelLongPressTimer(e.pointerId, ptr);
+    this.activePointers.delete(e.pointerId);
+
+    // Reset pinch state when dropping below two pointers
+    if (this.activePointers.size < 2) {
+      this.prevPinchDistance = null;
+    }
+
+    // Two-finger gesture just ended — don't fire a spurious click
+    if (this.activePointers.size >= 1) return;
+
+    const { screenX, screenY } = getEventPosition(e, this.canvas);
+
+    // FR-007: tapping a connected port (or cable) on touch disconnects it.
+    // Only applies when the lift is a tap (≤8px travel) and we are NOT mid-connection.
+    const isTap = Math.hypot(ptr.currentX - ptr.startX, ptr.currentY - ptr.startY) <= GESTURE_CONFIG.DRAG_THRESHOLD_PX;
+    if (isTap && e.pointerType === 'touch' && this.interactionMode !== InteractionMode.CONNECTING) {
+      const worldPos = this.viewport.screenToWorld(screenX, screenY);
+      const connectionId = this.connectionManager.getConnectionAt(worldPos.x, worldPos.y);
+      if (connectionId) {
+        this.connectionManager.removeConnection(connectionId);
+        return;
+      }
+    }
+
+    this.handleMouseUp(this.syntheticMouseEvent(e, screenX, screenY));
+  }
+
+  /**
+   * Pointer cancel — clean up tracking without triggering any interaction logic.
+   */
+  private handlePointerCancel(e: PointerEvent): void {
+    const ptr = this.activePointers.get(e.pointerId);
+    if (ptr) this.cancelLongPressTimer(e.pointerId, ptr);
+    this.activePointers.delete(e.pointerId);
+    if (this.activePointers.size < 2) this.prevPinchDistance = null;
+    // Reset interaction state
+    this.draggedComponents = [];
+    this.dragStartPos = null;
+    this.interactionMode = InteractionMode.NONE;
+    this.canvas.style.cursor = 'grab';
+  }
+
+  /**
+   * Long-press handler — shows context menu for the component under the pointer.
+   * Called from the 500ms timer started in handlePointerDown.
+   */
+  private handleLongPress(pointerId: number, screenX: number, screenY: number): void {
+    const ptr = this.activePointers.get(pointerId);
+    if (!ptr) return;
+    // Guard: only fire if the finger hasn't moved beyond drag threshold
+    if (isDragIntent(ptr)) return;
+
+    const worldPos = this.viewport.screenToWorld(screenX, screenY);
+    const component = this.findComponentAt(worldPos.x, worldPos.y);
+    if (!component) return;
+
+    // Clear drag state so the finger-lift doesn't also move/drag the component
+    this.draggedComponents = [];
+    this.dragStartPos = null;
+    this.interactionMode = InteractionMode.NONE;
+
+    // Emit a long-press event that UI can respond to (e.g. ContextMenu)
+    eventBus.emit(EventType.COMPONENT_LONG_PRESS, {
+      componentId: component.id,
+      screenX,
+      screenY,
+    });
+  }
+
+  /**
+   * Cancels the long-press timer for the given pointer and clears the reference.
+   */
+  private cancelLongPressTimer(pointerId: number, ptr?: ActivePointer): void {
+    const p = ptr ?? this.activePointers.get(pointerId);
+    if (p?.longPressTimer !== null) {
+      clearTimeout(p!.longPressTimer!);
+      p!.longPressTimer = null;
+    }
+  }
+
+  /**
+   * Creates a minimal synthetic MouseEvent-compatible object from a PointerEvent.
+   * Used to call existing handleMouseDown/Move/Up without duplicating their logic.
+   */
+  private syntheticMouseEvent(
+    e: PointerEvent,
+    screenX: number,
+    screenY: number,
+  ): MouseEvent {
+    return {
+      clientX: e.clientX,
+      clientY: e.clientY,
+      ctrlKey: e.ctrlKey,
+      metaKey: e.metaKey,
+      shiftKey: e.shiftKey,
+      button: e.button,
+      // Provide the pre-computed rect-relative coordinates via a patched getBoundingClientRect
+      // so handleMouseDown/Move/Up's own rect subtraction yields screenX/screenY
+      target: {
+        getBoundingClientRect: () => ({
+          left: e.clientX - screenX,
+          top: e.clientY - screenY,
+        }),
+      },
+    } as unknown as MouseEvent;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Mouse event handlers (still used for wheel and keyboard; called by pointer
+  // handlers via syntheticMouseEvent for single-pointer interactions)
+  // ---------------------------------------------------------------------------
 
   /**
    * Handle mouse down event

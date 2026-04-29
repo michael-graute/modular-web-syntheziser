@@ -3,6 +3,7 @@
  */
 
 import { isWebAudioSupported, isLocalStorageAvailable } from './utils/validators';
+import { isCoarsePointerDevice } from './canvas/GestureHelpers';
 import { Canvas } from './canvas/Canvas';
 import { CanvasComponent } from './canvas/CanvasComponent';
 import { ComponentType, EventType, type PatchData } from './core/types';
@@ -26,10 +27,15 @@ import { globalBpmController } from './core/GlobalBpmController';
 import { GlobalBpmControl } from './ui/GlobalBpmControl';
 import { globalTransportController } from './core/GlobalTransportController';
 import { GlobalTransportControl } from './ui/GlobalTransportControl';
+import { ContextMenu } from './ui/ContextMenu';
 
 // Ensure singletons are initialized at app startup
 void globalBpmController;
 void globalTransportController;
+
+// Context menu singleton — subscribes to COMPONENT_LONG_PRESS on construction
+const _contextMenu = new ContextMenu();
+void _contextMenu;
 
 console.log('🎹 Modular Synth - Initializing...');
 
@@ -261,6 +267,18 @@ async function init(): Promise<void> {
 
   // Register all component types
   registerAllComponents();
+
+  // Touch device detection — adds .touch-device class and wires sidebar toggle
+  if (isCoarsePointerDevice()) {
+    document.body.classList.add('touch-device');
+  }
+  const sidebarToggle = document.getElementById('sidebar-toggle');
+  const sidebarEl = document.querySelector('.sidebar');
+  if (sidebarToggle && sidebarEl) {
+    sidebarToggle.addEventListener('click', () => {
+      sidebarEl.classList.toggle('sidebar--open');
+    });
+  }
 
   // Initialize sidebar component library
   const sidebar = new Sidebar();

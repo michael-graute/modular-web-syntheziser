@@ -2,8 +2,9 @@
  * Sidebar - Component library UI
  */
 
-import { ComponentType } from '../core/types';
+import { ComponentType, EventType } from '../core/types';
 import { componentRegistry } from '../components/ComponentRegistry';
+import { eventBus } from '../core/EventBus';
 
 /**
  * Component item data for drag-and-drop
@@ -105,6 +106,23 @@ export class Sidebar {
     // Drag event handlers
     item.addEventListener('dragstart', (e) => this.handleDragStart(e, data));
     item.addEventListener('dragend', (e) => this.handleDragEnd(e));
+
+    // Touch tap-to-add: place component at canvas centre when tapped on touch device
+    item.addEventListener('pointerdown', (e: PointerEvent) => {
+      if (e.pointerType !== 'touch') return;
+      e.preventDefault();
+      const canvasEl = document.getElementById('synth-canvas');
+      const rect = canvasEl?.getBoundingClientRect();
+      const position = rect
+        ? { x: rect.width / 2, y: rect.height / 2 }
+        : { x: 400, y: 300 };
+      eventBus.emit(EventType.COMPONENT_ADD_REQUESTED, {
+        componentType: data.type,
+        position,
+      });
+      // Close sidebar after adding on touch
+      document.querySelector('.sidebar')?.classList.remove('sidebar--open');
+    });
 
     return item;
   }

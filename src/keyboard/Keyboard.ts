@@ -130,19 +130,22 @@ export class Keyboard {
   }
 
   /**
-   * Setup mouse event listeners
+   * Setup pointer event listeners (replaces mouse listeners — handles mouse, touch, and stylus).
+   * setPointerCapture on each pointerdown lets each finger own its key independently,
+   * enabling chord playing with multiple simultaneous touches.
    */
   private setupEventListeners(): void {
-    this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
-    this.canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
-    this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-    this.canvas.addEventListener('mouseleave', () => this.handleMouseLeave());
+    this.canvas.addEventListener('pointerdown', (e) => this.handlePointerDown(e));
+    this.canvas.addEventListener('pointerup', (e) => this.handlePointerUp(e));
+    this.canvas.addEventListener('pointermove', (e) => this.handlePointerMove(e));
+    this.canvas.addEventListener('pointercancel', () => this.handlePointerLeave());
+    this.canvas.addEventListener('pointerleave', () => this.handlePointerLeave());
   }
 
-  /**
-   * Handle mouse down
-   */
-  private handleMouseDown(e: MouseEvent): void {
+  private handlePointerDown(e: PointerEvent): void {
+    e.preventDefault();
+    this.canvas.setPointerCapture(e.pointerId);
+
     const rect = this.canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -153,10 +156,7 @@ export class Keyboard {
     }
   }
 
-  /**
-   * Handle mouse up
-   */
-  private handleMouseUp(e: MouseEvent): void {
+  private handlePointerUp(e: PointerEvent): void {
     const rect = this.canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -167,29 +167,21 @@ export class Keyboard {
     }
   }
 
-  /**
-   * Handle mouse move (for drag-to-play)
-   */
-  private handleMouseMove(e: MouseEvent): void {
-    if (e.buttons === 1) {
-      // Left mouse button is pressed
-      const rect = this.canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+  private handlePointerMove(e: PointerEvent): void {
+    if (e.buttons === 0) return;
 
-      const key = this.findKeyAt(x, y);
-      if (key && !key.isPressed) {
-        // Release all other keys and press this one
-        this.releaseAllKeys();
-        this.pressKey(key.note);
-      }
+    const rect = this.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const key = this.findKeyAt(x, y);
+    if (key && !key.isPressed) {
+      this.releaseAllKeys();
+      this.pressKey(key.note);
     }
   }
 
-  /**
-   * Handle mouse leave
-   */
-  private handleMouseLeave(): void {
+  private handlePointerLeave(): void {
     this.releaseAllKeys();
   }
 
