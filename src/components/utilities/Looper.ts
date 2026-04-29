@@ -56,6 +56,8 @@ export class Looper extends SynthComponent implements TempoAware {
   private _unsubscribeKeyRecord: (() => void) | null = null;
   private _unsubscribeKeyStop: (() => void) | null = null;
   private _unsubscribeKeyClear: (() => void) | null = null;
+  private _unsubscribeTransportPlay: (() => void) | null = null;
+  private _unsubscribeTransportStop: (() => void) | null = null;
 
   constructor(id: string, position: Position) {
     super(id, ComponentType.LOOPER, 'Looper', position);
@@ -91,10 +93,12 @@ export class Looper extends SynthComponent implements TempoAware {
     this.registerAudioNode('captureNode', this._captureNode);
 
     this.subscribeToGlobalBpm();
+    this.subscribeToTransport();
   }
 
   destroyAudioNodes(): void {
     this.unsubscribeFromGlobalBpm();
+    this.unsubscribeFromTransport();
     this._unsubscribeKeyRecord?.();
     this._unsubscribeKeyStop?.();
     this._unsubscribeKeyClear?.();
@@ -150,6 +154,27 @@ export class Looper extends SynthComponent implements TempoAware {
   unsubscribeFromGlobalBpm(): void {
     this._unsubscribeBpm?.();
     this._unsubscribeBpm = null;
+  }
+
+  /** Subscribe to global transport play/stop. Called from createAudioNodes(). */
+  private subscribeToTransport(): void {
+    this._unsubscribeTransportPlay = eventBus.on(EventType.TRANSPORT_PLAY, () => {
+      // Only resume if a loop is already recorded; never auto-start recording (FR-008)
+      if (this._filled) {
+        this._resumePlayback();
+      }
+    });
+    this._unsubscribeTransportStop = eventBus.on(EventType.TRANSPORT_STOP, () => {
+      this.pressStop(); // halts playback and preserves buffer (FR-008)
+    });
+  }
+
+  /** Unsubscribe from global transport events. Called from destroyAudioNodes(). */
+  private unsubscribeFromTransport(): void {
+    this._unsubscribeTransportPlay?.();
+    this._unsubscribeTransportStop?.();
+    this._unsubscribeTransportPlay = null;
+    this._unsubscribeTransportStop = null;
   }
 
   applyGlobalBpm(bpm: number): void {
@@ -263,6 +288,16 @@ export class Looper extends SynthComponent implements TempoAware {
     this._playbackSource = source;
     this._sourceStartTime = ctx.currentTime;
     this._state = LooperState.PLAYING;
+  }
+
+  /**
+   * Resume playback after a transport-stop without touching _filled or the buffer.
+   * Only valid when _filled is true and state is IDLE (stopped by transport).
+   * Distinct from pressRecord() — does not trigger recording.
+   */
+  private _resumePlayback(): void {
+    if (!this._filled || this._state !== LooperState.IDLE) return;
+    this._startPlayback();
   }
 
   private _stopPlaybackSource(): void {

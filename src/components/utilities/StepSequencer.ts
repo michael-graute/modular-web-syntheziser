@@ -65,6 +65,10 @@ export class StepSequencer extends SynthComponent implements TempoAware {
   // Global BPM subscription
   private _globalBpmUnsubscribe: (() => void) | null = null;
 
+  // Global transport subscriptions
+  private _transportPlayUnsubscribe: (() => void) | null = null;
+  private _transportStopUnsubscribe: (() => void) | null = null;
+
   constructor(id: string, position: Position) {
     super(id, ComponentType.STEP_SEQUENCER, 'Sequencer', position);
 
@@ -169,6 +173,9 @@ export class StepSequencer extends SynthComponent implements TempoAware {
 
     // Subscribe to global BPM (takes effect at next step boundary via existing scheduling)
     this.subscribeToGlobalBpm();
+
+    // Subscribe to global transport play/stop
+    this.subscribeToTransport();
   }
 
   /**
@@ -214,6 +221,7 @@ export class StepSequencer extends SynthComponent implements TempoAware {
     this.stopArpeggiatorMonitoring();
     this.connectedGateTargets.clear();
     this.unsubscribeFromGlobalBpm();
+    this.unsubscribeFromTransport();
   }
 
   /**
@@ -376,6 +384,28 @@ export class StepSequencer extends SynthComponent implements TempoAware {
     if (this._globalBpmUnsubscribe) {
       this._globalBpmUnsubscribe();
       this._globalBpmUnsubscribe = null;
+    }
+  }
+
+  /** Subscribe to global transport play/stop. Called from createAudioNodes(). */
+  private subscribeToTransport(): void {
+    this._transportPlayUnsubscribe = eventBus.on(EventType.TRANSPORT_PLAY, () => {
+      this.start(); // start() is idempotent — guards on isPlaying internally
+    });
+    this._transportStopUnsubscribe = eventBus.on(EventType.TRANSPORT_STOP, () => {
+      this.stop();
+    });
+  }
+
+  /** Unsubscribe from global transport events. Called from destroyAudioNodes(). */
+  private unsubscribeFromTransport(): void {
+    if (this._transportPlayUnsubscribe) {
+      this._transportPlayUnsubscribe();
+      this._transportPlayUnsubscribe = null;
+    }
+    if (this._transportStopUnsubscribe) {
+      this._transportStopUnsubscribe();
+      this._transportStopUnsubscribe = null;
     }
   }
 

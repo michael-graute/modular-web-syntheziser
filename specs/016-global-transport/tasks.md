@@ -95,8 +95,8 @@
 
 **Purpose**: Step Sequencer starts/stops with the global transport.
 
-- [X] T020 [P] Modify `src/components/utilities/StepSequencer.ts` — subscribe to `TRANSPORT_PLAY` → call `this.start()` (guard: no-op if already playing); subscribe to `TRANSPORT_STOP` → call `this.stop()`; add subscriptions in `createAudioNodes()` alongside existing BPM subscription; store unsubscribe callbacks and call them in `destroyAudioNodes()` / `deactivate()` (FR-012)
-- [X] T021 [P] Write `tests/components/StepSequencer.transport.test.ts` — mock EventBus; emit `TRANSPORT_PLAY` → verify `start()` called; emit `TRANSPORT_STOP` → verify `stop()` called; emit `TRANSPORT_PLAY` while already playing → verify no double-start
+- [X] T020 [P] Modify `src/components/utilities/StepSequencer.ts` — subscribe to `TRANSPORT_PLAY` → call `this.start()` (guard: no-op if already playing); subscribe to `TRANSPORT_STOP` → call `this.stop()`; add subscriptions in `createAudioNodes()` alongside existing BPM subscription; store unsubscribe callbacks and call them in `destroyAudioNodes()` / `deactivate()` (FR-012) ✅
+- [X] T021 [P] Write `tests/components/StepSequencer.transport.test.ts` — mock EventBus; emit `TRANSPORT_PLAY` → verify `start()` called; emit `TRANSPORT_STOP` → verify `stop()` called; emit `TRANSPORT_PLAY` while already playing → verify no double-start ✅
 
 **Checkpoint**: Step Sequencer starts/stops with transport.
 
@@ -106,9 +106,9 @@
 
 **Purpose**: Looper halts on transport stop; resumes on transport play if a loop is recorded.
 
-- [X] T022 Implement `_resumePlayback()` private method in `src/components/utilities/Looper.ts` — calls `_startPlayback()` without modifying `_filled` flag or triggering recording; transitions state from IDLE → PLAYING without touching the buffer
-- [X] T023 [P] Modify `src/components/utilities/Looper.ts` — subscribe to `TRANSPORT_STOP` → call `this.pressStop()` (halts playback, preserves buffer); subscribe to `TRANSPORT_PLAY` → if `this._filled` call `this._resumePlayback()`, else no-op; add subscriptions in `createAudioNodes()`; store unsubscribe callbacks and call them in `destroyAudioNodes()` / `deactivate()` (FR-012)
-- [X] T024 [P] Write `tests/components/Looper.transport.test.ts` — mock EventBus; emit `TRANSPORT_STOP` while looper is PLAYING → verify state goes to IDLE, buffer preserved; emit `TRANSPORT_PLAY` with `_filled=true` → verify `_resumePlayback()` called; emit `TRANSPORT_PLAY` with `_filled=false` → verify looper stays IDLE
+- [X] T022 Implement `_resumePlayback()` private method in `src/components/utilities/Looper.ts` — calls `_startPlayback()` without modifying `_filled` flag or triggering recording; transitions state from IDLE → PLAYING without touching the buffer ✅
+- [X] T023 [P] Modify `src/components/utilities/Looper.ts` — subscribe to `TRANSPORT_STOP` → call `this.pressStop()` (halts playback, preserves buffer); subscribe to `TRANSPORT_PLAY` → if `this._filled` call `this._resumePlayback()`, else no-op; add subscriptions in `createAudioNodes()`; store unsubscribe callbacks and call them in `destroyAudioNodes()` / `deactivate()` (FR-012) ✅
+- [X] T024 [P] Write `tests/components/Looper.transport.test.ts` — mock EventBus; emit `TRANSPORT_STOP` while looper is PLAYING → verify state goes to IDLE, buffer preserved; emit `TRANSPORT_PLAY` with `_filled=true` → verify `_resumePlayback()` called; emit `TRANSPORT_PLAY` with `_filled=false` → verify looper stays IDLE ✅
 
 **Checkpoint**: Looper integrates cleanly with transport. FR-008 fully satisfied.
 
@@ -118,10 +118,10 @@
 
 **Purpose**: Type-check, test suite green, manual verification.
 
-- [X] T025 Run `npx tsc --noEmit` and fix any TypeScript errors in new/modified files (`src/core/GlobalTransportController.ts`, `src/ui/GlobalTransportControl.ts`, `src/core/types.ts`, `src/components/utilities/StepSequencer.ts`, `src/components/utilities/Looper.ts`, `src/main.ts`)
-- [X] T026 Run `vitest run` — ensure all new and existing tests pass; zero regressions
+- [X] T025 Run `npx tsc --noEmit` and fix any TypeScript errors in new/modified files (`src/core/GlobalTransportController.ts`, `src/ui/GlobalTransportControl.ts`, `src/core/types.ts`, `src/components/utilities/StepSequencer.ts`, `src/components/utilities/Looper.ts`, `src/main.ts`) ✅ (0 errors)
+- [X] T026 Run `vitest run` — ensure all new and existing tests pass; zero regressions ✅ (600/600 tests, 33 files)
 - [X] T027 Manual smoke test per `specs/016-global-transport/quickstart.md` steps 1–8: play/stop, Step Sequencer integration, Looper with/without loop, BPM change while playing, multi-component, idempotent press, regression check
-- [X] T028 Document late-subscription contract in `src/core/GlobalTransportController.ts` JSDoc: callers that subscribe after transport is already playing MUST call `globalTransportController.getState()` and `getPosition()` on subscribe to self-initialise — no automatic state replay on subscription (resolves spec edge case 3)
+- [X] T028 Document late-subscription contract in `src/core/GlobalTransportController.ts` JSDoc: callers that subscribe after transport is already playing MUST call `globalTransportController.getState()` and `getPosition()` on subscribe to self-initialise — no automatic state replay on subscription (resolves spec edge case 3) ✅
 
 ---
 
