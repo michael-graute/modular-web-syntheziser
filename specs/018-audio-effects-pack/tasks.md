@@ -17,11 +17,11 @@
 
 **Purpose**: Add the four new `ComponentType` enum values and shared layout/sidebar entries that all four effects depend on. Must complete before any effect class can be written.
 
-- [ ] T001 Add `BITCRUSHER = 'bitcrusher'`, `FLANGER = 'flanger'`, `PHASER = 'phaser'`, `TREMOLO = 'tremolo'` to `ComponentType` enum in `src/core/types.ts`
-- [ ] T002 Add the four new types to the `isBypassable()` allowlist in `src/components/base/SynthComponent.ts`
-- [ ] T003 [P] Add knob-count cases for `BITCRUSHER` (3), `FLANGER` (4), `PHASER` (5), `TREMOLO` (3) in `src/utils/componentLayout.ts`
-- [ ] T004 Add port-count cases `{ inputs: 1, outputs: 1 }` for all four new types in `src/utils/componentLayout.ts` (sequential after T003 — same file)
-- [ ] T005 [P] Add sidebar icons (`▓`, `〜`, `◎`, `∿`) for the four new types in `src/ui/Sidebar.ts`
+- [x] T001 Add `BITCRUSHER = 'bitcrusher'`, `FLANGER = 'flanger'`, `PHASER = 'phaser'`, `TREMOLO = 'tremolo'` to `ComponentType` enum in `src/core/types.ts`
+- [x] T002 Add the four new types to the `isBypassable()` allowlist in `src/components/base/SynthComponent.ts`
+- [x] T003 [P] Add knob-count cases for `BITCRUSHER` (3), `FLANGER` (4), `PHASER` (5), `TREMOLO` (3) in `src/utils/componentLayout.ts`
+- [x] T004 Add port-count cases `{ inputs: 1, outputs: 1 }` for all four new types in `src/utils/componentLayout.ts` (sequential after T003 — same file)
+- [x] T005 [P] Add sidebar icons (`▓`, `〜`, `◎`, `∿`) for the four new types in `src/ui/Sidebar.ts`
 
 **Checkpoint**: `src/core/types.ts` compiles with four new enum values; sidebar and layout code reference them without errors.
 
@@ -31,9 +31,9 @@
 
 **Purpose**: Pure validation/conversion helpers extracted from `contracts/` — used by all four effect classes and their tests.
 
-- [ ] T006 Adapt `specs/018-audio-effects-pack/contracts/types.ts` into `src/components/effects/effectConstants.ts`: keep only the named constant exports (`RATE_MIN`, `RATE_MAX`, `BITCRUSHER_BIT_DEPTH_MIN`, etc.) and the `PHASER_STAGES_OPTIONS` array; strip spec-only interface types (`BitcrusherParams`, `FlangerParams`, etc.) and the `EffectParams` union that are not needed at runtime
-- [ ] T007 Adapt `specs/018-audio-effects-pack/contracts/validation.ts` into `src/components/effects/effectHelpers.ts`: update imports to reference `effectConstants.ts` instead of `./types`; keep all pure helper functions (`clamp`, `safeFeedback`, `depthToFlangerLfoGain`, `depthToPhaserLfoGain`, `tremoloLfoParams`, `isValidPhaserStages`)
-- [ ] T008 Write unit tests for all helpers in `tests/components/effectHelpers.test.ts` (100% coverage required per constitution)
+- [x] T006 Adapt `specs/018-audio-effects-pack/contracts/types.ts` into `src/components/effects/effectConstants.ts`: keep only the named constant exports (`RATE_MIN`, `RATE_MAX`, `BITCRUSHER_BIT_DEPTH_MIN`, etc.) and the `PHASER_STAGES_OPTIONS` array; strip spec-only interface types (`BitcrusherParams`, `FlangerParams`, etc.) and the `EffectParams` union that are not needed at runtime
+- [x] T007 Adapt `specs/018-audio-effects-pack/contracts/validation.ts` into `src/components/effects/effectHelpers.ts`: update imports to reference `effectConstants.ts` instead of `./types`; keep all pure helper functions (`clamp`, `safeFeedback`, `depthToFlangerLfoGain`, `depthToPhaserLfoGain`, `tremoloLfoParams`, `isValidPhaserStages`)
+- [x] T008 Write unit tests for all helpers in `tests/components/effectHelpers.test.ts` (100% coverage required per constitution)
 
 **Checkpoint**: `vitest run tests/components/effectHelpers.test.ts` passes; all helpers verified with boundary values.
 
