@@ -20,6 +20,7 @@ import { Delay } from './effects/Delay';
 import { Reverb } from './effects/Reverb';
 import { Distortion } from './effects/Distortion';
 import { Chorus } from './effects/Chorus';
+import { Bitcrusher } from './effects/Bitcrusher';
 import { Oscilloscope } from './analyzers/Oscilloscope';
 import { StepSequencer } from './utilities/StepSequencer';
 import { calculateComponentDimensions } from '../utils/componentLayout';
@@ -183,6 +184,15 @@ export function registerAllComponents(): void {
     'Effects',
     (id, position) => new Chorus(id, position),
     calculateComponentDimensions(ComponentType.CHORUS)
+  );
+
+  componentRegistry.register(
+    ComponentType.BITCRUSHER,
+    'Bitcrusher',
+    'Digital bit depth and sample rate reducer',
+    'Effects',
+    (id, position) => new Bitcrusher(id, position),
+    calculateComponentDimensions(ComponentType.BITCRUSHER)
   );
 
   // Analyzers

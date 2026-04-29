@@ -263,6 +263,31 @@ export class MockConstantSourceNode extends MockAudioNode implements Partial<Con
 }
 
 /**
+ * Mock ScriptProcessorNode
+ */
+export class MockScriptProcessorNode extends MockAudioNode implements Partial<ScriptProcessorNode> {
+  bufferSize: number;
+  onaudioprocess: ((this: ScriptProcessorNode, ev: AudioProcessingEvent) => any) | null = null;
+
+  constructor(bufferSize: number = 256) {
+    super(1, 1);
+    this.bufferSize = bufferSize;
+  }
+}
+
+/**
+ * Mock DelayNode
+ */
+export class MockDelayNode extends MockAudioNode implements Partial<DelayNode> {
+  delayTime: MockAudioParam;
+
+  constructor() {
+    super(1, 1);
+    this.delayTime = new MockAudioParam(0, 0, 1);
+  }
+}
+
+/**
  * Mock AudioContext
  */
 export class MockAudioContext implements Partial<BaseAudioContext> {
@@ -333,6 +358,20 @@ export class MockAudioContext implements Partial<BaseAudioContext> {
 
   createConstantSource(): ConstantSourceNode {
     const node = new MockConstantSourceNode();
+    node.context = this;
+    this.nodes.set(node.id, node as any);
+    return node as any;
+  }
+
+  createScriptProcessor(bufferSize?: number, _inputChannels?: number, _outputChannels?: number): ScriptProcessorNode {
+    const node = new MockScriptProcessorNode(bufferSize);
+    node.context = this;
+    this.nodes.set(node.id, node as any);
+    return node as any;
+  }
+
+  createDelay(_maxDelayTime?: number): DelayNode {
+    const node = new MockDelayNode();
     node.context = this;
     this.nodes.set(node.id, node as any);
     return node as any;

@@ -47,15 +47,15 @@
 
 ### Implementation for User Story 1
 
-- [ ] T009 [US1] Implement `src/components/effects/Bitcrusher.ts`:
+- [x] T009 [US1] Implement `src/components/effects/Bitcrusher.ts`:
   - Constructor: ports (`input`/`output`), parameters (`bitDepth` 1–16 default 16, `sampleRate` 1–100 default 100, `mix` 0–1 default 1.0)
   - `createAudioNodes()`: `inputGain`, `ScriptProcessorNode` (256 frames), `dryGain`, `wetGain`, `outputGain`; wire dry and wet paths; set `onaudioprocess` using helpers from `effectHelpers.ts`
   - `destroyAudioNodes()`: disconnect and null all nodes
   - `updateAudioParameter()`: update `currentBitDepth`/`currentSampleRate` fields read by `onaudioprocess`; update `mix` via equal-power crossfade
   - `getInputNode()` / `getOutputNode()`: return `inputGain` / `outputGain`
   - `enableBypass()` / `disableBypass()`: follow `Chorus.ts` `_bypassConnections` pattern
-- [ ] T010 [US1] Register `ComponentType.BITCRUSHER` in `src/components/registerComponents.ts` (import `Bitcrusher`, add `componentRegistry.register(...)` call in Effects section)
-- [ ] T011 [US1] Write unit tests for Bitcrusher in `tests/components/Bitcrusher.test.ts`:
+- [x] T010 [US1] Register `ComponentType.BITCRUSHER` in `src/components/registerComponents.ts` (import `Bitcrusher`, add `componentRegistry.register(...)` call in Effects section)
+- [x] T011 [US1] Write unit tests for Bitcrusher in `tests/components/Bitcrusher.test.ts`:
   - Constructor creates correct ports and parameters
   - `createAudioNodes()` creates and connects ScriptProcessorNode
   - `updateAudioParameter('bitDepth', ...)` updates internal state
