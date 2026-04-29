@@ -16,6 +16,7 @@ Auto-generated from all feature plans. Last updated: 2025-10-29
 - `localStorage` via existing `PatchSerializer` / `PatchStorage` pattern (012-step-sequencer-refactor)
 - TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero new runtime dependencies (013-global-bpm)
 - TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero runtime dependencies (014-chordfinder-keyboard-sync)
+- `localStorage` via existing `PatchSerializer` / `PatchStorage` pattern; `ComponentData.audioBlob?: string` added for Base64 PCM (015-bpm-looper)
 
 - TypeScript 5.6+, ES2020 target (001-effect-bypass)
 
@@ -35,8 +36,8 @@ npm test && npm run lint
 TypeScript 5.6+, ES2020 target: Follow standard conventions
 
 ## Recent Changes
+- 015-bpm-looper: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero runtime dependencies
 - 014-chordfinder-keyboard-sync: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero runtime dependencies
-- 013-global-bpm: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero new runtime dependencies
 - 013-global-bpm: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero new runtime dependencies
 
 
@@ -72,3 +73,9 @@ TypeScript 5.6+, ES2020 target: Follow standard conventions
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+at specs/016-global-transport/plan.md
+<!-- SPECKIT END -->

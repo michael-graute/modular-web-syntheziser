@@ -24,10 +24,12 @@ import { WelcomeDialog } from './ui/WelcomeDialog';
 import { visualUpdateScheduler } from './visualization/scheduler';
 import { globalBpmController } from './core/GlobalBpmController';
 import { GlobalBpmControl } from './ui/GlobalBpmControl';
+import { globalTransportController } from './core/GlobalTransportController';
+import { GlobalTransportControl } from './ui/GlobalTransportControl';
 
-// Ensure globalBpmController singleton is initialized at app startup
-// (components subscribe to it via EventBus when activated)
+// Ensure singletons are initialized at app startup
 void globalBpmController;
+void globalTransportController;
 
 console.log('🎹 Modular Synth - Initializing...');
 
@@ -308,9 +310,12 @@ async function init(): Promise<void> {
     // Setup patch management UI
     setupPatchManagement();
 
-    // Initialize global BPM toolbar widget
+    // Initialize global transport toolbar widget (inserted before BPM control)
     const bpmContainer = document.getElementById('global-bpm-control');
     if (bpmContainer) {
+      const transportContainer = document.createElement('div');
+      bpmContainer.insertAdjacentElement('beforebegin', transportContainer);
+      new GlobalTransportControl(transportContainer);
       new GlobalBpmControl(bpmContainer);
     }
 
@@ -384,6 +389,14 @@ async function init(): Promise<void> {
       });
     }
   }
+
+  // Looper keyboard shortcuts — emit EventBus events so all Looper instances respond (T035)
+  window.addEventListener('keydown', (e) => {
+    if (e.repeat) return;
+    if (e.key === '1') eventBus.emit(EventType.LOOPER_KEY_RECORD);
+    else if (e.key === '2') eventBus.emit(EventType.LOOPER_KEY_STOP);
+    else if (e.key === '0') eventBus.emit(EventType.LOOPER_KEY_CLEAR);
+  });
 
   // Update UI to show initialization is complete
   updateStatus('Ready - Phase 2 (Tasks 1-4) Complete - Click to enable audio');

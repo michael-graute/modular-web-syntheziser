@@ -56,11 +56,11 @@ describe('ChordFinder constructor', () => {
     expect(cf.inputs.size).toBe(0);
   });
 
-  it('defaults to C Major octave 4, no progression', () => {
+  it('defaults to C Major octave 3, no progression', () => {
     const state = cf.getState();
     expect(state.config.rootNote).toBe('C');
     expect(state.config.scaleType).toBe(ChordScaleType.MAJOR);
-    expect(state.config.octave).toBe(4);
+    expect(state.config.octave).toBe(3);
     expect(state.config.progression).toHaveLength(0);
   });
 
@@ -250,11 +250,11 @@ describe('ChordFinder CV output (T036)', () => {
     (audioEngine as any).nodes = new Map();
   });
 
-  it('note1 Hz = 261.626 for C Major degree 0, octave 4', () => {
+  it('note1 Hz = 130.813 for C Major degree 0, default octave 3', () => {
     cf.selectKey('C', ChordScaleType.MAJOR);
-    cf.pressChord(0); // C major chord, root = C4 = MIDI 60 → 440 * 2^((60-69)/12) ≈ 261.626 Hz
+    cf.pressChord(0); // C3 = MIDI 48 → 440 * 2^((48-69)/12) ≈ 130.813 Hz
     const node = (cf as any).note1Output as MockConstantSourceNode;
-    expect(node.offset.value).toBeCloseTo(261.626, 0);
+    expect(node.offset.value).toBeCloseTo(130.813, 0);
   });
 
   it('note1 Hz = 523.251 for C Major degree 0, octave 5', () => {

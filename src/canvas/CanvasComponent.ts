@@ -13,10 +13,13 @@ import { OscilloscopeDisplay } from './displays/OscilloscopeDisplay';
 import { StepSequencerDisplay, SEQUENCER_DISPLAY_HEIGHT } from './displays/StepSequencerDisplay';
 import { ColliderDisplay } from './displays/ColliderDisplay';
 import { ChordFinderDisplay } from './displays/ChordFinderDisplay';
+import { LooperDisplay, VALID_BAR_COUNTS } from './displays/LooperDisplay';
 import type { Oscilloscope } from '../components/analyzers/Oscilloscope';
 import type { StepSequencer } from '../components/utilities/StepSequencer';
 import type { Collider } from '../components/utilities/Collider';
 import type { ChordFinder } from '../components/utilities/ChordFinder';
+import type { Looper } from '../components/utilities/Looper';
+import type { BarCount } from '../components/utilities/LooperConstants';
 import { eventBus } from '../core/EventBus';
 import { EventType } from '../core/types';
 
@@ -39,6 +42,8 @@ export class CanvasComponent {
   private stepSequencerDisplay: StepSequencerDisplay | null = null;
   private colliderDisplay: ColliderDisplay | null = null;
   private chordFinderDisplay: ChordFinderDisplay | null = null;
+  private looperDisplay: LooperDisplay | null = null;
+  private _looperRafId: number | null = null;
 
   constructor(
     id: string,
@@ -1098,6 +1103,68 @@ export class CanvasComponent {
         this.chordFinderDisplay.updatePosition(displayX, displayY);
       }
     }
+
+    // Looper-specific controls (T018)
+    if (this.type === ComponentType.LOOPER && this.synthComponent) {
+      const looper = this.synthComponent as Looper;
+
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      const displayX = this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL;
+      const displayY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const displayWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+
+      if (!this.looperDisplay) {
+        this.looperDisplay = new LooperDisplay(displayX, displayY, displayWidth, 300);
+
+        // Attach canvas to DOM (same parent as #synth-canvas)
+        const synthCanvas = document.getElementById('synth-canvas');
+        if (synthCanvas?.parentElement) {
+          synthCanvas.parentElement.appendChild(this.looperDisplay.getCanvas());
+        }
+
+        // Enable pointer events so clicks can be forwarded
+        this.looperDisplay.getCanvas().style.pointerEvents = 'auto';
+
+        // Wire canvas click → looper actions
+        this.looperDisplay.getCanvas().addEventListener('click', (e: MouseEvent) => {
+          const rect = this.looperDisplay!.getCanvas().getBoundingClientRect();
+          const zoom = parseFloat(this.looperDisplay!.getCanvas().style.transform.replace('scale(', '') || '1');
+          const canvasZoom = isNaN(zoom) ? 1 : zoom;
+          const lx = (e.clientX - rect.left) / canvasZoom;
+          const ly = (e.clientY - rect.top) / canvasZoom;
+          const result = this.looperDisplay!.handleMouseDown(lx, ly);
+          if (result === null) return;
+          if (result === 'record') {
+            looper.pressRecord();
+          } else if (result === 'stop') {
+            looper.pressStop();
+          } else if (result === 'overdub') {
+            looper.pressOverdub();
+          } else if (result === 'clear') {
+            looper.pressClear();
+          } else if (VALID_BAR_COUNTS.includes(result as BarCount)) {
+            looper.setBarCount(result as BarCount);
+          }
+        });
+      } else {
+        this.looperDisplay.updatePosition(displayX, displayY);
+      }
+
+      // Schedule render loop for the looper display
+      if (!this._looperRafId) {
+        const renderLoop = () => {
+          if (this.looperDisplay) {
+            this.looperDisplay.render(looper.getDisplayState());
+            this._looperRafId = requestAnimationFrame(renderLoop);
+          }
+        };
+        this._looperRafId = requestAnimationFrame(renderLoop);
+      }
+    }
   }
 
   /**
@@ -1427,6 +1494,14 @@ export class CanvasComponent {
       this.chordFinderDisplay.destroy();
       this.chordFinderDisplay = null;
     }
+    if (this._looperRafId !== null) {
+      cancelAnimationFrame(this._looperRafId);
+      this._looperRafId = null;
+    }
+    if (this.looperDisplay) {
+      this.looperDisplay.destroy();
+      this.looperDisplay = null;
+    }
   }
 
   /**
@@ -1436,6 +1511,9 @@ export class CanvasComponent {
     // oscilloscopeDisplay and stepSequencerDisplay draw on the main canvas — no separate transform needed.
     if (this.colliderDisplay) {
       this.colliderDisplay.updateViewportTransform(zoom, panX, panY);
+    }
+    if (this.looperDisplay) {
+      this.looperDisplay.updateViewportTransform(zoom, panX, panY);
     }
     // chordFinderDisplay draws on the main canvas — no separate transform needed.
   }
@@ -1551,6 +1629,7 @@ export class CanvasComponent {
       [ComponentType.STEP_SEQUENCER]: 'Sequencer',
       [ComponentType.COLLIDER]: 'Collider',
       [ComponentType.CHORD_FINDER]: 'Chord Finder',
+      [ComponentType.LOOPER]: 'Looper',
     };
     return names[this.type] || 'Component';
   }
