@@ -649,6 +649,38 @@ export class CanvasComponent {
       }
     }
 
+    // Flanger-specific controls
+    if (this.type === ComponentType.FLANGER) {
+      const rateParam = this.synthComponent.getParameter('rate');
+      const depthParam = this.synthComponent.getParameter('depth');
+      const feedbackParam = this.synthComponent.getParameter('feedback');
+      const mixParam = this.synthComponent.getParameter('mix');
+
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const numKnobs = 4;
+      const totalSpacing = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const spacing = (totalSpacing - (numKnobs * knobSize)) / (numKnobs + 1);
+
+      const params = [rateParam, depthParam, feedbackParam, mixParam];
+      params.forEach((param, i) => {
+        if (param) {
+          const knob = new Knob(
+            this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * (i + 1) + knobSize * i,
+            knobY,
+            knobSize,
+            param
+          );
+          this.controls.push(knob);
+        }
+      });
+    }
+
     // LFO-specific controls
     if (this.type === ComponentType.LFO) {
       const waveformParam = this.synthComponent.getParameter('waveform');

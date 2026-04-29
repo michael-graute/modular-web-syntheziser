@@ -75,14 +75,14 @@
 
 ### Implementation for User Story 2
 
-- [ ] T012 [US2] Implement `src/components/effects/Flanger.ts`:
+- [x] T012 [US2] Implement `src/components/effects/Flanger.ts`:
   - Constructor: ports, parameters (`rate` 0.1–20 default 0.5, `depth` 0–100 default 50, `feedback` 0–95 default 0, `mix` 0–1 default 0.5)
   - `createAudioNodes()`: `inputGain`, `delayNode` (max 0.02s), `feedbackGain`, LFO (`OscillatorNode` + `lfoGain`), `dryGain`, `wetGain`, `outputGain`; wire: dry path `inputGain→dryGain→outputGain`; wet path `inputGain→delayNode→wetGain→outputGain`; feedback `wetGain→feedbackGain→delayNode`; LFO `lfo→lfoGain→delayNode.delayTime`
   - `destroyAudioNodes()`: stop LFO, disconnect all
   - `updateAudioParameter()`: rate → `lfo.frequency`; depth → `lfoGain.gain` via `depthToFlangerLfoGain`; feedback → `feedbackGain.gain` via `safeFeedback`; mix → equal-power crossfade
   - `getInputNode()` / `getOutputNode()` / `enableBypass()` / `disableBypass()`: follow Chorus pattern
-- [ ] T013 [US2] Register `ComponentType.FLANGER` in `src/components/registerComponents.ts`
-- [ ] T014 [US2] Write unit tests for Flanger in `tests/components/Flanger.test.ts`:
+- [x] T013 [US2] Register `ComponentType.FLANGER` in `src/components/registerComponents.ts`
+- [x] T014 [US2] Write unit tests for Flanger in `tests/components/Flanger.test.ts`:
   - Correct ports and parameters in constructor
   - `createAudioNodes()` wires dry/wet/feedback paths
   - Feedback clamped: `updateAudioParameter('feedback', 100)` → gain ≤ 0.95

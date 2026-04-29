@@ -21,6 +21,7 @@ import { Reverb } from './effects/Reverb';
 import { Distortion } from './effects/Distortion';
 import { Chorus } from './effects/Chorus';
 import { Bitcrusher } from './effects/Bitcrusher';
+import { Flanger } from './effects/Flanger';
 import { Oscilloscope } from './analyzers/Oscilloscope';
 import { StepSequencer } from './utilities/StepSequencer';
 import { calculateComponentDimensions } from '../utils/componentLayout';
@@ -193,6 +194,15 @@ export function registerAllComponents(): void {
     'Effects',
     (id, position) => new Bitcrusher(id, position),
     calculateComponentDimensions(ComponentType.BITCRUSHER)
+  );
+
+  componentRegistry.register(
+    ComponentType.FLANGER,
+    'Flanger',
+    'Comb-filter sweep with feedback',
+    'Effects',
+    (id, position) => new Flanger(id, position),
+    calculateComponentDimensions(ComponentType.FLANGER)
   );
 
   // Analyzers
