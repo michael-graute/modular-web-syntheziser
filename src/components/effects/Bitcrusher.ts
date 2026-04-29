@@ -54,7 +54,7 @@ export class Bitcrusher extends SynthComponent {
       let held = 0;
       for (let i = 0; i < input.length; i++) {
         if (i % holdInterval === 0) {
-          held = Math.round(input[i] * step) / step;
+          held = Math.round((input[i] ?? 0) * step) / step;
         }
         output[i] = held;
       }
