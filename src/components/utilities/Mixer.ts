@@ -9,9 +9,15 @@ import { audioEngine } from '../../core/AudioEngine';
 /**
  * Mixer component for combining multiple audio sources
  */
+const PAN_MIN = -1.0;
+const PAN_MAX = 1.0;
+const PAN_DEFAULT = 0.0;
+const PAN_STEP = 0.01;
+
 export class Mixer extends SynthComponent {
   private inputGains: GainNode[];
   private channelGains: GainNode[];
+  private stereoPanners: StereoPannerNode[];
   private outputGain: GainNode | null;
   private readonly numChannels: number = 4;
 
@@ -20,6 +26,7 @@ export class Mixer extends SynthComponent {
 
     this.inputGains = [];
     this.channelGains = [];
+    this.stereoPanners = [];
     this.outputGain = null;
 
     // Add input ports for each channel
@@ -37,6 +44,11 @@ export class Mixer extends SynthComponent {
 
     // Add master output gain
     this.addParameter('master', 'Master', 0.75, 0, 1, 0.01, '');
+
+    // Add pan parameters for each channel
+    for (let i = 0; i < this.numChannels; i++) {
+      this.addParameter(`pan${i + 1}`, `Pan${i + 1}`, PAN_DEFAULT, PAN_MIN, PAN_MAX, PAN_STEP, '');
+    }
   }
 
   /**
@@ -53,29 +65,32 @@ export class Mixer extends SynthComponent {
     this.outputGain = ctx.createGain();
     this.outputGain.gain.value = this.getParameter('master')?.getValue() || 0.75;
 
-    // Create input and channel gain nodes for each channel
+    // Create input, channel gain, and stereo panner nodes for each channel
     this.inputGains = [];
     this.channelGains = [];
+    this.stereoPanners = [];
     for (let i = 0; i < this.numChannels; i++) {
-      // Create input gain for bypass routing
       const inputGain = ctx.createGain();
       inputGain.gain.value = 1.0;
 
-      // Create channel gain for volume control
       const channelGain = ctx.createGain();
-      const gainValue = this.getParameter(`gain${i + 1}`)?.getValue() || 0.75;
-      channelGain.gain.value = gainValue;
+      channelGain.gain.value = this.getParameter(`gain${i + 1}`)?.getValue() ?? 0.75;
 
-      // Connect: input -> channel gain -> output
+      const stereoPanner = ctx.createStereoPanner();
+      stereoPanner.pan.value = this.getParameter(`pan${i + 1}`)?.getValue() ?? PAN_DEFAULT;
+
+      // Signal chain: inputGain → channelGain → stereoPanner → outputGain
       inputGain.connect(channelGain);
-      channelGain.connect(this.outputGain);
+      channelGain.connect(stereoPanner);
+      stereoPanner.connect(this.outputGain);
 
       this.inputGains.push(inputGain);
       this.channelGains.push(channelGain);
+      this.stereoPanners.push(stereoPanner);
 
-      // Register with audio engine
       this.registerAudioNode(`inputGain${i + 1}`, inputGain);
       this.registerAudioNode(`channelGain${i + 1}`, channelGain);
+      this.registerAudioNode(`stereoPanner${i + 1}`, stereoPanner);
     }
 
     // Register output gain
@@ -100,6 +115,12 @@ export class Mixer extends SynthComponent {
     });
     this.channelGains = [];
 
+    // Disconnect all stereo panners
+    this.stereoPanners.forEach((panner) => {
+      panner.disconnect();
+    });
+    this.stereoPanners = [];
+
     // Disconnect output gain
     if (this.outputGain) {
       this.outputGain.disconnect();
@@ -121,10 +142,14 @@ export class Mixer extends SynthComponent {
         this.outputGain.gain.setValueAtTime(value, now);
       }
     } else if (parameterId.startsWith('gain')) {
-      // Extract channel number from parameterId (e.g., "gain1" -> 0)
       const channelIndex = parseInt(parameterId.replace('gain', '')) - 1;
       if (channelIndex >= 0 && channelIndex < this.channelGains.length) {
         this.channelGains[channelIndex]!.gain.setValueAtTime(value, now);
+      }
+    } else if (parameterId.startsWith('pan')) {
+      const channelIndex = parseInt(parameterId.replace('pan', '')) - 1;
+      if (channelIndex >= 0 && channelIndex < this.stereoPanners.length) {
+        this.stereoPanners[channelIndex]!.pan.setValueAtTime(value, now);
       }
     }
   }
@@ -175,14 +200,16 @@ export class Mixer extends SynthComponent {
     this._bypassConnections = [];
     for (let i = 0; i < this.numChannels; i++) {
       this._bypassConnections.push({ from: this.inputGains[i]!, to: this.channelGains[i]! });
-      this._bypassConnections.push({ from: this.channelGains[i]!, to: this.outputGain });
+      this._bypassConnections.push({ from: this.channelGains[i]!, to: this.stereoPanners[i]! });
+      this._bypassConnections.push({ from: this.stereoPanners[i]!, to: this.outputGain });
     }
 
     // Disconnect all processing
     this.inputGains.forEach(inputGain => inputGain.disconnect());
     this.channelGains.forEach(channelGain => channelGain.disconnect());
+    this.stereoPanners.forEach(panner => panner.disconnect());
 
-    // Connect all inputs directly to output
+    // Connect all inputs directly to output (bypass path skips fader and panner)
     this.inputGains.forEach(inputGain => inputGain.connect(this.outputGain!));
 
     console.log(`Mixer ${this.id} bypassed`);

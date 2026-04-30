@@ -17,7 +17,7 @@
 
 **Purpose**: Add MockStereoPannerNode to the test mock layer — this is a prerequisite shared across all user stories.
 
-- [ ] T001 Add `MockStereoPannerNode` class (exposing `pan: MockAudioParam`) to `tests/mocks/WebAudioAPI.mock.ts` following the `MockGainNode` pattern; register it on the mock `AudioContext` as `createStereoPanner()`
+- [x] T001 Add `MockStereoPannerNode` class (exposing `pan: MockAudioParam`) to `tests/mocks/WebAudioAPI.mock.ts` following the `MockGainNode` pattern; register it on the mock `AudioContext` as `createStereoPanner()`
 
 ---
 
@@ -27,9 +27,9 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T002 In `src/components/utilities/Mixer.ts` constructor, call `addParameter()` four times to register `pan1`–`pan4` with range [−1.0, +1.0], step 0.01, default 0.0, unit `''`, following the `gain1`–`gain4` pattern
-- [ ] T003 In `src/components/utilities/Mixer.ts` `createAudioNodes()`, create four `StereoPannerNode`s via `ctx.createStereoPanner()`, register them as `stereoPanner1`–`stereoPanner4` via `registerAudioNode()`, and wire the signal chain: `channelGain → stereoPanner → outputGain` (replacing the existing `channelGain → outputGain` direct connection)
-- [ ] T004 In `src/components/utilities/Mixer.ts` `destroyAudioNodes()`, disconnect and null out `stereoPanner1`–`stereoPanner4` alongside the existing node teardown
+- [x] T002 In `src/components/utilities/Mixer.ts` constructor, call `addParameter()` four times to register `pan1`–`pan4` with range [−1.0, +1.0], step 0.01, default 0.0, unit `''`, following the `gain1`–`gain4` pattern
+- [x] T003 In `src/components/utilities/Mixer.ts` `createAudioNodes()`, create four `StereoPannerNode`s via `ctx.createStereoPanner()`, register them as `stereoPanner1`–`stereoPanner4` via `registerAudioNode()`, and wire the signal chain: `channelGain → stereoPanner → outputGain` (replacing the existing `channelGain → outputGain` direct connection)
+- [x] T004 In `src/components/utilities/Mixer.ts` `destroyAudioNodes()`, disconnect and null out `stereoPanner1`–`stereoPanner4` alongside the existing node teardown
 
 **Checkpoint**: Foundation ready — four StereoPannerNodes exist in the signal chain; user story implementation can now begin.
 
@@ -43,12 +43,12 @@
 
 ### Tests for User Story 1
 
-- [ ] T005 [P] [US1] In `tests/components/Mixer.test.ts`, write tests covering: constructor registers `pan1`–`pan4` with correct defaults; `createAudioNodes()` creates 4 `StereoPannerNode`s; signal chain order is `channelGain → stereoPanner → outputGain`; `updateAudioParameter('pan1', value)` calls `stereoPanner1.pan.setValueAtTime(value, now)`; all four panners update independently
+- [x] T005 [P] [US1] In `tests/components/Mixer.test.ts`, write tests covering: constructor registers `pan1`–`pan4` with correct defaults; `createAudioNodes()` creates 4 `StereoPannerNode`s; signal chain order is `channelGain → stereoPanner → outputGain`; `updateAudioParameter('pan1', value)` calls `stereoPanner1.pan.setValueAtTime(value, now)`; all four panners update independently
 
 ### Implementation for User Story 1
 
-- [ ] T006 [US1] In `src/components/utilities/Mixer.ts` `updateAudioParameter()`, handle `pan1`–`pan4` cases: call `stereoPanner[N].pan.setValueAtTime(value, audioContext.currentTime)` for the matching channel index, following the existing `gain1`–`gain4` handler pattern
-- [ ] T007 [US1] In `src/components/utilities/Mixer.ts` bypass logic, include `channelGain[N] → stereoPanner[N]` and `stereoPanner[N] → outputGain` in `_bypassConnections` so `disableBypass()` restores the panner connections automatically (per Decision 6 in research.md)
+- [x] T006 [US1] In `src/components/utilities/Mixer.ts` `updateAudioParameter()`, handle `pan1`–`pan4` cases: call `stereoPanner[N].pan.setValueAtTime(value, audioContext.currentTime)` for the matching channel index, following the existing `gain1`–`gain4` handler pattern
+- [x] T007 [US1] In `src/components/utilities/Mixer.ts` bypass logic, include `channelGain[N] → stereoPanner[N]` and `stereoPanner[N] → outputGain` in `_bypassConnections` so `disableBypass()` restores the panner connections automatically (per Decision 6 in research.md)
 
 **Checkpoint**: User Story 1 is fully functional — all four channels pan independently; run `vitest run` to verify T005 passes.
 
@@ -62,11 +62,11 @@
 
 ### Tests for User Story 2
 
-- [ ] T008 [P] [US2] In `tests/components/Mixer.test.ts`, add tests covering: serialize produces `pan1`–`pan4` keys in `ComponentData.parameters`; deserialize restores each channel's pan value and calls `stereoPanner[N].pan.setValueAtTime`; a legacy patch object missing `pan1`–`pan4` loads without error and all four panners default to 0.0
+- [x] T008 [P] [US2] In `tests/components/Mixer.test.ts`, add tests covering: serialize produces `pan1`–`pan4` keys in `ComponentData.parameters`; deserialize restores each channel's pan value and calls `stereoPanner[N].pan.setValueAtTime`; a legacy patch object missing `pan1`–`pan4` loads without error and all four panners default to 0.0
 
 ### Implementation for User Story 2
 
-- [ ] T009 [US2] Read `src/components/utilities/Mixer.ts` `serialize()` and `deserialize()`: confirm that `pan1`–`pan4` are included in `ComponentData.parameters` via the `SynthComponent.addParameter()` pipeline with no custom serialization; if they are not, wire them explicitly; confirm that loading a patch object without `pan1`–`pan4` keys falls back to the 0.0 constructor default without throwing
+- [x] T009 [US2] Read `src/components/utilities/Mixer.ts` `serialize()` and `deserialize()`: confirm that `pan1`–`pan4` are included in `ComponentData.parameters` via the `SynthComponent.addParameter()` pipeline with no custom serialization; if they are not, wire them explicitly; confirm that loading a patch object without `pan1`–`pan4` keys falls back to the 0.0 constructor default without throwing
 
 **Checkpoint**: User Story 2 complete — patch round-trip preserves all pan positions; legacy patches load cleanly.
 
@@ -80,12 +80,12 @@
 
 ### Tests for User Story 3
 
-- [ ] T010 [P] [US3] In `tests/components/Mixer.test.ts` (or a canvas unit test), assert that the pan knob angle calculation maps 0.0 → 0° offset (12 o'clock), −1.0 → full-left stop, +1.0 → full-right stop, using the same angle formula as other knobs in `src/canvas/CanvasComponent.ts`
+- [x] T010 [P] [US3] In `tests/components/Mixer.test.ts` (or a canvas unit test), assert that the pan knob angle calculation maps 0.0 → 0° offset (12 o'clock), −1.0 → full-left stop, +1.0 → full-right stop, using the same angle formula as other knobs in `src/canvas/CanvasComponent.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T011 [P] [US3] In `src/utils/componentLayout.ts`, add `numPanKnobs: 4` to the Mixer layout descriptor and increase the Mixer component height by 74 px (`+10` spacing + `+12` label + `+40` knob + `+12` value text), following the existing knob-row height formula
-- [ ] T012 [US3] In `src/canvas/CanvasComponent.ts`, render a pan knob row below the existing fader row in the Mixer block: 4 knobs spaced identically to the fader row, labelled `PAN`, each knob angle driven by the channel's `pan[N]` parameter value from `getParameter('panN')?.getValue()` (depends on T011)
+- [x] T011 [P] [US3] In `src/utils/componentLayout.ts`, add `numPanKnobs: 4` to the Mixer layout descriptor and increase the Mixer component height by 74 px (`+10` spacing + `+12` label + `+40` knob + `+12` value text), following the existing knob-row height formula
+- [x] T012 [US3] In `src/canvas/CanvasComponent.ts`, render a pan knob row below the existing fader row in the Mixer block: 4 knobs spaced identically to the fader row, labelled `PAN`, each knob angle driven by the channel's `pan[N]` parameter value from `getParameter('panN')?.getValue()` (depends on T011)
 
 **Checkpoint**: User Story 3 complete — all four pan knobs render correctly in the Mixer canvas.
 
@@ -95,10 +95,10 @@
 
 **Purpose**: Final validation, integration check, and cleanup.
 
-- [ ] T013 [P] In `tests/utils/panValidation.test.ts`, write unit tests for all three exported functions in `specs/019-mixer-channel-panning/contracts/validation.ts`: `clampPan` (clamps below −1.0, clamps above +1.0, passes through in-range values); `isValidPan` (returns false for NaN/Infinity/out-of-range, true for boundary and mid-range values); `isCenterPan` (true for 0.0, false for 0.5, respects custom epsilon)
-- [ ] T014 [P] Run `vitest run` and confirm all tests in `tests/components/Mixer.test.ts` and `tests/utils/panValidation.test.ts` pass with no regressions in other test files
-- [ ] T015 [P] Run `npm run lint` (or `tsc --noEmit`) and resolve any TypeScript strict-mode errors introduced by the new pan parameters or node registrations
-- [ ] T016 Manually verify the three quickstart.md integration scenarios in the browser: basic stereo spread (Scenario 1), all pans at center identical to pre-feature behavior (Scenario 2), legacy patch load defaulting to 0.0 (Scenario 3)
+- [x] T013 [P] In `tests/utils/panValidation.test.ts`, write unit tests for all three exported functions in `specs/019-mixer-channel-panning/contracts/validation.ts`: `clampPan` (clamps below −1.0, clamps above +1.0, passes through in-range values); `isValidPan` (returns false for NaN/Infinity/out-of-range, true for boundary and mid-range values); `isCenterPan` (true for 0.0, false for 0.5, respects custom epsilon)
+- [x] T014 [P] Run `vitest run` and confirm all tests in `tests/components/Mixer.test.ts` and `tests/utils/panValidation.test.ts` pass with no regressions in other test files
+- [x] T015 [P] Run `npm run lint` (or `tsc --noEmit`) and resolve any TypeScript strict-mode errors introduced by the new pan parameters or node registrations
+- [x] T016 Manually verify the three quickstart.md integration scenarios in the browser: basic stereo spread (Scenario 1), all pans at center identical to pre-feature behavior (Scenario 2), legacy patch load defaulting to 0.0 (Scenario 3)
 
 ---
 

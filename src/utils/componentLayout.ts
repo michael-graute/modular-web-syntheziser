@@ -16,6 +16,7 @@ interface ControlLayout {
   sliderHeight?: number;
   hasDisplayArea?: boolean;
   displayHeight?: number;
+  numPanKnobs?: number;
 }
 
 /**
@@ -63,6 +64,7 @@ function getControlLayout(type: ComponentType): ControlLayout {
       return {
         numSliders: 5, // 4 channels + master
         sliderHeight: 80,
+        numPanKnobs: 4,
       };
 
     case ComponentType.REVERB:
@@ -305,6 +307,13 @@ export function calculateComponentHeight(type: ComponentType): number {
     height += 10; // spacing above sliders
     height += (controlLayout.sliderHeight || 80); // slider height
     height += 12; // value text below (includes padding)
+  }
+
+  if (controlLayout.numPanKnobs && controlLayout.numPanKnobs > 0) {
+    height += 10; // spacing above pan knob row
+    height += 12; // knob label height
+    height += 40; // knob size
+    height += 12; // value text below
   }
 
   if (controlLayout.hasDisplayArea) {
