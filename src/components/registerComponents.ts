@@ -23,6 +23,7 @@ import { Chorus } from './effects/Chorus';
 import { Bitcrusher } from './effects/Bitcrusher';
 import { Flanger } from './effects/Flanger';
 import { Phaser } from './effects/Phaser';
+import { Tremolo } from './effects/Tremolo';
 import { Oscilloscope } from './analyzers/Oscilloscope';
 import { StepSequencer } from './utilities/StepSequencer';
 import { calculateComponentDimensions } from '../utils/componentLayout';
@@ -213,6 +214,15 @@ export function registerAllComponents(): void {
     'Effects',
     (id, position) => new Phaser(id, position),
     calculateComponentDimensions(ComponentType.PHASER)
+  );
+
+  componentRegistry.register(
+    ComponentType.TREMOLO,
+    'Tremolo',
+    'Rhythmic amplitude modulation',
+    'Effects',
+    (id, position) => new Tremolo(id, position),
+    calculateComponentDimensions(ComponentType.TREMOLO)
   );
 
   // Analyzers

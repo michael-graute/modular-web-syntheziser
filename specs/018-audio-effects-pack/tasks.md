@@ -129,14 +129,14 @@
 
 ### Implementation for User Story 4
 
-- [ ] T018 [US4] Implement `src/components/effects/Tremolo.ts`:
+- [x] T018 [US4] Implement `src/components/effects/Tremolo.ts`:
   - Constructor: ports, parameters (`rate` 0.1–20 default 4.0, `depth` 0–100 default 50, `mix` 0–1 default 1.0)
   - `createAudioNodes()`: `inputGain`, `tremoloGain` (GainNode), LFO (`OscillatorNode` + `lfoGain`), `constantSource` (ConstantSourceNode), `dryGain`, `wetGain`, `outputGain`; wire: wet path `inputGain→tremoloGain→wetGain→outputGain`; dry path `inputGain→dryGain→outputGain`; connect `constantSource→tremoloGain.gain` and `lfo→lfoGain→tremoloGain.gain`; set DC offset and LFO amplitude via `tremoloLfoParams(depth)` from `effectHelpers.ts`; start LFO and constantSource
   - `destroyAudioNodes()`: stop LFO and constantSource, disconnect all
   - `updateAudioParameter()`: rate → `lfo.frequency`; depth → recompute `tremoloLfoParams`, update `lfoGain.gain` and `constantSource.offset`; mix → equal-power crossfade
   - `getInputNode()` / `getOutputNode()` / `enableBypass()` / `disableBypass()`: follow Chorus pattern
-- [ ] T019 [US4] Register `ComponentType.TREMOLO` in `src/components/registerComponents.ts`
-- [ ] T020 [US4] Write unit tests for Tremolo in `tests/components/Tremolo.test.ts`:
+- [x] T019 [US4] Register `ComponentType.TREMOLO` in `src/components/registerComponents.ts`
+- [x] T020 [US4] Write unit tests for Tremolo in `tests/components/Tremolo.test.ts`:
   - Constructor creates correct ports and parameters
   - `tremoloLfoParams(0)` returns `{ lfoAmplitude: 0, dcOffset: 1.0 }` (no modulation)
   - `tremoloLfoParams(100)` returns `{ lfoAmplitude: 0.5, dcOffset: 0.5 }` (full depth)
@@ -156,9 +156,9 @@
 
 ### Implementation for User Story 5
 
-- [ ] T021 [P] [US5] Confirm that the active/bypassed CSS class is applied to the `BITCRUSHER` module panel when `setBypass()` is called — inspect `src/ui/Sidebar.ts` and the component panel rendering path; if the existing pattern does not cover the new type, add the necessary case
-- [ ] T022 [P] [US5] Confirm active/bypassed CSS class applies to `FLANGER`, `PHASER`, and `TREMOLO` panels — same check as T021; add missing cases if needed
-- [ ] T023 [US5] Write cross-cutting bypass tests in `tests/components/effectsBypass.test.ts`:
+- [x] T021 [P] [US5] Confirm that the active/bypassed CSS class is applied to the `BITCRUSHER` module panel when `setBypass()` is called — inspect `src/ui/Sidebar.ts` and the component panel rendering path; if the existing pattern does not cover the new type, add the necessary case
+- [x] T022 [P] [US5] Confirm active/bypassed CSS class applies to `FLANGER`, `PHASER`, and `TREMOLO` panels — same check as T021; add missing cases if needed
+- [x] T023 [US5] Write cross-cutting bypass tests in `tests/components/effectsBypass.test.ts`:
   - For each of the four effects: `setBypass(true)` → `isBypassed === true`; `setBypass(false)` → `isBypassed === false`
   - Double-toggle (true→false→true) leaves state consistent
   - `serialize()` includes `isBypassed: true` when bypassed; omits field when not bypassed
@@ -172,9 +172,9 @@
 
 **Purpose**: Final integration checks, help text, and validation sweep.
 
-- [ ] T024 [P] Update `src/ui/HelpSidebar.ts` to mention the four new effects (Bitcrusher, Flanger, Phaser, Tremolo) in the Effects section alongside existing entries
-- [ ] T025 Run `vitest run` — all new and existing tests pass; fix any regressions
-- [ ] T026 Run `npm run lint` — zero new warnings; fix any TypeScript strict-mode issues
+- [x] T024 [P] Update `src/ui/HelpSidebar.ts` to mention the four new effects (Bitcrusher, Flanger, Phaser, Tremolo) in the Effects section alongside existing entries
+- [x] T025 Run `vitest run` — all new and existing tests pass; fix any regressions (843/843 passed)
+- [x] T026 Run `npm run lint` — zero new warnings; fix any TypeScript strict-mode issues (`tsc --noEmit` clean)
 - [ ] T027 [P] Validate patch round-trip for each new effect: create a patch containing all four effects with non-default parameters, save to localStorage, reload, confirm all values restored (`PatchSerializer` / `PatchStorage` integration check)
 - [ ] T028 [P] Manual smoke test per quickstart.md: Oscillator → each new effect → Master Output; confirm audible transformation, bypass, and parameter response for all four
 - [ ] T029 [P] Manual chaining smoke test (spec.md Edge Cases): Oscillator → Bitcrusher → Flanger → Phaser → Tremolo → Master Output; confirm no mutual interference, no audio graph errors, and bypass on any single effect in the chain passes signal cleanly
