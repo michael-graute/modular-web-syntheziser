@@ -288,6 +288,18 @@ export class MockDelayNode extends MockAudioNode implements Partial<DelayNode> {
 }
 
 /**
+ * Mock StereoPannerNode
+ */
+export class MockStereoPannerNode extends MockAudioNode implements Partial<StereoPannerNode> {
+  pan: MockAudioParam;
+
+  constructor() {
+    super(1, 1);
+    this.pan = new MockAudioParam(0, -1, 1);
+  }
+}
+
+/**
  * Mock AudioContext
  */
 export class MockAudioContext implements Partial<BaseAudioContext> {
@@ -372,6 +384,13 @@ export class MockAudioContext implements Partial<BaseAudioContext> {
 
   createDelay(_maxDelayTime?: number): DelayNode {
     const node = new MockDelayNode();
+    node.context = this;
+    this.nodes.set(node.id, node as any);
+    return node as any;
+  }
+
+  createStereoPanner(): StereoPannerNode {
+    const node = new MockStereoPannerNode();
     node.context = this;
     this.nodes.set(node.id, node as any);
     return node as any;

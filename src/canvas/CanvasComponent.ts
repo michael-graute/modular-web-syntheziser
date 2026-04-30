@@ -399,6 +399,29 @@ export class CanvasComponent {
         );
         this.controls.push(slider);
       }
+
+      // Pan knob row — rendered below the fader row (+10 spacing +12 label +80 slider +12 value = 114 px offset)
+      const panKnobY = sliderStartY + sliderHeight + 12 + 10;
+      const numPanKnobs = 4;
+      const panKnobSize = COMPONENT.KNOB_SIZE;
+      const panTotalSpacing = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const panSpacing = (panTotalSpacing - numPanKnobs * panKnobSize) / (numPanKnobs + 1);
+
+      const component = this.synthComponent;
+      const panParams = ['pan1', 'pan2', 'pan3', 'pan4'].map(id =>
+        component.getParameter(id)
+      );
+      panParams.forEach((param, i) => {
+        if (param) {
+          const knob = new Knob(
+            this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + panSpacing * (i + 1) + panKnobSize * i,
+            panKnobY,
+            panKnobSize,
+            param
+          );
+          this.controls.push(knob);
+        }
+      });
     }
 
     // Delay-specific controls
