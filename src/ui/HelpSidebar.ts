@@ -484,7 +484,7 @@ export class HelpSidebar {
       <ul style="color: var(--text-secondary, #cccccc);">
         <li><strong style="color: var(--text-primary, #ffffff);">Generators:</strong> Oscillators, LFOs, Noise</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Processors:</strong> Filters, VCA, Envelopes</li>
-        <li><strong style="color: var(--text-primary, #ffffff);">Effects:</strong> Delay, Reverb, Distortion, Chorus</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">Effects:</strong> Delay, Reverb, Distortion, Chorus, Bitcrusher, Flanger, Phaser, Tremolo</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Utilities:</strong> Keyboard, Mixer, Sequencer</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Analyzers:</strong> Oscilloscope</li>
       </ul>
@@ -631,6 +631,49 @@ export class HelpSidebar {
       <ul style="color: var(--text-secondary, #cccccc);">
         <li><strong>Rate:</strong> Modulation speed</li>
         <li><strong>Depth:</strong> Modulation amount</li>
+        <li><strong>Mix:</strong> Dry/wet balance</li>
+      </ul>
+
+      <h4 style="color: var(--text-primary, #ffffff);">Bitcrusher</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Adds lo-fi digital grit by reducing bit depth and sample rate.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>Bit Depth:</strong> 1–16 bits (lower = more distortion)</li>
+        <li><strong>Sample Rate:</strong> Reduction percentage (lower = more aliasing)</li>
+        <li><strong>Mix:</strong> Dry/wet balance</li>
+      </ul>
+
+      <h4 style="color: var(--text-primary, #ffffff);">Flanger</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Creates a sweeping jet-like effect using a modulated short delay.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>Rate:</strong> Modulation speed (0.1–20 Hz)</li>
+        <li><strong>Depth:</strong> Modulation amount</li>
+        <li><strong>Feedback:</strong> Resonance intensity (0–95%)</li>
+        <li><strong>Mix:</strong> Dry/wet balance</li>
+      </ul>
+
+      <h4 style="color: var(--text-primary, #ffffff);">Phaser</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Adds a sweeping phase-shift character using all-pass filter stages.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>Rate:</strong> Modulation speed (0.1–20 Hz)</li>
+        <li><strong>Depth:</strong> Sweep amount</li>
+        <li><strong>Feedback:</strong> Resonance intensity (0–95%)</li>
+        <li><strong>Stages:</strong> Filter stages (2, 4, 6, or 8)</li>
+        <li><strong>Mix:</strong> Dry/wet balance</li>
+      </ul>
+
+      <h4 style="color: var(--text-primary, #ffffff);">Tremolo</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Creates rhythmic volume pulsing via amplitude modulation.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>Rate:</strong> Modulation speed (0.1–20 Hz)</li>
+        <li><strong>Depth:</strong> Volume swing amount</li>
         <li><strong>Mix:</strong> Dry/wet balance</li>
       </ul>
 

@@ -105,6 +105,26 @@ function getControlLayout(type: ComponentType): ControlLayout {
         numKnobs: 3, // rate, depth, mix
       };
 
+    case ComponentType.BITCRUSHER:
+      return {
+        numKnobs: 3, // bitDepth, sampleRate, mix
+      };
+
+    case ComponentType.FLANGER:
+      return {
+        numKnobs: 4, // rate, depth, feedback, mix
+      };
+
+    case ComponentType.PHASER:
+      return {
+        numKnobs: 5, // rate, depth, feedback, stages, mix
+      };
+
+    case ComponentType.TREMOLO:
+      return {
+        numKnobs: 3, // rate, depth, mix
+      };
+
     case ComponentType.COLLIDER:
       return {
         numKnobs: 6, // scaleType, rootNote, colliderCount, speedPreset, bpm, gateSize
@@ -174,6 +194,12 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
       return { inputs: 1, outputs: 1 }; // audio in / audio out
 
     case ComponentType.CHORUS:
+      return { inputs: 1, outputs: 1 }; // audio in / audio out
+
+    case ComponentType.BITCRUSHER:
+    case ComponentType.FLANGER:
+    case ComponentType.PHASER:
+    case ComponentType.TREMOLO:
       return { inputs: 1, outputs: 1 }; // audio in / audio out
 
     case ComponentType.MIXER:

@@ -77,5 +77,5 @@ TypeScript 5.6+, ES2020 target: Follow standard conventions
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/017-touch-support/plan.md
+at specs/018-audio-effects-pack/plan.md
 <!-- SPECKIT END -->

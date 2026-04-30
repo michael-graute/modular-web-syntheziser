@@ -153,6 +153,10 @@ export abstract class SynthComponent {
       ComponentType.DISTORTION,
       ComponentType.CHORUS,
       ComponentType.MIXER,
+      ComponentType.BITCRUSHER,
+      ComponentType.FLANGER,
+      ComponentType.PHASER,
+      ComponentType.TREMOLO,
     ];
     return bypassableTypes.includes(this.type);
   }

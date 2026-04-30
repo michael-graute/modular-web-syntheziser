@@ -601,6 +601,150 @@ export class CanvasComponent {
       }
     }
 
+    // Bitcrusher-specific controls
+    if (this.type === ComponentType.BITCRUSHER) {
+      const bitDepthParam = this.synthComponent.getParameter('bitDepth');
+      const sampleRateParam = this.synthComponent.getParameter('sampleRate');
+      const mixParam = this.synthComponent.getParameter('mix');
+
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const numKnobs = 3;
+      const totalSpacing = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const spacing = (totalSpacing - (numKnobs * knobSize)) / (numKnobs + 1);
+
+      if (bitDepthParam) {
+        const knob = new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing,
+          knobY,
+          knobSize,
+          bitDepthParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (sampleRateParam) {
+        const knob = new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 2 + knobSize,
+          knobY,
+          knobSize,
+          sampleRateParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (mixParam) {
+        const knob = new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 3 + knobSize * 2,
+          knobY,
+          knobSize,
+          mixParam
+        );
+        this.controls.push(knob);
+      }
+    }
+
+    // Flanger-specific controls
+    if (this.type === ComponentType.FLANGER) {
+      const rateParam = this.synthComponent.getParameter('rate');
+      const depthParam = this.synthComponent.getParameter('depth');
+      const feedbackParam = this.synthComponent.getParameter('feedback');
+      const mixParam = this.synthComponent.getParameter('mix');
+
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const numKnobs = 4;
+      const totalSpacing = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const spacing = (totalSpacing - (numKnobs * knobSize)) / (numKnobs + 1);
+
+      const params = [rateParam, depthParam, feedbackParam, mixParam];
+      params.forEach((param, i) => {
+        if (param) {
+          const knob = new Knob(
+            this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * (i + 1) + knobSize * i,
+            knobY,
+            knobSize,
+            param
+          );
+          this.controls.push(knob);
+        }
+      });
+    }
+
+    // Phaser-specific controls
+    if (this.type === ComponentType.PHASER) {
+      const rateParam = this.synthComponent.getParameter('rate');
+      const depthParam = this.synthComponent.getParameter('depth');
+      const feedbackParam = this.synthComponent.getParameter('feedback');
+      const stagesParam = this.synthComponent.getParameter('stages');
+      const mixParam = this.synthComponent.getParameter('mix');
+
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const numKnobs = 5;
+      const totalSpacing = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const spacing = (totalSpacing - (numKnobs * knobSize)) / (numKnobs + 1);
+
+      const params = [rateParam, depthParam, feedbackParam, stagesParam, mixParam];
+      params.forEach((param, i) => {
+        if (param) {
+          const knob = new Knob(
+            this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * (i + 1) + knobSize * i,
+            knobY,
+            knobSize,
+            param
+          );
+          this.controls.push(knob);
+        }
+      });
+    }
+
+    // Tremolo-specific controls
+    if (this.type === ComponentType.TREMOLO) {
+      const rateParam = this.synthComponent.getParameter('rate');
+      const depthParam = this.synthComponent.getParameter('depth');
+      const mixParam = this.synthComponent.getParameter('mix');
+
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const numKnobs = 3;
+      const totalSpacing = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const spacing = (totalSpacing - (numKnobs * knobSize)) / (numKnobs + 1);
+
+      const params = [rateParam, depthParam, mixParam];
+      params.forEach((param, i) => {
+        if (param) {
+          const knob = new Knob(
+            this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * (i + 1) + knobSize * i,
+            knobY,
+            knobSize,
+            param
+          );
+          this.controls.push(knob);
+        }
+      });
+    }
+
     // LFO-specific controls
     if (this.type === ComponentType.LFO) {
       const waveformParam = this.synthComponent.getParameter('waveform');
@@ -1622,6 +1766,10 @@ export class CanvasComponent {
       [ComponentType.REVERB]: 'Reverb',
       [ComponentType.DISTORTION]: 'Distortion',
       [ComponentType.CHORUS]: 'Chorus',
+      [ComponentType.BITCRUSHER]: 'Bitcrusher',
+      [ComponentType.FLANGER]: 'Flanger',
+      [ComponentType.PHASER]: 'Phaser',
+      [ComponentType.TREMOLO]: 'Tremolo',
       [ComponentType.MIXER]: 'Mixer',
       [ComponentType.KEYBOARD_INPUT]: 'Keyboard',
       [ComponentType.MASTER_OUTPUT]: 'Master Out',

@@ -35,6 +35,10 @@ export enum ComponentType {
   COLLIDER = 'collider',
   CHORD_FINDER = 'chord-finder',
   LOOPER = 'looper',
+  BITCRUSHER = 'bitcrusher',
+  FLANGER = 'flanger',
+  PHASER = 'phaser',
+  TREMOLO = 'tremolo',
 }
 
 /**

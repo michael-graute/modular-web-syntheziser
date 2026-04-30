@@ -20,6 +20,10 @@ import { Delay } from './effects/Delay';
 import { Reverb } from './effects/Reverb';
 import { Distortion } from './effects/Distortion';
 import { Chorus } from './effects/Chorus';
+import { Bitcrusher } from './effects/Bitcrusher';
+import { Flanger } from './effects/Flanger';
+import { Phaser } from './effects/Phaser';
+import { Tremolo } from './effects/Tremolo';
 import { Oscilloscope } from './analyzers/Oscilloscope';
 import { StepSequencer } from './utilities/StepSequencer';
 import { calculateComponentDimensions } from '../utils/componentLayout';
@@ -183,6 +187,42 @@ export function registerAllComponents(): void {
     'Effects',
     (id, position) => new Chorus(id, position),
     calculateComponentDimensions(ComponentType.CHORUS)
+  );
+
+  componentRegistry.register(
+    ComponentType.BITCRUSHER,
+    'Bitcrusher',
+    'Digital bit depth and sample rate reducer',
+    'Effects',
+    (id, position) => new Bitcrusher(id, position),
+    calculateComponentDimensions(ComponentType.BITCRUSHER)
+  );
+
+  componentRegistry.register(
+    ComponentType.FLANGER,
+    'Flanger',
+    'Comb-filter sweep with feedback',
+    'Effects',
+    (id, position) => new Flanger(id, position),
+    calculateComponentDimensions(ComponentType.FLANGER)
+  );
+
+  componentRegistry.register(
+    ComponentType.PHASER,
+    'Phaser',
+    'All-pass phase sweep with selectable stages',
+    'Effects',
+    (id, position) => new Phaser(id, position),
+    calculateComponentDimensions(ComponentType.PHASER)
+  );
+
+  componentRegistry.register(
+    ComponentType.TREMOLO,
+    'Tremolo',
+    'Rhythmic amplitude modulation',
+    'Effects',
+    (id, position) => new Tremolo(id, position),
+    calculateComponentDimensions(ComponentType.TREMOLO)
   );
 
   // Analyzers

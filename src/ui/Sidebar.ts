@@ -151,6 +151,10 @@ export class Sidebar {
       [ComponentType.COLLIDER]: '●',
       [ComponentType.CHORD_FINDER]: '♬',
       [ComponentType.LOOPER]: '⊙',
+      [ComponentType.BITCRUSHER]: '▓',
+      [ComponentType.FLANGER]: '〜',
+      [ComponentType.PHASER]: '◎',
+      [ComponentType.TREMOLO]: '∿',
     };
     return icons[type] || '□';
   }
