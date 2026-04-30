@@ -477,6 +477,35 @@ export class HelpSidebar {
         <li><strong style="color: var(--text-primary, #ffffff);">Help:</strong> Open this help dialog</li>
       </ul>
 
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Global BPM</h3>
+      <p style="color: var(--text-secondary, #cccccc);">
+        A single tempo control in the top bar that all tempo-aware components follow by default.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong style="color: var(--text-primary, #ffffff);">Range:</strong> 30–300 BPM (default 120)</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">Global follow:</strong> Step Sequencer, Collider, and Looper adopt the global BPM automatically</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">Local override:</strong> Individual components can be switched to a local BPM value that ignores the global setting</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">Persisted:</strong> The global BPM and each component's mode (global / local) are saved and restored with the patch</li>
+      </ul>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Global Transport</h3>
+      <p style="color: var(--text-secondary, #cccccc);">
+        A Play / Stop toggle in the top bar that starts and stops all transport-aware components simultaneously.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong style="color: var(--text-primary, #ffffff);">▶ Play:</strong> Starts the Step Sequencer and resumes any recorded Looper loop</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">■ Stop:</strong> Halts the Step Sequencer and Looper playback (recorded Looper buffer is preserved)</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">Position display:</strong> Shows the current bar and beat (e.g. "3.2" = bar 3, beat 2) while transport is running; resets to "1.1" on Stop</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">Beat clock:</strong> Fires a beat event on every beat — future components such as a metronome can subscribe without polling</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">BPM changes while playing:</strong> The beat rate adjusts immediately without restarting transport</li>
+      </ul>
+      <div style="background: var(--bg-secondary, #1a1a1a); padding: 12px 16px; border-radius: 8px; border-left: 4px solid var(--accent-color, #0066cc); margin-top: 8px;">
+        <p style="color: var(--text-secondary, #cccccc); margin: 0;">
+          <strong style="color: var(--text-primary, #ffffff);">Note:</strong> Transport does not pause mid-position — pressing Stop always resets to bar 1, beat 1.
+          Time signature is fixed at 4/4. Looper recording must be triggered manually; pressing Play does not start recording.
+        </p>
+      </div>
+
       <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Component Library (Left Sidebar)</h3>
       <p style="color: var(--text-secondary, #cccccc);">
         Browse and drag components onto the canvas. Components are organized into categories:
@@ -1105,8 +1134,8 @@ export class HelpSidebar {
           Connect LFO (sine, slow rate) to oscillator frequency CV
         </li>
         <li>
-          <strong style="color: var(--text-primary, #ffffff);">Tremolo:</strong>
-          Connect LFO to VCA CV input
+          <strong style="color: var(--text-primary, #ffffff);">Tremolo (manual):</strong>
+          Connect an LFO to a VCA CV input for custom waveform shapes — or use the dedicated <em>Tremolo</em> effect module for a ready-made solution with rate, depth, and mix controls
         </li>
         <li>
           <strong style="color: var(--text-primary, #ffffff);">Filter Sweep:</strong>
