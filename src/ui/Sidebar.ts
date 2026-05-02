@@ -133,6 +133,7 @@ export class Sidebar {
   private getComponentIcon(type: ComponentType): string {
     const icons: Record<ComponentType, string> = {
       [ComponentType.OSCILLATOR]: '〜',
+      [ComponentType.FM_OSCILLATOR]: '〜',
       [ComponentType.LFO]: '≈',
       [ComponentType.NOISE]: '※',
       [ComponentType.FILTER]: '⊼',
