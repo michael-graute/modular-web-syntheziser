@@ -28,6 +28,8 @@ A first-time user opens the app and wants to understand what an oscillator is. T
 3. **Given** a lesson is active with a task of type "connect", **When** the user makes the required connection, **Then** the task is marked complete and a success indicator appears.
 4. **Given** a task is complete, **When** the user clicks "Next", **Then** the next lesson loads with its patch and explanation.
 5. **Given** a lesson with a task of type "observe" or "free", **When** the user clicks "Next", **Then** no validation is required and the lesson advances immediately.
+6. **Given** the user is on the first lesson, **Then** the Back button is disabled (greyed out / non-interactive).
+7. **Given** a task is not yet complete and the task type is "connect" or "set-parameter", **Then** the Next button is disabled until the task is marked complete.
 
 ---
 
@@ -58,7 +60,7 @@ A user already familiar with oscillators wants to skip to the filter lessons. Th
 
 **Acceptance Scenarios**:
 
-1. **Given** Lesson Mode is open, **When** the user opens the curriculum overview, **Then** all 5 modules and their lessons are visible with completion indicators (completed / current / locked).
+1. **Given** Lesson Mode is open, **When** the user opens the curriculum overview, **Then** all 5 modules and their lessons are visible with completion indicators (completed / current / not started — unstarted lessons appear dimmed but remain clickable).
 2. **Given** the curriculum overview is open, **When** the user clicks any previously completed lesson, **Then** that lesson loads immediately.
 3. **Given** the curriculum overview is open, **When** the user clicks a not-yet-reached lesson, **Then** they can still enter it (lessons are not hard-locked; the curriculum is a guide, not a gate).
 
@@ -95,15 +97,15 @@ A user is on the "What is a filter?" lesson and wants to connect extra component
 
 - **FR-001**: The app MUST provide a "Learn" entry point in the main toolbar that opens Lesson Mode.
 - **FR-002**: Lesson Mode MUST display a sidebar showing: lesson title, module and lesson number, concept explanation (plain-language markdown), task instruction, and Next/Back navigation.
-- **FR-003**: Opening a lesson MUST automatically load the lesson's associated patch onto the canvas, replacing any current patch (with a confirmation prompt if the current patch has unsaved changes).
+- **FR-003**: Navigating to any lesson (initial load or "Next"/"Back" within Lesson Mode) MUST automatically load the lesson's associated patch onto the canvas, replacing the current patch. If the current patch has unsaved modifications, the system MUST prompt "Your changes will be lost — continue?" before replacing.
 - **FR-004**: Opening a lesson MUST highlight the lesson's relevant components on the canvas with a visual indicator; the indicator MUST be dismissable.
 - **FR-005**: The system MUST support four task types: `connect` (make a specific cable connection), `set-parameter` (change a parameter to a target value within a tolerance), `observe` (no validation required, advance manually), and `free` (no constraint, advance manually).
 - **FR-006**: For `connect` tasks, the system MUST detect when the required connection is made and automatically mark the task complete.
-- **FR-007**: For `set-parameter` tasks, the system MUST detect when a parameter reaches the target value (within the specified tolerance) and mark the task complete.
+- **FR-007**: For `set-parameter` tasks, the system MUST mark the task complete the moment the parameter value first enters the target range (within tolerance). The value does not need to remain there — reaching it once is sufficient.
 - **FR-008**: Lesson progress MUST persist across browser sessions using local storage.
 - **FR-009**: Users MUST be able to navigate to any lesson in the curriculum regardless of completion status (no hard locks).
-- **FR-010**: Users MUST be able to reset their progress from within Lesson Mode.
-- **FR-011**: The curriculum MUST contain at least 15 lessons across 5 modules (as defined in the curriculum outline).
+- **FR-010**: Users MUST be able to reset all lesson progress from within Lesson Mode via a single "Reset Progress" action that clears the full curriculum and returns to Lesson 1. There is no partial/per-module reset.
+- **FR-011**: The infrastructure MUST support a curriculum of up to 15 lessons across 5 modules. The initial release MUST ship Module 1 content (3 lessons: "What is sound?", "The oscillator", "Waveform shapes") as a working proof-of-concept. Lessons for Modules 2–5 are out of scope for this feature and will be authored iteratively.
 - **FR-012**: Lesson content (title, explanation, task) MUST be authored in external JSON files under `public/lessons/` — not hardcoded in source.
 - **FR-013**: The lesson sidebar MUST remain open and functional while the user interacts freely with the canvas.
 - **FR-014**: The system MUST display a curriculum overview showing all modules, lessons, and per-lesson completion status.
@@ -121,12 +123,25 @@ A user is on the "What is a filter?" lesson and wants to connect extra component
 
 ### Measurable Outcomes
 
-- **SC-001**: A user with no prior synthesis knowledge can complete Module 1 (3 lessons) in under 15 minutes.
-- **SC-002**: 90% of users who start a lesson successfully complete its task without external help.
+- **SC-001** *(post-launch metric — not a buildable task)*: A user with no prior synthesis knowledge can complete Module 1 (3 lessons) in under 15 minutes. Measured via user testing after release; no instrumentation required for this feature.
+- **SC-002** *(post-launch metric — not a buildable task)*: 90% of users who start a lesson successfully complete its task without external help. Measured via analytics after release; no tracking infrastructure required for this feature.
 - **SC-003**: Lesson progress is restored correctly on return visits in 100% of cases where local storage is available.
-- **SC-004**: The lesson sidebar opens and a patch loads within 1 second of clicking "Next" or selecting a lesson.
-- **SC-005**: All 15 lessons are accessible and completable on both desktop and tablet screen sizes.
-- **SC-006**: Task validation fires within 500ms of the user completing the required action.
+- **SC-004**: The lesson sidebar opens and a patch loads within 1 second of clicking "Next" or selecting a lesson. Verified manually via quickstart.md scenarios.
+- **SC-005**: All 15 lessons are accessible and completable on desktop screen sizes. Tablet layout is out of scope for the initial release (sidebar overlays the canvas on small screens via the existing collapse toggle).
+- **SC-006**: Task validation fires within 500ms of the user completing the required action. Verified manually via quickstart.md scenarios.
+
+---
+
+## Clarifications
+
+### Session 2026-05-02
+
+- Q: What should "locked" mean visually in the curriculum overview? → A: Unstarted lessons appear visually dimmed but remain clickable; labelled "not started" rather than "locked". The no-hard-locks principle is preserved.
+- Q: What happens to unsaved patch changes when navigating between lessons? → A: Always prompt "Your changes will be lost — continue?" whenever any lesson navigation would replace a modified patch, including Next/Back transitions.
+- Q: Does "Reset Progress" reset only the current lesson or the full curriculum? → A: Full curriculum reset — all progress cleared, returns to Lesson 1. No partial/per-module reset.
+- Q: For set-parameter tasks, must the value stay at the target or is reaching it once enough? → A: Complete on first reach — the moment the value enters the target range the task is marked done, regardless of subsequent changes.
+- Q: Is the full 15-lesson curriculum content in scope? → A: Infrastructure plus Module 1 (3 lessons) only. Modules 2–5 content is out of scope and will be authored iteratively after the architecture is validated.
+- Q: Should lesson concept text be stored as Markdown, plain text, or HTML? → A: Plain text with `\n` line breaks rendered as `<br>` in the sidebar. No Markdown parser dependency. FR-002's reference to "plain-language markdown" means the writing style (readable prose), not the format. Lesson JSON files store pre-written plain text strings.
 
 ---
 
