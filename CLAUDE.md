@@ -36,6 +36,7 @@ npm test && npm run lint
 TypeScript 5.6+, ES2020 target: Follow standard conventions
 
 ## Recent Changes
+- 020-fm-oscillator: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero new runtime dependencies
 - 015-bpm-looper: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero runtime dependencies
 - 014-chordfinder-keyboard-sync: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero runtime dependencies
 - 013-global-bpm: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero new runtime dependencies
@@ -77,5 +78,5 @@ TypeScript 5.6+, ES2020 target: Follow standard conventions
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/019-mixer-channel-panning/plan.md
+at specs/020-fm-oscillator/plan.md
 <!-- SPECKIT END -->

@@ -511,7 +511,7 @@ export class HelpSidebar {
         Browse and drag components onto the canvas. Components are organized into categories:
       </p>
       <ul style="color: var(--text-secondary, #cccccc);">
-        <li><strong style="color: var(--text-primary, #ffffff);">Generators:</strong> Oscillators, LFOs, Noise</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">Generators:</strong> Oscillator, FM Oscillator, LFO, Noise</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Processors:</strong> Filters, VCA, Envelopes</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Effects:</strong> Delay, Reverb, Distortion, Chorus, Bitcrusher, Flanger, Phaser, Tremolo</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Utilities:</strong> Keyboard, Mixer, Sequencer</li>
@@ -562,6 +562,31 @@ export class HelpSidebar {
         <li><strong>Inputs:</strong> Frequency CV, Detune CV, Gate</li>
         <li><strong>Output:</strong> Audio signal</li>
       </ul>
+
+      <h4 style="color: var(--text-primary, #ffffff);">FM Oscillator</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Generates audio waveforms whose frequency is modulated by an incoming audio signal — the foundation of FM (Frequency Modulation) synthesis. Produces bell-like, metallic, and complex harmonic timbres not achievable with a standard oscillator alone.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>Waveform:</strong> Sine, Square, Sawtooth, Triangle (carrier waveform)</li>
+        <li><strong>Frequency:</strong> Base carrier frequency (Hz)</li>
+        <li><strong>Detune:</strong> Fine tuning in cents</li>
+        <li><strong>FM Depth:</strong> Modulation intensity — frequency deviation range (0–1000 Hz). At 0 the output is identical to a plain oscillator; higher values add more harmonic richness.</li>
+        <li><strong>Inputs:</strong> Frequency CV, Detune CV, FM Input (audio)</li>
+        <li><strong>Output:</strong> Audio signal</li>
+      </ul>
+      <div style="background: var(--bg-secondary, #1a1a1a); padding: 12px 16px; border-radius: 8px; border-left: 4px solid var(--accent-color, #0066cc); margin: 8px 0 16px;">
+        <p style="color: var(--text-secondary, #cccccc); margin: 0 0 6px;">
+          <strong style="color: var(--text-primary, #ffffff);">Basic FM patch:</strong>
+        </p>
+        <ol style="color: var(--text-secondary, #cccccc); margin: 0; padding-left: 18px;">
+          <li>Add an FM Oscillator (carrier) — set Frequency to 440 Hz</li>
+          <li>Add a standard Oscillator (modulator) — set Frequency to 220 Hz</li>
+          <li>Connect modulator <strong>Audio Out → FM Oscillator FM Input</strong></li>
+          <li>Connect FM Oscillator <strong>Audio Out → Master Output</strong></li>
+          <li>Adjust <strong>FM Depth</strong> to change the timbre</li>
+        </ol>
+      </div>
 
       <h4 style="color: var(--text-primary, #ffffff);">LFO (Low Frequency Oscillator)</h4>
       <p style="color: var(--text-secondary, #cccccc);">
