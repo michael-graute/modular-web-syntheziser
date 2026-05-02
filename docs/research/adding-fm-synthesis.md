@@ -862,8 +862,8 @@ Verify no regressions in audio output
 ## Next Steps
 
 1. **Approval**: Review this research document and approve Option 1 approach
-2. **Planning**: Create detailed implementation plan using `/speckit.plan`
-3. **Specification**: Write formal spec using `/speckit.specify`
+2. **Specification**: Write formal spec using `/speckit-specify`
+3. **Planning**: Create detailed implementation plan using `/speckit-plan`
 4. **Implementation**: Execute phased rollout (basic FM → enhanced features)
 5. **Testing**: Comprehensive testing against success criteria
 6. **Documentation**: Update user guides with FM synthesis tutorials

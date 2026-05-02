@@ -25,13 +25,13 @@ export class FactoryPatchLoader {
     // Known factory patch filenames
     const patchFiles = [
       'basic-oscillator.json',
+      'basic-fm-synthesis.json',
       'two-oscillator-setup.json',
       'pad-sound.json',
       'two-oscillator-setup-with-lfos-filter-and-mixer.json',
       'chord-finder.json',
       'arpeggiator.json',
-      'looper.json',
-      'basic-fm-synthesis.json'
+      'looper.json'
     ];
 
     try {
