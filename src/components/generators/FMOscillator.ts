@@ -90,7 +90,7 @@ export class FMOscillator extends Oscillator {
     if (portId === 'fm') {
       return this.fmGain;
     }
-    return super.getInputNode(portId);
+    return super.getInputNode();
   }
 
   /**
