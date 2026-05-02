@@ -30,6 +30,12 @@ function getControlLayout(type: ComponentType): ControlLayout {
         numKnobs: 2, // frequency, detune
       };
 
+    case ComponentType.FM_OSCILLATOR:
+      return {
+        hasDropdown: true,
+        numKnobs: 3, // frequency, detune, fmDepth
+      };
+
     case ComponentType.FILTER:
       return {
         hasDropdown: true,
@@ -161,6 +167,9 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
   switch (type) {
     case ComponentType.OSCILLATOR:
       return { inputs: 2, outputs: 1 }; // frequency CV, detune CV / audio out
+
+    case ComponentType.FM_OSCILLATOR:
+      return { inputs: 4, outputs: 1 }; // frequency CV, detune CV, fm audio in, fmDepth CV / audio out
 
     case ComponentType.FILTER:
       return { inputs: 3, outputs: 1 }; // audio in, cutoff CV, resonance CV / audio out

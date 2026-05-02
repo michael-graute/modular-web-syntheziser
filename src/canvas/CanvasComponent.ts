@@ -153,6 +153,70 @@ export class CanvasComponent {
       }
     }
 
+    // FM Oscillator-specific controls
+    if (this.type === ComponentType.FM_OSCILLATOR) {
+      const waveformParam = this.synthComponent.getParameter('waveform');
+      const frequencyParam = this.synthComponent.getParameter('frequency');
+      const detuneParam = this.synthComponent.getParameter('detune');
+      const fmDepthParam = this.synthComponent.getParameter('fmDepth');
+
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      if (waveformParam) {
+        const options: DropdownOption[] = [
+          { value: 0, label: 'Sine' },
+          { value: 1, label: 'Square' },
+          { value: 2, label: 'Sawtooth' },
+          { value: 3, label: 'Triangle' },
+        ];
+        const dropdown = new Dropdown(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
+          this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP,
+          this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2,
+          COMPONENT.DROPDOWN_HEIGHT,
+          waveformParam,
+          options,
+          'Waveform'
+        );
+        this.controls.push(dropdown);
+      }
+
+      // Three knobs: frequency, detune, fmDepth — evenly spaced
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const spacing = (this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2 - knobSize * 3) / 4;
+
+      if (frequencyParam) {
+        this.controls.push(new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing,
+          knobY,
+          knobSize,
+          frequencyParam
+        ));
+      }
+
+      if (detuneParam) {
+        this.controls.push(new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 2 + knobSize,
+          knobY,
+          knobSize,
+          detuneParam
+        ));
+      }
+
+      if (fmDepthParam) {
+        this.controls.push(new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 3 + knobSize * 2,
+          knobY,
+          knobSize,
+          fmDepthParam
+        ));
+      }
+    }
+
     // Filter-specific controls
     if (this.type === ComponentType.FILTER) {
       const typeParam = this.synthComponent.getParameter('type');
@@ -1801,6 +1865,7 @@ export class CanvasComponent {
       [ComponentType.COLLIDER]: 'Collider',
       [ComponentType.CHORD_FINDER]: 'Chord Finder',
       [ComponentType.LOOPER]: 'Looper',
+      [ComponentType.FM_OSCILLATOR]: 'FM Oscillator',
     };
     return names[this.type] || 'Component';
   }

@@ -5,6 +5,7 @@
 import { componentRegistry } from './ComponentRegistry';
 import { ComponentType } from '../core/types';
 import { Oscillator } from './generators/Oscillator';
+import { FMOscillator } from './generators/FMOscillator';
 import { LFO } from './generators/LFO';
 import { NoiseGenerator } from './generators/NoiseGenerator';
 import { VCA } from './processors/VCA';
@@ -40,6 +41,15 @@ export function registerAllComponents(): void {
     'Generators',
     (id, position) => new Oscillator(id, position),
     calculateComponentDimensions(ComponentType.OSCILLATOR)
+  );
+
+  componentRegistry.register(
+    ComponentType.FM_OSCILLATOR,
+    'FM Oscillator',
+    'Frequency modulation oscillator',
+    'Generators',
+    (id, position) => new FMOscillator(id, position),
+    calculateComponentDimensions(ComponentType.FM_OSCILLATOR)
   );
 
   componentRegistry.register(

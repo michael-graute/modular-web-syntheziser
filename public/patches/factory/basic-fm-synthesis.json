@@ -1,0 +1,121 @@
+{
+  "name": "Basic FM Synthesis",
+  "version": "1.0",
+  "created": "2026-05-02T20:00:00.000Z",
+  "modified": "2026-05-02T20:00:00.000Z",
+  "components": [
+    {
+      "id": "a1000000-0000-4000-8000-000000000001",
+      "type": "keyboard-input",
+      "position": { "x": -200, "y": 80 },
+      "parameters": {}
+    },
+    {
+      "id": "a1000000-0000-4000-8000-000000000002",
+      "type": "oscillator",
+      "position": { "x": 60, "y": 80 },
+      "parameters": {
+        "waveform": 0,
+        "frequency": 0,
+        "detune": 0
+      }
+    },
+    {
+      "id": "a1000000-0000-4000-8000-000000000003",
+      "type": "fm-oscillator",
+      "position": { "x": 340, "y": 80 },
+      "parameters": {
+        "waveform": 0,
+        "frequency": 0,
+        "detune": 0,
+        "fmDepth": 300
+      }
+    },
+    {
+      "id": "a1000000-0000-4000-8000-000000000004",
+      "type": "adsr-envelope",
+      "position": { "x": 60, "y": 320 },
+      "parameters": {
+        "attack": 0.005,
+        "decay": 0.4,
+        "sustain": 0.2,
+        "release": 0.5
+      }
+    },
+    {
+      "id": "a1000000-0000-4000-8000-000000000005",
+      "type": "vca",
+      "position": { "x": 620, "y": 80 },
+      "parameters": {
+        "gain": 0
+      }
+    },
+    {
+      "id": "a1000000-0000-4000-8000-000000000006",
+      "type": "master-output",
+      "position": { "x": 820, "y": 80 },
+      "parameters": {
+        "volume": 0.7,
+        "limiter": 1
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "b1000000-0000-4000-8000-000000000001",
+      "sourceComponentId": "a1000000-0000-4000-8000-000000000001",
+      "sourcePortId": "frequency",
+      "targetComponentId": "a1000000-0000-4000-8000-000000000002",
+      "targetPortId": "frequency",
+      "signalType": "cv"
+    },
+    {
+      "id": "b1000000-0000-4000-8000-000000000002",
+      "sourceComponentId": "a1000000-0000-4000-8000-000000000001",
+      "sourcePortId": "frequency",
+      "targetComponentId": "a1000000-0000-4000-8000-000000000003",
+      "targetPortId": "frequency",
+      "signalType": "cv"
+    },
+    {
+      "id": "b1000000-0000-4000-8000-000000000003",
+      "sourceComponentId": "a1000000-0000-4000-8000-000000000001",
+      "sourcePortId": "gate",
+      "targetComponentId": "a1000000-0000-4000-8000-000000000004",
+      "targetPortId": "gate",
+      "signalType": "gate"
+    },
+    {
+      "id": "b1000000-0000-4000-8000-000000000004",
+      "sourceComponentId": "a1000000-0000-4000-8000-000000000002",
+      "sourcePortId": "output",
+      "targetComponentId": "a1000000-0000-4000-8000-000000000003",
+      "targetPortId": "fm",
+      "signalType": "audio"
+    },
+    {
+      "id": "b1000000-0000-4000-8000-000000000005",
+      "sourceComponentId": "a1000000-0000-4000-8000-000000000003",
+      "sourcePortId": "output",
+      "targetComponentId": "a1000000-0000-4000-8000-000000000005",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "b1000000-0000-4000-8000-000000000006",
+      "sourceComponentId": "a1000000-0000-4000-8000-000000000004",
+      "sourcePortId": "output",
+      "targetComponentId": "a1000000-0000-4000-8000-000000000005",
+      "targetPortId": "cv",
+      "signalType": "cv"
+    },
+    {
+      "id": "b1000000-0000-4000-8000-000000000007",
+      "sourceComponentId": "a1000000-0000-4000-8000-000000000005",
+      "sourcePortId": "output",
+      "targetComponentId": "a1000000-0000-4000-8000-000000000006",
+      "targetPortId": "input",
+      "signalType": "audio"
+    }
+  ]
+}

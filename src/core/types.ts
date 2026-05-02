@@ -39,6 +39,7 @@ export enum ComponentType {
   FLANGER = 'flanger',
   PHASER = 'phaser',
   TREMOLO = 'tremolo',
+  FM_OSCILLATOR = 'fm-oscillator',
 }
 
 /**

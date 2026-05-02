@@ -17,9 +17,9 @@
 
 **Purpose**: Extend enums and layout utilities — no user story can be verified until these are done.
 
-- [ ] T001 Add `FM_OSCILLATOR = 'fm-oscillator'` to `ComponentType` enum in `src/core/types.ts`
-- [ ] T002 Add `FM_OSCILLATOR` port count case (`inputs: 3, outputs: 1`) to `getPortCounts()` in `src/utils/componentLayout.ts`
-- [ ] T003 Add `FM_OSCILLATOR` layout options case (`hasDropdown: true, numKnobs: 3`) to `getComponentLayoutOptions()` in `src/utils/componentLayout.ts`
+- [x] T001 Add `FM_OSCILLATOR = 'fm-oscillator'` to `ComponentType` enum in `src/core/types.ts`
+- [x] T002 Add `FM_OSCILLATOR` port count case (`inputs: 3, outputs: 1`) to `getPortCounts()` in `src/utils/componentLayout.ts`
+- [x] T003 Add `FM_OSCILLATOR` layout options case (`hasDropdown: true, numKnobs: 3`) to `getComponentLayoutOptions()` in `src/utils/componentLayout.ts`
 
 **Checkpoint**: Type system and layout utilities ready — `FMOscillator` can now be registered and rendered correctly.
 
@@ -31,12 +31,12 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T004 Create `src/components/generators/FMOscillator.ts` — class extending `Oscillator`, constructor sets `this.name = 'FM Oscillator'` and `this.type = ComponentType.FM_OSCILLATOR`, adds `fm` AUDIO input port, adds `fmDepth` parameter (default 100, range 0–1000, step 1, unit Hz) using constants from `specs/020-fm-oscillator/contracts/validation.ts`
-- [ ] T005 Implement `createAudioNodes()` override in `src/components/generators/FMOscillator.ts` — calls `super.createAudioNodes()`, creates `fmGain` GainNode, sets `fmGain.gain.value` from `fmDepth` parameter, connects `fmGain` to `(this.getOutputNode() as OscillatorNode).frequency`, calls `this.registerAudioNode('fmInput', this.fmGain)`, links `fmDepth` param to `fmGain.gain` via `fmDepthParam.linkAudioParam()`
-- [ ] T006 Implement `destroyAudioNodes()` override in `src/components/generators/FMOscillator.ts` — disconnects and nulls `fmGain`, then calls `super.destroyAudioNodes()`
-- [ ] T007 Implement `getInputNode(portId?: string)` override in `src/components/generators/FMOscillator.ts` — returns `this.fmGain` when `portId === 'fm'`, otherwise delegates to `super.getInputNode(portId)`
-- [ ] T008 Implement `updateAudioParameter(parameterId, value)` override in `src/components/generators/FMOscillator.ts` — when `parameterId === 'fmDepth'` calls `this.fmGain.gain.setValueAtTime(value, audioEngine.getContext().currentTime)`, otherwise delegates to `super.updateAudioParameter()`
-- [ ] T009 Register `FM_OSCILLATOR` in `src/components/registerComponents.ts` — add `componentRegistry.register(ComponentType.FM_OSCILLATOR, 'FM Oscillator', 'Frequency modulation oscillator', 'Generators', (id, position) => new FMOscillator(id, position), calculateComponentDimensions(ComponentType.FM_OSCILLATOR))` alongside the existing `OSCILLATOR` entry; add `import { FMOscillator } from './generators/FMOscillator'`
+- [x] T004 Create `src/components/generators/FMOscillator.ts` — class extending `Oscillator`, constructor sets `this.name = 'FM Oscillator'` and `this.type = ComponentType.FM_OSCILLATOR`, adds `fm` AUDIO input port, adds `fmDepth` parameter (default 100, range 0–1000, step 1, unit Hz) using constants from `specs/020-fm-oscillator/contracts/validation.ts`
+- [x] T005 Implement `createAudioNodes()` override in `src/components/generators/FMOscillator.ts` — calls `super.createAudioNodes()`, creates `fmGain` GainNode, sets `fmGain.gain.value` from `fmDepth` parameter, connects `fmGain` to `(this.getOutputNode() as OscillatorNode).frequency`, calls `this.registerAudioNode('fmInput', this.fmGain)`, links `fmDepth` param to `fmGain.gain` via `fmDepthParam.linkAudioParam()`
+- [x] T006 Implement `destroyAudioNodes()` override in `src/components/generators/FMOscillator.ts` — disconnects and nulls `fmGain`, then calls `super.destroyAudioNodes()`
+- [x] T007 Implement `getInputNode(portId?: string)` override in `src/components/generators/FMOscillator.ts` — returns `this.fmGain` when `portId === 'fm'`, otherwise delegates to `super.getInputNode(portId)`
+- [x] T008 Implement `updateAudioParameter(parameterId, value)` override in `src/components/generators/FMOscillator.ts` — when `parameterId === 'fmDepth'` calls `this.fmGain.gain.setValueAtTime(value, audioEngine.getContext().currentTime)`, otherwise delegates to `super.updateAudioParameter()`
+- [x] T009 Register `FM_OSCILLATOR` in `src/components/registerComponents.ts` — add `componentRegistry.register(ComponentType.FM_OSCILLATOR, 'FM Oscillator', 'Frequency modulation oscillator', 'Generators', (id, position) => new FMOscillator(id, position), calculateComponentDimensions(ComponentType.FM_OSCILLATOR))` alongside the existing `OSCILLATOR` entry; add `import { FMOscillator } from './generators/FMOscillator'`
 
 **Checkpoint**: Foundation ready — FM Oscillator appears in the Generators palette and can be placed on the canvas.
 
@@ -50,16 +50,16 @@
 
 ### Tests for User Story 1
 
-- [ ] T010 [P] [US1] Create `tests/components/generators/FMOscillator.test.ts` — test that `FMOscillator` constructor creates component with `type === ComponentType.FM_OSCILLATOR`, `name === 'FM Oscillator'`, has input ports `frequency`, `detune`, `fm` and output port `output`, has parameter `fmDepth` with default value 100
-- [ ] T011 [P] [US1] Add test in `tests/components/generators/FMOscillator.test.ts` — after `activate()`, `getAudioNode('fmInput')` returns a `GainNode` instance
-- [ ] T012 [P] [US1] Add test in `tests/components/generators/FMOscillator.test.ts` — `getInputNode('fm')` returns the same `GainNode` as `getAudioNode('fmInput')`
-- [ ] T013 [P] [US1] Add test in `tests/components/generators/FMOscillator.test.ts` — `getInputNode('output')` (non-FM port) falls through to super and returns null (Oscillator has no audio input node)
-- [ ] T014 [P] [US1] Add test in `tests/components/generators/FMOscillator.test.ts` — `getOutputNode()` returns an `OscillatorNode` (inherited, unchanged)
+- [x] T010 [P] [US1] Create `tests/components/generators/FMOscillator.test.ts` — test that `FMOscillator` constructor creates component with `type === ComponentType.FM_OSCILLATOR`, `name === 'FM Oscillator'`, has input ports `frequency`, `detune`, `fm` and output port `output`, has parameter `fmDepth` with default value 100
+- [x] T011 [P] [US1] Add test in `tests/components/generators/FMOscillator.test.ts` — after `activate()`, `getAudioNode('fmInput')` returns a `GainNode` instance
+- [x] T012 [P] [US1] Add test in `tests/components/generators/FMOscillator.test.ts` — `getInputNode('fm')` returns the same `GainNode` as `getAudioNode('fmInput')`
+- [x] T013 [P] [US1] Add test in `tests/components/generators/FMOscillator.test.ts` — `getInputNode('output')` (non-FM port) falls through to super and returns null (Oscillator has no audio input node)
+- [x] T014 [P] [US1] Add test in `tests/components/generators/FMOscillator.test.ts` — `getOutputNode()` returns an `OscillatorNode` (inherited, unchanged)
 
 ### Implementation for User Story 1
 
-- [ ] T015 [US1] Verify end-to-end FM connection path in `src/canvas/ConnectionManager.ts` — confirm that connecting a source component's AUDIO output port to the FM Oscillator's `fm` AUDIO input port calls `target.getInputNode('fm')` and connects to `fmGain`; no code change expected (existing `connectTo` logic handles this); add an inline comment if the routing is non-obvious
-- [ ] T016 [US1] Run `vitest run tests/components/generators/FMOscillator.test.ts` and confirm all Phase 3 tests pass
+- [x] T015 [US1] Verify end-to-end FM connection path in `src/canvas/ConnectionManager.ts` — confirm that connecting a source component's AUDIO output port to the FM Oscillator's `fm` AUDIO input port calls `target.getInputNode('fm')` and connects to `fmGain`; no code change expected (existing `connectTo` logic handles this); add an inline comment if the routing is non-obvious
+- [x] T016 [US1] Run `vitest run tests/components/generators/FMOscillator.test.ts` and confirm all Phase 3 tests pass
 
 **Checkpoint**: User Story 1 fully functional — FM patch produces audible FM synthesis.
 
@@ -73,14 +73,14 @@
 
 ### Tests for User Story 2
 
-- [ ] T017 [P] [US2] Add test in `tests/components/generators/FMOscillator.test.ts` — after `activate()`, calling `setParameterValue('fmDepth', 200)` results in `(getAudioNode('fmInput') as GainNode).gain.value === 200`
-- [ ] T018 [P] [US2] Add test in `tests/components/generators/FMOscillator.test.ts` — `setParameterValue('fmDepth', 0)` results in `gain.value === 0`
-- [ ] T019 [P] [US2] Add test in `tests/components/generators/FMOscillator.test.ts` — `serialize()` includes `parameters.fmDepth` with the current value; `deserialize()` restores it via `setParameterValue`
+- [x] T017 [P] [US2] Add test in `tests/components/generators/FMOscillator.test.ts` — after `activate()`, calling `setParameterValue('fmDepth', 200)` results in `(getAudioNode('fmInput') as GainNode).gain.value === 200`
+- [x] T018 [P] [US2] Add test in `tests/components/generators/FMOscillator.test.ts` — `setParameterValue('fmDepth', 0)` results in `gain.value === 0`
+- [x] T019 [P] [US2] Add test in `tests/components/generators/FMOscillator.test.ts` — `serialize()` includes `parameters.fmDepth` with the current value; `deserialize()` restores it via `setParameterValue`
 
 ### Implementation for User Story 2
 
-- [ ] T020 [US2] Confirm `updateAudioParameter('fmDepth', value)` implementation in `src/components/generators/FMOscillator.ts` is complete (T008) — no additional code needed; this test phase verifies the behaviour
-- [ ] T021 [US2] Run `vitest run tests/components/generators/FMOscillator.test.ts` and confirm all Phase 4 tests pass
+- [x] T020 [US2] Confirm `updateAudioParameter('fmDepth', value)` implementation in `src/components/generators/FMOscillator.ts` is complete (T008) — no additional code needed; this test phase verifies the behaviour
+- [x] T021 [US2] Run `vitest run tests/components/generators/FMOscillator.test.ts` and confirm all Phase 4 tests pass
 
 **Checkpoint**: User Story 2 fully functional — FM Depth controls modulation intensity and survives save/load.
 
@@ -94,13 +94,13 @@
 
 ### Tests for User Story 3
 
-- [ ] T022 [P] [US3] Add test in `tests/components/generators/FMOscillator.test.ts` — after `activate()` and `linkAudioParam()` called on `fmDepth` parameter, confirm `fmGain.gain` has a connected audio node (i.e., `numberOfInputs > 0` or mock verifies `connect` was called on the AudioParam)
-- [ ] T023 [P] [US3] Add test in `tests/components/generators/FMOscillator.test.ts` — `getAudioParamForInput('fm')` returns `null` (FM port routes to AudioNode, not AudioParam; CV modulation of fmDepth goes through the Parameter system, not port connection)
+- [x] T022 [P] [US3] Add test in `tests/components/generators/FMOscillator.test.ts` — after `activate()` and `linkAudioParam()` called on `fmDepth` parameter, confirm `fmGain.gain` has a connected audio node (i.e., `numberOfInputs > 0` or mock verifies `connect` was called on the AudioParam)
+- [x] T023 [P] [US3] Add test in `tests/components/generators/FMOscillator.test.ts` — `getAudioParamForInput('fm')` returns `null` (FM port routes to AudioNode, not AudioParam; CV modulation of fmDepth goes through the Parameter system, not port connection)
 
 ### Implementation for User Story 3
 
-- [ ] T024 [US3] Verify CV-to-parameter routing for `fmDepth` in `src/components/base/SynthComponent.ts` — when a CV source connects to the `fmDepth` parameter port, `getAudioParamForInput('fmDepth')` on `FMOscillator` inherits from `Oscillator` which returns null for unknown IDs; confirm `fmDepth` parameter's `linkAudioParam(fmGain.gain)` call in `createAudioNodes` (T005) is the CV entry point — no additional code change expected
-- [ ] T025 [US3] Run `vitest run tests/components/generators/FMOscillator.test.ts` and confirm all Phase 5 tests pass
+- [x] T024 [US3] Verify CV-to-parameter routing for `fmDepth` in `src/components/base/SynthComponent.ts` — when a CV source connects to the `fmDepth` parameter port, `getAudioParamForInput('fmDepth')` on `FMOscillator` inherits from `Oscillator` which returns null for unknown IDs; confirm `fmDepth` parameter's `linkAudioParam(fmGain.gain)` call in `createAudioNodes` (T005) is the CV entry point — no additional code change expected
+- [x] T025 [US3] Run `vitest run tests/components/generators/FMOscillator.test.ts` and confirm all Phase 5 tests pass
 
 **Checkpoint**: All three user stories are independently functional.
 
@@ -110,9 +110,9 @@
 
 **Purpose**: Ensure integration quality, backward compatibility, and documentation consistency.
 
-- [ ] T026 [P] Verify backward compatibility — run `vitest run` for full test suite and confirm no regressions in existing `Oscillator` tests or other component tests
-- [ ] T027 [P] Confirm `FM_OSCILLATOR` does not appear in `SynthComponent.isBypassable()` list in `src/components/base/SynthComponent.ts` (FM Oscillator is a generator, not an effect; bypass does not apply)
-- [ ] T028 Update `CLAUDE.md` `## Recent Changes` section to reflect 020-fm-oscillator feature addition (TypeScript 5.6+, ES2020, Web Audio API — zero new runtime dependencies)
+- [x] T026 [P] Verify backward compatibility — run `vitest run` for full test suite and confirm no regressions in existing `Oscillator` tests or other component tests
+- [x] T027 [P] Confirm `FM_OSCILLATOR` does not appear in `SynthComponent.isBypassable()` list in `src/components/base/SynthComponent.ts` (FM Oscillator is a generator, not an effect; bypass does not apply)
+- [x] T028 Update `CLAUDE.md` `## Recent Changes` section to reflect 020-fm-oscillator feature addition (TypeScript 5.6+, ES2020, Web Audio API — zero new runtime dependencies)
 - [ ] T029 Run the full quickstart validation from `specs/020-fm-oscillator/quickstart.md` — create a manual FM patch in the browser (two oscillators, FM connection, Master Output) and confirm audible FM synthesis with real-time FM Depth control
 
 ---
