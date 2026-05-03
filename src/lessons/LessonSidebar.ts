@@ -306,7 +306,7 @@ export class LessonSidebar {
     try {
       this.renderLoadingState();
       const nextLesson = await lessonLoader.loadLesson(nextFile);
-      await this.loadLesson(nextLesson, { fileIndex: nextIdx });
+      await this.loadLesson(nextLesson, { fileIndex: nextIdx, skipDirtyCheck: true });
     } catch (err) {
       this.renderErrorState(`Could not load next lesson: ${(err as Error).message}`);
     }
@@ -321,7 +321,7 @@ export class LessonSidebar {
     try {
       this.renderLoadingState();
       const prevLesson = await lessonLoader.loadLesson(prevFile);
-      await this.loadLesson(prevLesson, { fileIndex: prevIdx });
+      await this.loadLesson(prevLesson, { fileIndex: prevIdx, skipDirtyCheck: true });
     } catch (err) {
       this.renderErrorState(`Could not load previous lesson: ${(err as Error).message}`);
     }
