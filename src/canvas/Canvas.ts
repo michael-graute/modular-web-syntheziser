@@ -531,11 +531,25 @@ export class Canvas {
       for (const dropdown of dropdowns) {
         if (dropdown.isDropdownOpen()) {
           // Let the dropdown handle the click (menu item, button, or outside click)
+          const paramBeforeClick = component.synthComponent
+            ? component.getDropdownControls().find(d => d === dropdown)?.getParameter()
+            : undefined;
+          const valueBeforeClick = paramBeforeClick?.getValue();
+
           if (dropdown.onMouseDown(worldPos.x, worldPos.y)) {
             // Dropdown handled it (selected an item or toggled)
             if (component.synthComponent) {
               const param = dropdown.getParameter();
-              component.synthComponent.setParameterValue(param.id, param.getValue());
+              const newValue = param.getValue();
+              component.synthComponent.setParameterValue(param.id, newValue);
+              if (newValue !== valueBeforeClick) {
+                eventBus.emit(EventType.PARAMETER_CHANGED, {
+                  componentId: component.synthComponent.id,
+                  componentType: component.synthComponent.type,
+                  parameterId: param.id,
+                  value: newValue,
+                });
+              }
             }
             return; // Don't process any other interactions
           } else {
