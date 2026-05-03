@@ -1,0 +1,38 @@
+{
+  "modules": [
+    {
+      "id": "module-01",
+      "number": 1,
+      "title": "Sound Basics",
+      "lessons": [
+        "01-what-is-sound.json",
+        "02-the-oscillator.json",
+        "03-waveform-shapes.json"
+      ]
+    },
+    {
+      "id": "module-02",
+      "number": 2,
+      "title": "Shaping Sound (Coming Soon)",
+      "lessons": []
+    },
+    {
+      "id": "module-03",
+      "number": 3,
+      "title": "Dynamics & Envelopes (Coming Soon)",
+      "lessons": []
+    },
+    {
+      "id": "module-04",
+      "number": 4,
+      "title": "Modulation (Coming Soon)",
+      "lessons": []
+    },
+    {
+      "id": "module-05",
+      "number": 5,
+      "title": "Effects & Space (Coming Soon)",
+      "lessons": []
+    }
+  ]
+}

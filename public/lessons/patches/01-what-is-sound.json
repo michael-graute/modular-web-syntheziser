@@ -1,0 +1,38 @@
+{
+  "name": "Lesson 1 — What is Sound?",
+  "version": "1.0.0",
+  "created": "2026-05-03T00:00:00.000Z",
+  "modified": "2026-05-03T00:00:00.000Z",
+  "globalBpm": 120,
+  "components": [
+    {
+      "id": "lesson-01-oscillator",
+      "type": "oscillator",
+      "position": { "x": 300, "y": 160 },
+      "parameters": {
+        "waveform": 0,
+        "frequency": 440,
+        "detune": 0
+      }
+    },
+    {
+      "id": "lesson-01-master-output",
+      "type": "master-output",
+      "position": { "x": 560, "y": 160 },
+      "parameters": {
+        "volume": 0.6,
+        "limiter": 1
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "lesson-01-conn-1",
+      "sourceComponentId": "lesson-01-oscillator",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-01-master-output",
+      "targetPortId": "input",
+      "signalType": "audio"
+    }
+  ]
+}

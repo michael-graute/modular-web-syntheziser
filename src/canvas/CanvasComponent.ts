@@ -1891,6 +1891,12 @@ export class CanvasComponent {
           if (this.synthComponent) {
             const param = control.getParameter();
             this.synthComponent.setParameterValue(param.id, param.getValue());
+            eventBus.emit(EventType.PARAMETER_CHANGED, {
+              componentId: this.synthComponent.id,
+              componentType: this.synthComponent.type,
+              parameterId: param.id,
+              value: param.getValue(),
+            });
           }
           return true;
         }
@@ -1930,6 +1936,12 @@ export class CanvasComponent {
           if (this.synthComponent) {
             const param = control.getParameter();
             this.synthComponent.setParameterValue(param.id, param.getValue());
+            eventBus.emit(EventType.PARAMETER_CHANGED, {
+              componentId: this.synthComponent.id,
+              componentType: this.synthComponent.type,
+              parameterId: param.id,
+              value: param.getValue(),
+            });
           }
           return true;
         }
@@ -1939,6 +1951,12 @@ export class CanvasComponent {
           if (this.synthComponent) {
             const param = control.getParameter();
             this.synthComponent.setParameterValue(param.id, param.getValue());
+            eventBus.emit(EventType.PARAMETER_CHANGED, {
+              componentId: this.synthComponent.id,
+              componentType: this.synthComponent.type,
+              parameterId: param.id,
+              value: param.getValue(),
+            });
           }
           return true;
         }

@@ -1,0 +1,13 @@
+{
+  "id": "lesson-01-what-is-sound",
+  "moduleId": "module-01",
+  "index": 1,
+  "title": "What is Sound?",
+  "concept": "Sound is vibration — rapid pressure waves moving through the air. When something vibrates, it pushes and pulls the air around it, creating these waves.\n\nEvery sound has a frequency, which determines its pitch. Frequency is measured in Hertz (Hz) — the number of vibrations per second. A low rumble has a low frequency; a high whistle has a high frequency. Humans can typically hear sounds between 20 Hz and 20,000 Hz.\n\nSounds also have amplitude, which determines their loudness. A larger vibration moves more air and creates a louder sound.\n\nIn this synthesizer, the Oscillator component is your sound source. It generates a continuous vibration at a frequency you control. The simplest waveform — the one playing right now — is called a sine wave. It produces a single, pure frequency with no overtones.",
+  "patchFile": "/lessons/patches/01-what-is-sound.json",
+  "highlightComponentTypes": ["oscillator"],
+  "task": {
+    "type": "observe",
+    "instruction": "Listen to the sine wave. This is the purest form of sound — a single frequency. Notice how it sounds smooth and clear, without any grit or brightness."
+  }
+}

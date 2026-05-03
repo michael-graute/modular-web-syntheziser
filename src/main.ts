@@ -19,6 +19,7 @@ import { factoryPatchLoader } from './patch/FactoryPatchLoader';
 import { SaveModal } from './ui/SaveModal';
 import { LoadModal } from './ui/LoadModal';
 import { HelpSidebar } from './ui/HelpSidebar';
+import { lessonSidebar } from './lessons/LessonSidebar';
 import { ModulationVisualizer } from './visualization';
 import { AcceptanceStorage } from './storage/AcceptanceStorage';
 import { WelcomeDialog } from './ui/WelcomeDialog';
@@ -167,10 +168,20 @@ function setupPatchManagement(): void {
     }
   });
 
-  // Help button
+  // Help button — close lesson sidebar for mutual exclusion
   if (btnHelp) {
     btnHelp.addEventListener('click', () => {
+      lessonSidebar.close();
       helpSidebar?.toggle();
+    });
+  }
+
+  // Learn button — close help sidebar for mutual exclusion
+  const btnLearn = document.getElementById('btn-learn');
+  if (btnLearn) {
+    btnLearn.addEventListener('click', () => {
+      helpSidebar?.close();
+      lessonSidebar.toggle();
     });
   }
 
