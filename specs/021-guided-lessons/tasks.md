@@ -17,10 +17,10 @@
 
 **Purpose**: Create the `src/lessons/` directory, add the CSS highlight rule, and wire the toolbar button. All phases depend on this.
 
-- [ ] T001 Create directory `src/lessons/` (new source module for all lesson logic)
-- [ ] T002 Create directory `public/lessons/patches/` (lesson PatchData JSON files)
-- [ ] T003 [P] Add `.lesson-highlight` CSS rule to `src/styles/components.css` — `box-shadow: 0 0 0 3px var(--accent-color, #ff9500), 0 0 12px rgba(255, 149, 0, 0.4);` on the component's root element; rule must not affect canvas rendering or audio pipeline
-- [ ] T004 [P] Add `btn-learn` button to `.top-bar` in `index.html` — place it after `btn-help`; use same button class and structure as existing toolbar buttons; label text "Learn"
+- [x] T001 Create directory `src/lessons/` (new source module for all lesson logic)
+- [x] T002 Create directory `public/lessons/patches/` (lesson PatchData JSON files)
+- [x] T003 [P] Add `.lesson-highlight` CSS rule to `src/styles/components.css` — `box-shadow: 0 0 0 3px var(--accent-color, #ff9500), 0 0 12px rgba(255, 149, 0, 0.4);` on the component's root element; rule must not affect canvas rendering or audio pipeline
+- [x] T004 [P] Add `btn-learn` button to `.top-bar` in `index.html` — place it after `btn-help`; use same button class and structure as existing toolbar buttons; label text "Learn"
 
 **Checkpoint**: Directory structure ready; CSS and HTML foundations in place.
 
@@ -32,13 +32,13 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T005 Copy `specs/021-guided-lessons/contracts/types.ts` to `src/lessons/types.ts` — this file is the canonical type contract; do not modify the contracts/ copy
-- [ ] T006 Copy `specs/021-guided-lessons/contracts/validation.ts` to `src/lessons/validation.ts` — update the import path from `'./types'` to match the new location
-- [ ] T007 Create `src/lessons/LessonProgressStorage.ts` — exports `loadProgress(): LessonProgress`, `saveProgress(p: LessonProgress): void`, `clearProgress(): void`; reads/writes `localStorage` key `'lesson-progress'` (constant from `types.ts`); falls back to an in-memory store when `localStorage` throws; uses `isValidLessonProgress()` from `validation.ts` to guard reads; exports a singleton `lessonProgressStorage`
-- [ ] T008 Create `src/lessons/LessonLoader.ts` — exports class `LessonLoader` with `loadManifest(): Promise<LessonManifest>` (fetches `public/lessons/manifest.json`), `loadLesson(filename: string): Promise<LessonData>` (fetches `public/lessons/<filename>`), `loadLessonPatch(patchFile: string): Promise<PatchData>` (fetches the given path); validates responses with `isValidLessonManifest()` and `isValidLessonData()` from `validation.ts`; throws descriptive errors on fetch failure or validation failure; exports singleton `lessonLoader`
-- [ ] T009 [P] Create `tests/lessons/LessonProgressStorage.test.ts` — tests: `loadProgress()` returns default when key absent; `saveProgress()` writes and `loadProgress()` reads back; `clearProgress()` removes key and returns default on next read; falls back to in-memory when `localStorage` throws (mock `localStorage.setItem` to throw)
-- [ ] T010 [P] Create `tests/lessons/LessonLoader.test.ts` — mock `fetch`; tests: `loadManifest()` resolves valid manifest; `loadManifest()` throws on HTTP error; `loadManifest()` throws on invalid JSON shape; `loadLesson()` resolves valid `LessonData`; `loadLesson()` throws on invalid shape; `loadLessonPatch()` resolves a `PatchData`-shaped object; **`loadManifest()` resolves a manifest with 5 modules and 15 total lessons distributed across them** (validates FR-011 infrastructure capacity)
-- [ ] T011 [P] Create `tests/lessons/validation.test.ts` — 100% coverage of all exported functions in `src/lessons/validation.ts`: valid and invalid inputs for `isValidLessonTask`, `isValidLessonData`, `isValidLessonManifest`, `isValidLessonProgress`; run `vitest run tests/lessons/` to confirm all pass
+- [x] T005 Copy `specs/021-guided-lessons/contracts/types.ts` to `src/lessons/types.ts` — this file is the canonical type contract; do not modify the contracts/ copy
+- [x] T006 Copy `specs/021-guided-lessons/contracts/validation.ts` to `src/lessons/validation.ts` — update the import path from `'./types'` to match the new location
+- [x] T007 Create `src/lessons/LessonProgressStorage.ts` — exports `loadProgress(): LessonProgress`, `saveProgress(p: LessonProgress): void`, `clearProgress(): void`; reads/writes `localStorage` key `'lesson-progress'` (constant from `types.ts`); falls back to an in-memory store when `localStorage` throws; uses `isValidLessonProgress()` from `validation.ts` to guard reads; exports a singleton `lessonProgressStorage`
+- [x] T008 Create `src/lessons/LessonLoader.ts` — exports class `LessonLoader` with `loadManifest(): Promise<LessonManifest>` (fetches `public/lessons/manifest.json`), `loadLesson(filename: string): Promise<LessonData>` (fetches `public/lessons/<filename>`), `loadLessonPatch(patchFile: string): Promise<PatchData>` (fetches the given path); validates responses with `isValidLessonManifest()` and `isValidLessonData()` from `validation.ts`; throws descriptive errors on fetch failure or validation failure; exports singleton `lessonLoader`
+- [x] T009 [P] Create `tests/lessons/LessonProgressStorage.test.ts` — tests: `loadProgress()` returns default when key absent; `saveProgress()` writes and `loadProgress()` reads back; `clearProgress()` removes key and returns default on next read; falls back to in-memory when `localStorage` throws (mock `localStorage.setItem` to throw)
+- [x] T010 [P] Create `tests/lessons/LessonLoader.test.ts` — mock `fetch`; tests: `loadManifest()` resolves valid manifest; `loadManifest()` throws on HTTP error; `loadManifest()` throws on invalid JSON shape; `loadLesson()` resolves valid `LessonData`; `loadLesson()` throws on invalid shape; `loadLessonPatch()` resolves a `PatchData`-shaped object; **`loadManifest()` resolves a manifest with 5 modules and 15 total lessons distributed across them** (validates FR-011 infrastructure capacity)
+- [x] T011 [P] Create `tests/lessons/validation.test.ts` — 100% coverage of all exported functions in `src/lessons/validation.ts`: valid and invalid inputs for `isValidLessonTask`, `isValidLessonData`, `isValidLessonManifest`, `isValidLessonProgress`; run `vitest run tests/lessons/` to confirm all pass
 
 **Checkpoint**: Foundation ready — type-safe lesson loading and progress persistence proven by tests.
 
