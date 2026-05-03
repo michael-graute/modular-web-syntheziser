@@ -155,14 +155,12 @@ export class ConnectionManager {
       `✅ Connected ${sourceComponent.type}:${sourcePort.name} -> ${targetComponent.type}:${targetPort.name}`
     );
 
-    // Notify ModulationVisualizer about CV connections for realtime visualization
-    if (sourcePort.type === SignalType.CV) {
-      eventBus.emit(EventType.CONNECTION_ADDED, {
-        connection,
-        sourceComponent: sourceComponent.synthComponent,
-        targetComponent: targetComponent.synthComponent,
-      });
-    }
+    // Emit for all connections; CV branch also triggers ModulationVisualizer
+    eventBus.emit(EventType.CONNECTION_ADDED, {
+      connection,
+      sourceComponent: sourceComponent.synthComponent,
+      targetComponent: targetComponent.synthComponent,
+    });
 
     return { success: true, connectionId };
   }
