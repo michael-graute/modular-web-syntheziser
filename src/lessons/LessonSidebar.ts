@@ -15,6 +15,7 @@ export class LessonSidebar {
     taskComplete: false,
     isLoadingLesson: false,
     highlightDismissed: false,
+    patchLoaded: false,
   };
 
   // Flat ordered list of lesson filenames built from manifest
@@ -212,7 +213,7 @@ export class LessonSidebar {
       if (!ok) return;
     }
 
-    this.state = { ...this.state, isLoadingLesson: true, taskComplete: false, highlightDismissed: false };
+    this.state = { ...this.state, isLoadingLesson: true, taskComplete: false, highlightDismissed: false, patchLoaded: false };
     this.renderLoadingState();
 
     // Track position in flat file list
@@ -220,16 +221,6 @@ export class LessonSidebar {
       this.currentIndex = opts.fileIndex;
     } else {
       this.currentIndex = this.indexForLessonId(lesson.id);
-    }
-
-    // Load patch
-    if (lesson.patchFile) {
-      try {
-        const patchData = await lessonLoader.loadLessonPatch(lesson.patchFile);
-        await patchManager.loadFromData(patchData);
-      } catch {
-        this.showPatchLoadError();
-      }
     }
 
     // Save progress
@@ -243,11 +234,21 @@ export class LessonSidebar {
       this.renderLesson(lesson);
     });
 
-    // Apply highlights
-    this.applyHighlights(lesson);
-
     this.state = { ...this.state, currentLesson: lesson, isLoadingLesson: false };
     this.renderLesson(lesson);
+  }
+
+  private async loadPatch(lesson: LessonData): Promise<void> {
+    if (!lesson.patchFile) return;
+    try {
+      const patchData = await lessonLoader.loadLessonPatch(lesson.patchFile);
+      await patchManager.loadFromData(patchData);
+      this.applyHighlights(lesson);
+      this.state = { ...this.state, patchLoaded: true };
+      this.renderLesson(lesson);
+    } catch {
+      this.showPatchLoadError();
+    }
   }
 
   // ── Navigation ────────────────────────────────────────────────────────────
@@ -435,6 +436,28 @@ export class LessonSidebar {
     this.contentArea.appendChild(title);
     this.contentArea.appendChild(concept);
     this.contentArea.appendChild(taskBox);
+
+    // Load patch button — shown when the lesson has a patch that hasn't been loaded yet
+    if (lesson.patchFile && !this.state.patchLoaded) {
+      const loadBtn = document.createElement('button');
+      const isObserve = lesson.task.type === 'observe' || lesson.task.type === 'free';
+      loadBtn.textContent = isObserve ? '▶ Start listening' : '▶ Load patch';
+      loadBtn.setAttribute('aria-label', 'Load the lesson patch onto the canvas');
+      loadBtn.style.cssText = `
+        width: 100%;
+        padding: 12px;
+        border: none;
+        background: var(--accent-color, #0066cc);
+        color: #fff;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        font-weight: 600;
+      `;
+      loadBtn.addEventListener('click', () => this.loadPatch(lesson));
+      this.contentArea.appendChild(loadBtn);
+    }
+
     this.contentArea.appendChild(navRow);
   }
 
@@ -532,7 +555,7 @@ export class LessonSidebar {
     lessonProgressStorage.clearProgress();
     lessonTaskValidator.setTask(null);
     this.clearHighlights();
-    this.state = { currentLesson: null, taskComplete: false, isLoadingLesson: false, highlightDismissed: false };
+    this.state = { currentLesson: null, taskComplete: false, isLoadingLesson: false, highlightDismissed: false, patchLoaded: false };
     this.manifest = null;
     this.lessonFiles = [];
     this.currentIndex = -1;

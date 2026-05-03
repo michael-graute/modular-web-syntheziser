@@ -85,4 +85,5 @@ export interface LessonState {
   taskComplete: boolean;
   isLoadingLesson: boolean;
   highlightDismissed: boolean;
+  patchLoaded: boolean;
 }
