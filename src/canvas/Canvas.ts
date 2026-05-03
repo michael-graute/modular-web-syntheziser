@@ -543,7 +543,7 @@ export class Canvas {
                 eventBus.emit(EventType.PARAMETER_CHANGED, {
                   componentId: component.synthComponent.id,
                   componentType: component.synthComponent.type,
-                  parameterId: param.id,
+                  parameterId: component.bareParamId(param.id),
                   value: valueAfter,
                 });
               }

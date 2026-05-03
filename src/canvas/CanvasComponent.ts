@@ -1894,7 +1894,7 @@ export class CanvasComponent {
             eventBus.emit(EventType.PARAMETER_CHANGED, {
               componentId: this.synthComponent.id,
               componentType: this.synthComponent.type,
-              parameterId: param.id,
+              parameterId: this.bareParamId(param.id),
               value: param.getValue(),
             });
           }
@@ -1939,7 +1939,7 @@ export class CanvasComponent {
             eventBus.emit(EventType.PARAMETER_CHANGED, {
               componentId: this.synthComponent.id,
               componentType: this.synthComponent.type,
-              parameterId: param.id,
+              parameterId: this.bareParamId(param.id),
               value: param.getValue(),
             });
           }
@@ -1954,7 +1954,7 @@ export class CanvasComponent {
             eventBus.emit(EventType.PARAMETER_CHANGED, {
               componentId: this.synthComponent.id,
               componentType: this.synthComponent.type,
-              parameterId: param.id,
+              parameterId: this.bareParamId(param.id),
               value: param.getValue(),
             });
           }
@@ -2021,5 +2021,11 @@ export class CanvasComponent {
    */
   getDropdownControls(): Dropdown[] {
     return this.controls.filter(control => control instanceof Dropdown) as Dropdown[];
+  }
+
+  // Parameter IDs are stored as 'componentId:paramName' — strip the prefix for events.
+  bareParamId(prefixedId: string): string {
+    const colon = prefixedId.indexOf(':');
+    return colon >= 0 ? prefixedId.slice(colon + 1) : prefixedId;
   }
 }
