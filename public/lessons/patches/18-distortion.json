@@ -148,18 +148,10 @@
       "signalType": "audio"
     },
     {
-      "id": "lesson-18-conn-dist-reverb",
-      "sourceComponentId": "lesson-18-distortion",
-      "sourcePortId": "output",
-      "targetComponentId": "lesson-18-reverb",
-      "targetPortId": "input",
-      "signalType": "audio"
-    },
-    {
-      "id": "lesson-18-conn-delay-master",
+      "id": "lesson-18-conn-delay-reverb",
       "sourceComponentId": "lesson-18-delay",
       "sourcePortId": "output",
-      "targetComponentId": "lesson-18-master-output",
+      "targetComponentId": "lesson-18-reverb",
       "targetPortId": "input",
       "signalType": "audio"
     },
