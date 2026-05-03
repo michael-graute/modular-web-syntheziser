@@ -82,8 +82,12 @@ export class Filter extends SynthComponent {
     // Scaler: CV sources (0–1 range) connect here as an AudioNode input.
     // The scaler multiplies the signal by its gain before adding to filterNode.frequency.
     // gain = 5000 means a full 0–1 envelope sweeps the cutoff up by 5000 Hz.
+    // CV scaler: multiplies normalised −1..+1 CV (LFO, ADSR) into Hz.
+    // Gain 4000 → full-depth LFO sweeps ±4000 Hz; ADSR 0..1 sweeps 0..4000 Hz.
+    // Base cutoff is set on filterNode.frequency.value so the CV adds as an offset.
+    // Lesson patches keep base cutoff ≥ 500 Hz so the negative swing never hits 0.
     this.cutoffCvScaler = ctx.createGain();
-    this.cutoffCvScaler.gain.value = 5000;
+    this.cutoffCvScaler.gain.value = 4000;
     this.cutoffCvScaler.connect(this.filterNode.frequency);
 
     // Connect: input -> filter -> output

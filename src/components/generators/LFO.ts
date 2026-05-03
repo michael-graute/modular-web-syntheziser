@@ -64,7 +64,7 @@ export class LFO extends SynthComponent {
     // At 100% depth, we want full modulation range
     // Typical modulation range is +/- some value, so we scale accordingly
     const depthPercent = this.getParameter('depth')?.getValue() || 50;
-    this.gainNode.gain.value = (depthPercent / 100) * 100; // Scale to useful range
+    this.gainNode.gain.value = depthPercent / 100; // Normalised: 0–1 at 0–100% depth
 
     // Connect oscillator → gain
     this.oscillator.connect(this.gainNode);
@@ -126,7 +126,7 @@ export class LFO extends SynthComponent {
         break;
       case 'depth':
         // Update modulation depth
-        const gainValue = (value / 100) * 100; // Scale to useful range
+        const gainValue = value / 100; // Normalised: 0–1 at 0–100% depth
         this.gainNode.gain.setValueAtTime(gainValue, now);
         console.log(`LFO ${this.id} depth changed to: ${value}%`);
         break;
