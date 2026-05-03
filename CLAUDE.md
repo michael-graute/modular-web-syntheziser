@@ -36,6 +36,7 @@ npm test && npm run lint
 TypeScript 5.6+, ES2020 target: Follow standard conventions
 
 ## Recent Changes
+- 021-guided-lessons: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero new runtime dependencies
 - 020-fm-oscillator: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero new runtime dependencies
 - 015-bpm-looper: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero runtime dependencies
 - 014-chordfinder-keyboard-sync: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero runtime dependencies
