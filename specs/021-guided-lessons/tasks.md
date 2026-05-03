@@ -159,7 +159,7 @@
 - [x] T052 [P] Create `public/lessons/07-shaping-amplitude.json` — `LessonData`: id `lesson-07-shaping-amplitude`, index 4, title "Shaping Amplitude", concept introduces ADSR envelope (Attack/Decay/Sustain/Release) and VCA / explains that envelope generates CV that controls VCA volume, task type `connect`, instruction "Connect the Keyboard's gate output to the ADSR's gate input.", `connect: { sourceComponentType: 'keyboard-input', targetComponentType: 'adsr-envelope', targetPortId: 'gate' }`
 - [x] T053 [P] Create `public/lessons/patches/07-shaping-amplitude.json` — `PatchData` with: Keyboard + Oscillator (sawtooth) → Filter → VCA → Master Output; ADSR → VCA cv connected; all audio/cv routing pre-wired; Keyboard→ADSR gate connection intentionally MISSING (user must make it); patch name "Lesson 7 — Shaping Amplitude"
 - [x] T054 [P] Update `public/lessons/manifest.json` — set Module 2 title to "Shaping Sound" (remove "Coming Soon"), lessons array: `['04-introducing-the-filter.json', '05-filter-cutoff.json', '06-resonance.json', '07-shaping-amplitude.json']`
-- [ ] T055 Manual browser validation — open Learn panel, navigate to Module 2, complete all 4 lessons in sequence; verify connect tasks validate correctly, set-parameter tasks validate within tolerance, patch loads under 1s, highlighting works on filter/ADSR/VCA components
+- [x] T055 Manual browser validation — open Learn panel, navigate to Module 2, complete all 4 lessons in sequence; verify connect tasks validate correctly, set-parameter tasks validate within tolerance, patch loads under 1s, highlighting works on filter/ADSR/VCA components
 
 **Checkpoint**: Module 2 fully authored and playable in-app.
 
