@@ -1,0 +1,95 @@
+{
+  "name": "Lesson 9 — Attack & Decay",
+  "version": "1.0.0",
+  "created": "2026-05-03T00:00:00.000Z",
+  "modified": "2026-05-03T00:00:00.000Z",
+  "globalBpm": 120,
+  "components": [
+    {
+      "id": "lesson-09-keyboard",
+      "type": "keyboard-input",
+      "position": { "x": 60, "y": 200 },
+      "parameters": {}
+    },
+    {
+      "id": "lesson-09-oscillator",
+      "type": "oscillator",
+      "position": { "x": 250, "y": 120 },
+      "parameters": {
+        "waveform": 0,
+        "frequency": 440,
+        "detune": 0
+      }
+    },
+    {
+      "id": "lesson-09-adsr",
+      "type": "adsr-envelope",
+      "position": { "x": 250, "y": 320 },
+      "parameters": {
+        "attack": 0.01,
+        "decay": 0.3,
+        "sustain": 0.8,
+        "release": 0.5
+      }
+    },
+    {
+      "id": "lesson-09-vca",
+      "type": "vca",
+      "position": { "x": 470, "y": 200 },
+      "parameters": {
+        "gain": 0
+      }
+    },
+    {
+      "id": "lesson-09-master-output",
+      "type": "master-output",
+      "position": { "x": 660, "y": 200 },
+      "parameters": {
+        "volume": 0.6,
+        "limiter": 1
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "lesson-09-conn-kbd-freq",
+      "sourceComponentId": "lesson-09-keyboard",
+      "sourcePortId": "frequency",
+      "targetComponentId": "lesson-09-oscillator",
+      "targetPortId": "frequency",
+      "signalType": "cv"
+    },
+    {
+      "id": "lesson-09-conn-kbd-gate",
+      "sourceComponentId": "lesson-09-keyboard",
+      "sourcePortId": "gate",
+      "targetComponentId": "lesson-09-adsr",
+      "targetPortId": "gate",
+      "signalType": "gate"
+    },
+    {
+      "id": "lesson-09-conn-osc-vca",
+      "sourceComponentId": "lesson-09-oscillator",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-09-vca",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "lesson-09-conn-adsr-vca",
+      "sourceComponentId": "lesson-09-adsr",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-09-vca",
+      "targetPortId": "cv",
+      "signalType": "cv"
+    },
+    {
+      "id": "lesson-09-conn-vca-out",
+      "sourceComponentId": "lesson-09-vca",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-09-master-output",
+      "targetPortId": "input",
+      "signalType": "audio"
+    }
+  ]
+}

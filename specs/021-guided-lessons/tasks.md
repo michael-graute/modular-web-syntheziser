@@ -165,6 +165,25 @@
 
 ---
 
+## Phase 10: Module 3 Content
+
+**Purpose**: Author the four Module 3 lesson JSON files and their patches. All parallel.
+
+- [x] T056 [P] Create `public/lessons/08-the-envelope.json` — `LessonData`: id `lesson-08-the-envelope`, moduleId `module-03`, index 1, title "The Envelope", concept introduces all four ADSR stages and the envelope-to-VCA pattern, task type `observe`, instruction "Press and hold a key then release — listen for all four ADSR stages"
+- [x] T057 [P] Create `public/lessons/patches/08-the-envelope.json` — full Keyboard → Oscillator (saw) → Filter → VCA → Master Output chain with ADSR-amp controlling VCA; attack 0.3 s, decay 0.2, sustain 0.7, release 0.8; all connections pre-wired
+- [x] T058 [P] Create `public/lessons/09-attack-and-decay.json` — `LessonData`: id `lesson-09-attack-and-decay`, index 2, title "Attack & Decay", concept explains short vs long attack (percussive vs swelling), task type `set-parameter`, instruction "Set Attack to 1.5 s", `setParameter: { componentType: 'adsr-envelope', parameterId: 'attack', targetValue: 1.5, tolerance: 0.3 }`
+- [x] T059 [P] Create `public/lessons/patches/09-attack-and-decay.json` — Keyboard → Oscillator (sine) → VCA → Master Output with ADSR; attack starts at 0.01 s (very short/instant) so the contrast is clear when the student raises it
+- [x] T060 [P] Create `public/lessons/10-sustain-and-release.json` — `LessonData`: id `lesson-10-sustain-and-release`, index 3, title "Sustain & Release", concept explains sustain as level (not time) and release as the note tail, task type `set-parameter`, instruction "Set Release to 2 s", `setParameter: { componentType: 'adsr-envelope', parameterId: 'release', targetValue: 2.0, tolerance: 0.3 }`
+- [x] T061 [P] Create `public/lessons/patches/10-sustain-and-release.json` — Keyboard → Oscillator (sine) → VCA → Master Output with ADSR; release starts at 0.05 s (very short/clicky) so the contrast is audible immediately
+- [x] T062 [P] Create `public/lessons/11-envelope-to-filter.json` — `LessonData`: id `lesson-11-envelope-to-filter`, index 4, title "Envelope to Filter", concept explains routing ADSR to filter cutoff_cv for the classic filter sweep sound, task type `connect`, instruction "Connect the second ADSR's output to the Filter's Cutoff CV input.", `connect: { sourceComponentType: 'adsr-envelope', targetComponentType: 'filter', targetPortId: 'cutoff_cv' }`
+- [x] T063 [P] Create `public/lessons/patches/11-envelope-to-filter.json` — full chain: Keyboard → Oscillator (saw) → Filter (cutoff 300 Hz, resonance 4) → VCA → Master Output; two ADSRs both gated from Keyboard; amp-ADSR → VCA cv pre-wired; filter-ADSR output intentionally NOT connected to filter cutoff_cv (user must make it)
+- [x] T064 [P] Update `public/lessons/manifest.json` — set Module 3 title to "Dynamics & Envelopes" (remove "Coming Soon"), lessons array: `['08-the-envelope.json', '09-attack-and-decay.json', '10-sustain-and-release.json', '11-envelope-to-filter.json']`
+- [ ] T065 Manual browser validation — navigate to Module 3, complete all 4 lessons; verify observe task advances immediately, set-parameter tasks validate within tolerance, envelope-to-filter connect task validates on the correct port
+
+**Checkpoint**: Module 3 fully authored and playable in-app.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

@@ -24,8 +24,13 @@
     {
       "id": "module-03",
       "number": 3,
-      "title": "Dynamics & Envelopes (Coming Soon)",
-      "lessons": []
+      "title": "Dynamics & Envelopes",
+      "lessons": [
+        "08-the-envelope.json",
+        "09-attack-and-decay.json",
+        "10-sustain-and-release.json",
+        "11-envelope-to-filter.json"
+      ]
     },
     {
       "id": "module-04",

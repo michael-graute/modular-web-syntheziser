@@ -1,0 +1,13 @@
+{
+  "id": "lesson-08-the-envelope",
+  "moduleId": "module-03",
+  "index": 1,
+  "title": "The Envelope",
+  "concept": "In Module 2 you briefly met the ADSR Envelope when shaping amplitude. Now let's look at it properly.\n\nAn envelope is a control signal that changes shape over time in response to a trigger — in our case, a key press. ADSR stands for the four stages of that shape:\n\nAttack — the time it takes to rise from silence to full level after the key is pressed.\nDecay — the time it takes to fall from full level down to the Sustain level.\nSustain — the level held as long as the key is held down (not a time, but a level).\nRelease — the time it takes to fall back to silence after the key is released.\n\nThe envelope generates a CV signal that follows this shape. By connecting that CV to a VCA, you control how the volume of a note evolves — from percussive clicks to slow swells and long fades.\n\nThis patch has a complete signal chain: Keyboard → Oscillator → Filter → VCA → Master Output, with ADSR controlling the VCA. Press a key and listen carefully — notice the attack, the sustain while you hold, and the release tail after you let go.",
+  "patchFile": "/lessons/patches/08-the-envelope.json",
+  "highlightComponentTypes": ["adsr-envelope", "vca"],
+  "task": {
+    "type": "observe",
+    "instruction": "Press and hold a key, then release it. Listen for the four stages: the note rises (Attack), settles (Decay → Sustain), then fades after you release (Release). Try holding different lengths of time."
+  }
+}

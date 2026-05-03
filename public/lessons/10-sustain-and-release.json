@@ -1,0 +1,19 @@
+{
+  "id": "lesson-10-sustain-and-release",
+  "moduleId": "module-03",
+  "index": 3,
+  "title": "Sustain & Release",
+  "concept": "The last two ADSR stages control the held and ending portions of a note.\n\nSustain is the level (not a time) at which the envelope holds while the key is pressed. Unlike Attack and Decay, it does not count down — it just waits. A sustain of 1.0 means the note stays at full volume throughout. A sustain of 0.0 means the note silences after the Decay stage, creating a plucked or percussive feel even while the key is held.\n\nRelease is the time for the note to fade to silence after the key is released. A very short release (near 0 s) cuts the note off abruptly — useful for staccato playing. A long release (1–3 s) leaves a trailing echo-like tail, like the sustain pedal on a piano or the natural reverb of a room.\n\nThe patch has a short release right now. Set the Release to 2 seconds and listen to how the note lingers after you let go of the key.",
+  "patchFile": "/lessons/patches/10-sustain-and-release.json",
+  "highlightComponentTypes": ["adsr-envelope"],
+  "task": {
+    "type": "set-parameter",
+    "instruction": "Set the ADSR's Release to 2 s. Raise the Release knob on the ADSR Envelope, press a key briefly, then release it — hear the note fade out slowly.",
+    "setParameter": {
+      "componentType": "adsr-envelope",
+      "parameterId": "release",
+      "targetValue": 2.0,
+      "tolerance": 0.3
+    }
+  }
+}
