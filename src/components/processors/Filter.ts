@@ -19,6 +19,7 @@ export class Filter extends SynthComponent {
   private inputGain: GainNode | null;
   private filterNode: BiquadFilterNode | null;
   private outputGain: GainNode | null;
+  private cutoffCvScaler: GainNode | null;
 
   constructor(id: string, position: Position) {
     super(id, ComponentType.FILTER, 'Filter', position);
@@ -38,6 +39,7 @@ export class Filter extends SynthComponent {
     this.inputGain = null;
     this.filterNode = null;
     this.outputGain = null;
+    this.cutoffCvScaler = null;
   }
 
   /**
@@ -77,6 +79,13 @@ export class Filter extends SynthComponent {
       resonanceParam.linkAudioParam(this.filterNode.Q);
     }
 
+    // Scaler: CV sources (0–1 range) connect here as an AudioNode input.
+    // The scaler multiplies the signal by its gain before adding to filterNode.frequency.
+    // gain = 5000 means a full 0–1 envelope sweeps the cutoff up by 5000 Hz.
+    this.cutoffCvScaler = ctx.createGain();
+    this.cutoffCvScaler.gain.value = 5000;
+    this.cutoffCvScaler.connect(this.filterNode.frequency);
+
     // Connect: input -> filter -> output
     this.inputGain.connect(this.filterNode);
     this.filterNode.connect(this.outputGain);
@@ -85,6 +94,7 @@ export class Filter extends SynthComponent {
     this.registerAudioNode('inputGain', this.inputGain);
     this.registerAudioNode('filter', this.filterNode);
     this.registerAudioNode('outputGain', this.outputGain);
+    this.registerAudioNode('cutoffCvScaler', this.cutoffCvScaler);
 
     console.log(`Filter ${this.id} created with type: ${this.filterNode.type}`);
   }
@@ -93,6 +103,11 @@ export class Filter extends SynthComponent {
    * Destroy audio nodes
    */
   destroyAudioNodes(): void {
+    if (this.cutoffCvScaler) {
+      this.cutoffCvScaler.disconnect();
+      this.cutoffCvScaler = null;
+    }
+
     if (this.filterNode) {
       this.filterNode.disconnect();
       this.filterNode = null;
@@ -179,12 +194,20 @@ export class Filter extends SynthComponent {
   protected override getAudioParamForInput(inputId: string): AudioParam | null {
     switch (inputId) {
       case 'cutoff_cv':
-        return this.getCutoffParam();
+        // Handled via getInputNodeByPort — CV routes through a scaling GainNode
+        return null;
       case 'resonance_cv':
         return this.getResonanceParam();
       default:
         return null;
     }
+  }
+
+  protected override getInputNodeByPort(portId: string): AudioNode | null {
+    if (portId === 'cutoff_cv') {
+      return this.cutoffCvScaler;
+    }
+    return super.getInputNodeByPort(portId);
   }
 
   /**

@@ -266,10 +266,17 @@ export abstract class SynthComponent {
           if (inputId === 'frequency' && target.type === 'oscillator') {
             console.log(`💡 Tip: Set ${target.name} frequency knob to 0 Hz for direct CV control, or use it as an offset/transpose`);
           }
-        } else if (outputPort.type !== 'gate' || target.type !== 'adsr-envelope') {
-          // Only warn if it's not a gate->ADSR connection (which doesn't use AudioParam)
-          console.warn(`Cannot connect CV: no AudioParam found for input ${inputId}`);
-          return;
+        } else {
+          // Fallback: try an AudioNode input (e.g. a scaling GainNode that routes CV into a freq param)
+          const cvInputNode = target.getInputNodeByPort(inputId);
+          if (cvInputNode) {
+            outputNode.connect(cvInputNode);
+            console.log(`✓ Connected ${this.name}:${outputPort.name} (CV) -> ${target.name}:${inputPort.name} (AudioNode)`);
+          } else if (outputPort.type !== 'gate' || target.type !== 'adsr-envelope') {
+            // Only warn if it's not a gate->ADSR connection (which doesn't use AudioParam)
+            console.warn(`Cannot connect CV: no AudioParam found for input ${inputId}`);
+            return;
+          }
         }
       } else {
         // Regular audio connection (AudioNode -> AudioNode)
@@ -343,6 +350,13 @@ export abstract class SynthComponent {
           if (targetParam) {
             outputNode.disconnect(targetParam);
             console.log(`✓ Disconnected ${this.name}:${outputPort.name} from ${target.name}:${inputPort.name} (AudioParam)`);
+          } else {
+            // Fallback: CV connected via AudioNode (e.g. scaling GainNode)
+            const cvInputNode = target.getInputNodeByPort(inputId);
+            if (cvInputNode) {
+              outputNode.disconnect(cvInputNode);
+              console.log(`✓ Disconnected ${this.name}:${outputPort.name} from ${target.name}:${inputPort.name} (AudioNode)`);
+            }
           }
 
           // If this was a gate connection to ADSR, unregister
