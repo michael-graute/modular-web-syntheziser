@@ -197,7 +197,7 @@
 - [x] T072 [P] Create `public/lessons/15-fm-synthesis.json` — `LessonData`: id `lesson-15-fm-synthesis`, index 4, title "FM Synthesis", concept explains audio-rate modulation / carrier + modulator / sideband harmonics / FM depth, task type `connect`, `connect: { sourceComponentType: 'oscillator', targetComponentType: 'fm-oscillator', targetPortId: 'fm' }`
 - [x] T073 [P] Create `public/lessons/patches/15-fm-synthesis.json` — Keyboard → FM Oscillator (carrier) + Oscillator (modulator, same freq); carrier → VCA → Master Output; ADSR amp; keyboard freq connected to both oscillators; modulator output NOT connected to FM input
 - [x] T074 [P] Update `public/lessons/manifest.json` — Module 4 title "Modulation", lessons: `['12-lfo-to-filter.json', '13-lfo-rate-and-depth.json', '14-vibrato.json', '15-fm-synthesis.json']`
-- [ ] T075 Manual browser validation — complete all 4 Module 4 lessons; verify LFO filter sweep audible, rate set-parameter validates, vibrato connect validates on oscillator frequency port, FM connect produces clearly audible timbre change
+- [x] T075 Manual browser validation — complete all 4 Module 4 lessons; verify LFO filter sweep audible, rate set-parameter validates, vibrato connect validates on oscillator detune port, FM connect produces clearly audible timbre change
 
 **Checkpoint**: Module 4 fully authored and playable in-app.
 
