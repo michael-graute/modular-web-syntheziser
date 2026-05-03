@@ -1,0 +1,70 @@
+{
+  "name": "Lesson 5 — Filter Cutoff",
+  "version": "1.0.0",
+  "created": "2026-05-03T00:00:00.000Z",
+  "modified": "2026-05-03T00:00:00.000Z",
+  "globalBpm": 120,
+  "components": [
+    {
+      "id": "lesson-05-keyboard",
+      "type": "keyboard-input",
+      "position": { "x": 60, "y": 160 },
+      "parameters": {}
+    },
+    {
+      "id": "lesson-05-oscillator",
+      "type": "oscillator",
+      "position": { "x": 290, "y": 160 },
+      "parameters": {
+        "waveform": 2,
+        "frequency": 440,
+        "detune": 0
+      }
+    },
+    {
+      "id": "lesson-05-filter",
+      "type": "filter",
+      "position": { "x": 520, "y": 160 },
+      "parameters": {
+        "type": 0,
+        "cutoff": 8000,
+        "resonance": 1
+      }
+    },
+    {
+      "id": "lesson-05-master-output",
+      "type": "master-output",
+      "position": { "x": 750, "y": 160 },
+      "parameters": {
+        "volume": 0.6,
+        "limiter": 1
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "lesson-05-conn-kbd-freq",
+      "sourceComponentId": "lesson-05-keyboard",
+      "sourcePortId": "frequency",
+      "targetComponentId": "lesson-05-oscillator",
+      "targetPortId": "frequency",
+      "signalType": "cv"
+    },
+    {
+      "id": "lesson-05-conn-osc-filter",
+      "sourceComponentId": "lesson-05-oscillator",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-05-filter",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "lesson-05-conn-filter-out",
+      "sourceComponentId": "lesson-05-filter",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-05-master-output",
+      "targetPortId": "input",
+      "signalType": "audio"
+    }
+  ]
+}

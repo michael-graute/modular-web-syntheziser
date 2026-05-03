@@ -13,8 +13,13 @@
     {
       "id": "module-02",
       "number": 2,
-      "title": "Shaping Sound (Coming Soon)",
-      "lessons": []
+      "title": "Shaping Sound",
+      "lessons": [
+        "04-introducing-the-filter.json",
+        "05-filter-cutoff.json",
+        "06-resonance.json",
+        "07-shaping-amplitude.json"
+      ]
     },
     {
       "id": "module-03",

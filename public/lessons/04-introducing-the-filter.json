@@ -1,0 +1,18 @@
+{
+  "id": "lesson-04-introducing-the-filter",
+  "moduleId": "module-02",
+  "index": 1,
+  "title": "Introducing the Filter",
+  "concept": "So far you have been working with oscillators — components that generate sound. Now you will learn about processors, components that change sound after it is generated.\n\nThe Filter is the most important processor in synthesis. It removes certain frequencies from a signal, changing the tone colour without changing the pitch. Think of it like an equaliser with a specific shape: a low-pass filter lets low frequencies through and cuts high ones, like holding your hand over a speaker.\n\nIn modular synthesis the filter sits between the oscillator and the output. The oscillator produces a harmonically rich sound (try a sawtooth wave — full of overtones), and the filter sculpts that raw material into something musical.\n\nThe patch already has a Keyboard, an Oscillator (set to sawtooth), and a Master Output. Your task is to insert the Filter in between the Oscillator and the Master Output by connecting the Oscillator's audio output to the Filter's audio input.",
+  "patchFile": "/lessons/patches/04-introducing-the-filter.json",
+  "highlightComponentTypes": ["filter"],
+  "task": {
+    "type": "connect",
+    "instruction": "Connect the Oscillator's audio output to the Filter's input. Click the Oscillator's 'output' port (right side), then click the Filter's 'input' port (left side).",
+    "connect": {
+      "sourceComponentType": "oscillator",
+      "targetComponentType": "filter",
+      "targetPortId": "input"
+    }
+  }
+}

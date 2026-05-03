@@ -1,0 +1,19 @@
+{
+  "id": "lesson-05-filter-cutoff",
+  "moduleId": "module-02",
+  "index": 2,
+  "title": "Filter Cutoff",
+  "concept": "The Filter's most important control is the Cutoff frequency. It sets the boundary point where the filter starts to act. On a low-pass filter (the default), all frequencies below the cutoff pass through freely, while frequencies above are reduced.\n\nAt a high cutoff (around 8000 Hz) the filter is nearly open — you hear the full brightness of the sawtooth wave. As you lower the cutoff, you progressively remove the high harmonics, making the sound darker and warmer. At a very low cutoff (below 200 Hz) only the fundamental frequency remains — the sound becomes a near-pure sine.\n\nThis is one of the most expressive controls in synthesis. A slow sweep of the cutoff — from low to high — is the classic synthesizer 'filter sweep' sound you have heard in countless recordings.\n\nChange the cutoff to around 300 Hz to hear the filter close down and darken the sound.",
+  "patchFile": "/lessons/patches/05-filter-cutoff.json",
+  "highlightComponentTypes": ["filter"],
+  "task": {
+    "type": "set-parameter",
+    "instruction": "Lower the Filter's Cutoff to 300 Hz. Adjust the Cutoff knob on the Filter component and listen to the sound get darker as the high frequencies are removed.",
+    "setParameter": {
+      "componentType": "filter",
+      "parameterId": "cutoff",
+      "targetValue": 300,
+      "tolerance": 100
+    }
+  }
+}

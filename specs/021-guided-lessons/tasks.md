@@ -146,6 +146,25 @@
 
 ---
 
+## Phase 9: Module 2 Content
+
+**Purpose**: Author the four Module 2 lesson JSON files and their patches. All parallel — no interdependencies.
+
+- [x] T046 [P] Create `public/lessons/04-introducing-the-filter.json` — `LessonData`: id `lesson-04-introducing-the-filter`, moduleId `module-02`, index 1, title "Introducing the Filter", concept introduces filters as processors that remove frequencies / low-pass filter lets lows through / sawtooth wave as raw material, `patchFile: '/lessons/patches/04-introducing-the-filter.json'`, `highlightComponentTypes: ['filter']`, task type `connect`, instruction "Connect the Oscillator's audio output to the Filter's input.", `connect: { sourceComponentType: 'oscillator', targetComponentType: 'filter', targetPortId: 'input' }`
+- [x] T047 [P] Create `public/lessons/patches/04-introducing-the-filter.json` — `PatchData` with: Keyboard → Oscillator (sawtooth) + Filter (lowpass, 800 Hz) → Master Output; Keyboard→Oscillator freq connected; Filter→Master Output connected; Oscillator→Filter connection intentionally MISSING (user must make it); patch name "Lesson 4 — Introducing the Filter"
+- [x] T048 [P] Create `public/lessons/05-filter-cutoff.json` — `LessonData`: id `lesson-05-filter-cutoff`, index 2, title "Filter Cutoff", concept explains cutoff as the boundary point / high cutoff = open/bright / low cutoff = dark/warm / the classic filter sweep, task type `set-parameter`, instruction "Lower the Filter's Cutoff to 300 Hz.", `setParameter: { componentType: 'filter', parameterId: 'cutoff', targetValue: 300, tolerance: 100 }`
+- [x] T049 [P] Create `public/lessons/patches/05-filter-cutoff.json` — `PatchData` with: Keyboard → Oscillator (sawtooth) → Filter (lowpass, cutoff 8000 Hz open) → Master Output; all connections pre-wired; patch name "Lesson 5 — Filter Cutoff"
+- [x] T050 [P] Create `public/lessons/06-resonance.json` — `LessonData`: id `lesson-06-resonance`, index 3, title "Resonance", concept explains resonance as a peak at cutoff / low Q = smooth / high Q = nasal/wah / self-oscillation at extreme values, task type `set-parameter`, instruction "Raise the Filter's Resonance to 15.", `setParameter: { componentType: 'filter', parameterId: 'resonance', targetValue: 15, tolerance: 3 }`
+- [x] T051 [P] Create `public/lessons/patches/06-resonance.json` — `PatchData` with: Keyboard → Oscillator (sawtooth) → Filter (lowpass, cutoff 1200 Hz, resonance 1) → Master Output; all connections pre-wired; patch name "Lesson 6 — Resonance"
+- [x] T052 [P] Create `public/lessons/07-shaping-amplitude.json` — `LessonData`: id `lesson-07-shaping-amplitude`, index 4, title "Shaping Amplitude", concept introduces ADSR envelope (Attack/Decay/Sustain/Release) and VCA / explains that envelope generates CV that controls VCA volume, task type `connect`, instruction "Connect the Keyboard's gate output to the ADSR's gate input.", `connect: { sourceComponentType: 'keyboard-input', targetComponentType: 'adsr-envelope', targetPortId: 'gate' }`
+- [x] T053 [P] Create `public/lessons/patches/07-shaping-amplitude.json` — `PatchData` with: Keyboard + Oscillator (sawtooth) → Filter → VCA → Master Output; ADSR → VCA cv connected; all audio/cv routing pre-wired; Keyboard→ADSR gate connection intentionally MISSING (user must make it); patch name "Lesson 7 — Shaping Amplitude"
+- [x] T054 [P] Update `public/lessons/manifest.json` — set Module 2 title to "Shaping Sound" (remove "Coming Soon"), lessons array: `['04-introducing-the-filter.json', '05-filter-cutoff.json', '06-resonance.json', '07-shaping-amplitude.json']`
+- [ ] T055 Manual browser validation — open Learn panel, navigate to Module 2, complete all 4 lessons in sequence; verify connect tasks validate correctly, set-parameter tasks validate within tolerance, patch loads under 1s, highlighting works on filter/ADSR/VCA components
+
+**Checkpoint**: Module 2 fully authored and playable in-app.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

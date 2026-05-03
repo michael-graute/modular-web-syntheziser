@@ -1,0 +1,19 @@
+{
+  "id": "lesson-06-resonance",
+  "moduleId": "module-02",
+  "index": 3,
+  "title": "Resonance",
+  "concept": "Filters have a second control called Resonance (sometimes labelled Q). It boosts the frequencies right at the cutoff point, creating a peak in the frequency response.\n\nAt low resonance the filter is gentle and smooth — it just rolls off the high frequencies softly. As you increase resonance, a narrow band of frequencies around the cutoff starts to ring. The sound takes on a nasal, vocal-like quality. Think of the 'wah' pedal sound on a guitar — that is a resonant filter in action.\n\nAt very high resonance values the filter begins to self-oscillate: it produces its own tone even without any input signal. This is a characteristic sound of classic synthesizers and is used deliberately in many styles of electronic music.\n\nThe filter is already set to a mid cutoff so the effect of resonance is clearly audible. Raise the Resonance to 15 to hear the peak emerge.",
+  "patchFile": "/lessons/patches/06-resonance.json",
+  "highlightComponentTypes": ["filter"],
+  "task": {
+    "type": "set-parameter",
+    "instruction": "Raise the Filter's Resonance to 15. Adjust the Resonance knob on the Filter component and listen to the ringing peak appear at the cutoff frequency.",
+    "setParameter": {
+      "componentType": "filter",
+      "parameterId": "resonance",
+      "targetValue": 15,
+      "tolerance": 3
+    }
+  }
+}
