@@ -35,8 +35,13 @@
     {
       "id": "module-04",
       "number": 4,
-      "title": "Modulation (Coming Soon)",
-      "lessons": []
+      "title": "Modulation",
+      "lessons": [
+        "12-lfo-to-filter.json",
+        "13-lfo-rate-and-depth.json",
+        "14-vibrato.json",
+        "15-fm-synthesis.json"
+      ]
     },
     {
       "id": "module-05",

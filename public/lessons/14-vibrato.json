@@ -1,0 +1,18 @@
+{
+  "id": "lesson-14-vibrato",
+  "moduleId": "module-04",
+  "index": 3,
+  "title": "Vibrato",
+  "concept": "Modulation does not have to go to the filter. You can route the LFO to any CV input — including the oscillator's frequency. When pitch wobbles up and down in a regular cycle, the result is vibrato: the same expressive technique used by violinists, vocalists, and guitarists.\n\nA slow, subtle vibrato (rate around 5 Hz, low depth) adds warmth and life to a held note without sounding artificial. A fast, deep vibrato becomes more exaggerated — like a vintage electric piano or an old analog synth. At extreme settings it turns into a trill or a siren.\n\nThe key difference from filter modulation: here the LFO is affecting pitch, not tone colour. The note bends periodically above and below its target pitch. Combined with a slow attack on the envelope, the vibrato can be made to fade in gradually after the note starts — just like a real string player.\n\nThe LFO is running but not yet connected to the oscillator. Connect it to the Oscillator's frequency CV input to add vibrato.",
+  "patchFile": "/lessons/patches/14-vibrato.json",
+  "highlightComponentTypes": ["lfo", "oscillator"],
+  "task": {
+    "type": "connect",
+    "instruction": "Connect the LFO's output to the Oscillator's frequency input. Click the LFO's 'output' port (right side), then click the Oscillator's 'frequency' input port (left side).",
+    "connect": {
+      "sourceComponentType": "lfo",
+      "targetComponentType": "oscillator",
+      "targetPortId": "frequency"
+    }
+  }
+}

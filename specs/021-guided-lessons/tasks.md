@@ -184,6 +184,25 @@
 
 ---
 
+## Phase 11: Module 4 Content
+
+**Purpose**: Author the four Module 4 lesson JSON files and their patches. All parallel.
+
+- [x] T066 [P] Create `public/lessons/12-lfo-to-filter.json` — `LessonData`: id `lesson-12-lfo-to-filter`, moduleId `module-04`, index 1, title "LFO to Filter", concept introduces LFO as automatic modulation source / cyclic filter sweep, task type `connect`, `connect: { sourceComponentType: 'lfo', targetComponentType: 'filter', targetPortId: 'cutoff_cv' }`
+- [x] T067 [P] Create `public/lessons/patches/12-lfo-to-filter.json` — full chain: Keyboard → Oscillator (saw) → Filter (cutoff 1200, resonance 6) → VCA → Master Output; ADSR amp; LFO (sine, 1.5 Hz, 60%) running but NOT connected to filter cutoff_cv
+- [x] T068 [P] Create `public/lessons/13-lfo-rate-and-depth.json` — `LessonData`: id `lesson-13-lfo-rate-and-depth`, index 2, title "LFO Rate & Depth", concept explains rate (speed) vs depth (swing amount), task type `set-parameter`, instruction "Set the LFO's Rate to 0.3 Hz", `setParameter: { componentType: 'lfo', parameterId: 'rate', targetValue: 0.3, tolerance: 0.15 }`
+- [x] T069 [P] Create `public/lessons/patches/13-lfo-rate-and-depth.json` — same chain as L12 but LFO starts at 3 Hz (fast/obvious) so slowing it is clearly audible; LFO→filter cutoff_cv pre-wired
+- [x] T070 [P] Create `public/lessons/14-vibrato.json` — `LessonData`: id `lesson-14-vibrato`, index 3, title "Vibrato", concept explains LFO-to-pitch modulation / vibrato effect / rate and depth trade-offs, task type `connect`, `connect: { sourceComponentType: 'lfo', targetComponentType: 'oscillator', targetPortId: 'frequency' }`
+- [x] T071 [P] Create `public/lessons/patches/14-vibrato.json` — Keyboard → Oscillator (sine) → VCA → Master Output; ADSR amp; LFO (sine, 5 Hz, 20%) running but NOT connected to oscillator frequency
+- [x] T072 [P] Create `public/lessons/15-fm-synthesis.json` — `LessonData`: id `lesson-15-fm-synthesis`, index 4, title "FM Synthesis", concept explains audio-rate modulation / carrier + modulator / sideband harmonics / FM depth, task type `connect`, `connect: { sourceComponentType: 'oscillator', targetComponentType: 'fm-oscillator', targetPortId: 'fm' }`
+- [x] T073 [P] Create `public/lessons/patches/15-fm-synthesis.json` — Keyboard → FM Oscillator (carrier) + Oscillator (modulator, same freq); carrier → VCA → Master Output; ADSR amp; keyboard freq connected to both oscillators; modulator output NOT connected to FM input
+- [x] T074 [P] Update `public/lessons/manifest.json` — Module 4 title "Modulation", lessons: `['12-lfo-to-filter.json', '13-lfo-rate-and-depth.json', '14-vibrato.json', '15-fm-synthesis.json']`
+- [ ] T075 Manual browser validation — complete all 4 Module 4 lessons; verify LFO filter sweep audible, rate set-parameter validates, vibrato connect validates on oscillator frequency port, FM connect produces clearly audible timbre change
+
+**Checkpoint**: Module 4 fully authored and playable in-app.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

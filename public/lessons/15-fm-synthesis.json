@@ -1,0 +1,18 @@
+{
+  "id": "lesson-15-fm-synthesis",
+  "moduleId": "module-04",
+  "index": 4,
+  "title": "FM Synthesis",
+  "concept": "So far modulation has been slow — LFOs move at rates well below the threshold of hearing. But what happens when you modulate a sound source at audio rate — thousands of times per second?\n\nThis is FM synthesis: Frequency Modulation. Instead of an LFO, a second oscillator (the modulator) runs at audio frequency and modulates the pitch of the first oscillator (the carrier) many thousands of times per second. The result is not vibrato — it happens too fast to hear as pitch wobble. Instead, entirely new sidebands (harmonics) appear in the spectrum, producing complex, metallic, bell-like, or inharmonic timbres that are impossible to achieve with simple waveforms.\n\nFM depth controls how far the carrier's pitch is pushed by the modulator. Low depth adds subtle metallic sheen; high depth creates dramatic, clanging, aggressive tones. The ratio between carrier and modulator frequencies determines the harmonic character: simple integer ratios (1:1, 1:2) give musical, bell-like results; non-integer ratios produce noisy, inharmonic textures.\n\nThe patch has an FM Oscillator (the carrier) and a regular Oscillator (the modulator), both tuned to the same pitch. Connect the modulator's audio output to the FM Oscillator's FM input and hear the timbre transform.",
+  "patchFile": "/lessons/patches/15-fm-synthesis.json",
+  "highlightComponentTypes": ["fm-oscillator", "oscillator"],
+  "task": {
+    "type": "connect",
+    "instruction": "Connect the Oscillator's audio output to the FM Oscillator's FM input. Click the Oscillator's 'output' port (right side), then click the FM Oscillator's 'fm' input port (left side).",
+    "connect": {
+      "sourceComponentType": "oscillator",
+      "targetComponentType": "fm-oscillator",
+      "targetPortId": "fm"
+    }
+  }
+}

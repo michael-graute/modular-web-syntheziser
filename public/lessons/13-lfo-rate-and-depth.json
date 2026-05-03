@@ -1,0 +1,19 @@
+{
+  "id": "lesson-13-lfo-rate-and-depth",
+  "moduleId": "module-04",
+  "index": 2,
+  "title": "LFO Rate & Depth",
+  "concept": "The LFO has two main controls that shape how it modulates its destination.\n\nRate sets how fast the LFO cycles — measured in Hz, just like an audio oscillator's frequency. At 0.1 Hz the LFO completes one full cycle every 10 seconds — a very slow, gradual sweep. At 5 Hz it completes five cycles per second — a fast, trembling flutter. Musical LFO rates are often synced to the song tempo, so the sweep feels rhythmically connected to the beat.\n\nDepth sets how far the LFO swings in each direction. At 0% depth the LFO has no effect even if connected. At 100% depth the LFO swings at full amplitude — how that maps to an audible change depends on what is being modulated. On the filter cutoff, high depth means the filter sweeps over a wide frequency range; low depth gives a subtle shimmer.\n\nThe LFO is already connected to the filter. Slow the Rate down to 0.3 Hz to hear the sweep become a long, slow wave.",
+  "patchFile": "/lessons/patches/13-lfo-rate-and-depth.json",
+  "highlightComponentTypes": ["lfo"],
+  "task": {
+    "type": "set-parameter",
+    "instruction": "Set the LFO's Rate to 0.3 Hz. Adjust the Rate knob on the LFO component and hear the filter sweep slow to a long, lazy wave.",
+    "setParameter": {
+      "componentType": "lfo",
+      "parameterId": "rate",
+      "targetValue": 0.3,
+      "tolerance": 0.15
+    }
+  }
+}
