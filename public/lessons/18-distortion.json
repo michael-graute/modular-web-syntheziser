@@ -1,0 +1,19 @@
+{
+  "id": "lesson-18-distortion",
+  "moduleId": "module-05",
+  "index": 3,
+  "title": "Distortion",
+  "concept": "Not all effects are about space. Distortion is about character — it deliberately deforms the audio waveform, adding harmonics and grit that can range from subtle warmth to aggressive clipping.\n\nWhen an audio signal is pushed beyond its normal amplitude range, the peaks of the waveform get clipped or reshaped. This clipping introduces new harmonics not present in the original sound — the same process that makes an overdriven guitar amplifier sound powerful and aggressive.\n\nThe Drive control sets how hard the signal is pushed into distortion. At low drive, the effect adds warmth and presence — often used on bass sounds and pads. At high drive, the sound becomes saturated and aggressive.\n\nTone acts as a high-frequency filter on the distorted signal. Since distortion generates a lot of high-frequency harmonics, the Tone control lets you brighten or darken the result.\n\nMix blends the dry and distorted signals, letting you retain some of the original clarity underneath the effect.\n\nThe patch has the full chain ready with Delay and Reverb in place. Raise the Drive on the Distortion component — already inserted in the chain — to hear the sound transform.",
+  "patchFile": "/lessons/patches/18-distortion.json",
+  "highlightComponentTypes": ["distortion"],
+  "task": {
+    "type": "set-parameter",
+    "instruction": "Raise the Distortion's Drive to 80%. Adjust the Drive knob on the Distortion component and hear the sound take on grit and harmonic richness.",
+    "setParameter": {
+      "componentType": "distortion",
+      "parameterId": "drive",
+      "targetValue": 80,
+      "tolerance": 10
+    }
+  }
+}

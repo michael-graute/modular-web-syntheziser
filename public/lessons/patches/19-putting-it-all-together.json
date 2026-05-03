@@ -1,0 +1,193 @@
+{
+  "name": "Lesson 19 — Putting It All Together",
+  "version": "1.0.0",
+  "created": "2026-05-03T00:00:00.000Z",
+  "modified": "2026-05-03T00:00:00.000Z",
+  "globalBpm": 120,
+  "components": [
+    {
+      "id": "lesson-19-keyboard",
+      "type": "keyboard-input",
+      "position": { "x": 60, "y": 240 },
+      "parameters": {}
+    },
+    {
+      "id": "lesson-19-oscillator",
+      "type": "oscillator",
+      "position": { "x": 250, "y": 120 },
+      "parameters": {
+        "waveform": 2,
+        "frequency": 440,
+        "detune": 0
+      }
+    },
+    {
+      "id": "lesson-19-filter",
+      "type": "filter",
+      "position": { "x": 440, "y": 120 },
+      "parameters": {
+        "type": 0,
+        "cutoff": 1800,
+        "resonance": 3
+      }
+    },
+    {
+      "id": "lesson-19-adsr",
+      "type": "adsr-envelope",
+      "position": { "x": 250, "y": 380 },
+      "parameters": {
+        "attack": 0.04,
+        "decay": 0.25,
+        "sustain": 0.6,
+        "release": 0.5
+      }
+    },
+    {
+      "id": "lesson-19-lfo",
+      "type": "lfo",
+      "position": { "x": 440, "y": 380 },
+      "parameters": {
+        "waveform": 0,
+        "rate": 0.8,
+        "depth": 40
+      }
+    },
+    {
+      "id": "lesson-19-vca",
+      "type": "vca",
+      "position": { "x": 630, "y": 120 },
+      "parameters": {
+        "gain": 0
+      }
+    },
+    {
+      "id": "lesson-19-distortion",
+      "type": "distortion",
+      "position": { "x": 630, "y": 340 },
+      "parameters": {
+        "drive": 30,
+        "tone": 7000,
+        "mix": 0.6
+      }
+    },
+    {
+      "id": "lesson-19-delay",
+      "type": "delay",
+      "position": { "x": 840, "y": 120 },
+      "parameters": {
+        "time": 0.375,
+        "feedback": 0.35,
+        "mix": 0.35
+      }
+    },
+    {
+      "id": "lesson-19-reverb",
+      "type": "reverb",
+      "position": { "x": 840, "y": 320 },
+      "parameters": {
+        "roomSize": 0.65,
+        "decay": 2.0,
+        "mix": 0.3
+      }
+    },
+    {
+      "id": "lesson-19-master-output",
+      "type": "master-output",
+      "position": { "x": 1060, "y": 200 },
+      "parameters": {
+        "volume": 0.6,
+        "limiter": 1
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "lesson-19-conn-kbd-freq",
+      "sourceComponentId": "lesson-19-keyboard",
+      "sourcePortId": "frequency",
+      "targetComponentId": "lesson-19-oscillator",
+      "targetPortId": "frequency",
+      "signalType": "cv"
+    },
+    {
+      "id": "lesson-19-conn-kbd-gate",
+      "sourceComponentId": "lesson-19-keyboard",
+      "sourcePortId": "gate",
+      "targetComponentId": "lesson-19-adsr",
+      "targetPortId": "gate",
+      "signalType": "gate"
+    },
+    {
+      "id": "lesson-19-conn-osc-filter",
+      "sourceComponentId": "lesson-19-oscillator",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-19-filter",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "lesson-19-conn-lfo-cutoff",
+      "sourceComponentId": "lesson-19-lfo",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-19-filter",
+      "targetPortId": "cutoff_cv",
+      "signalType": "cv"
+    },
+    {
+      "id": "lesson-19-conn-filter-vca",
+      "sourceComponentId": "lesson-19-filter",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-19-vca",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "lesson-19-conn-adsr-vca",
+      "sourceComponentId": "lesson-19-adsr",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-19-vca",
+      "targetPortId": "cv",
+      "signalType": "cv"
+    },
+    {
+      "id": "lesson-19-conn-vca-dist",
+      "sourceComponentId": "lesson-19-vca",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-19-distortion",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "lesson-19-conn-dist-delay",
+      "sourceComponentId": "lesson-19-distortion",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-19-delay",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "lesson-19-conn-dist-reverb",
+      "sourceComponentId": "lesson-19-distortion",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-19-reverb",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "lesson-19-conn-delay-master",
+      "sourceComponentId": "lesson-19-delay",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-19-master-output",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "lesson-19-conn-reverb-master",
+      "sourceComponentId": "lesson-19-reverb",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-19-master-output",
+      "targetPortId": "input",
+      "signalType": "audio"
+    }
+  ]
+}

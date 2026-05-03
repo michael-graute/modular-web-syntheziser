@@ -203,6 +203,25 @@
 
 ---
 
+## Phase 12: Module 5 Content
+
+**Purpose**: Author the four Module 5 lesson JSON files and their patches. All parallel.
+
+- [x] T076 [P] Create `public/lessons/16-delay.json` — `LessonData`: id `lesson-16-delay`, moduleId `module-05`, index 1, title "Delay", concept introduces delay (time, feedback, mix), task type `connect`, `connect: { sourceComponentType: 'vca', targetComponentType: 'delay', targetPortId: 'input' }`
+- [x] T077 [P] Create `public/lessons/patches/16-delay.json` — Keyboard → Oscillator (saw) → Filter → VCA → Master Output; ADSR amp; Delay (0.375 s, 0.45 feedback) with output pre-wired to master; VCA→Delay input intentionally MISSING
+- [x] T078 [P] Create `public/lessons/17-reverb.json` — `LessonData`: id `lesson-17-reverb`, index 2, title "Reverb", concept explains reverb vs delay / room size / decay / mix, task type `connect`, `connect: { sourceComponentType: 'delay', targetComponentType: 'reverb', targetPortId: 'input' }`
+- [x] T079 [P] Create `public/lessons/patches/17-reverb.json` — full chain with Delay pre-wired after VCA; Reverb output pre-wired to master; Delay→Reverb input intentionally MISSING
+- [x] T080 [P] Create `public/lessons/18-distortion.json` — `LessonData`: id `lesson-18-distortion`, index 3, title "Distortion", concept explains waveshaping / drive / tone / grit, task type `set-parameter`, `setParameter: { componentType: 'distortion', parameterId: 'drive', targetValue: 80, tolerance: 10 }`
+- [x] T081 [P] Create `public/lessons/patches/18-distortion.json` — full chain: VCA → Distortion (drive 10, low) → Delay + Reverb (parallel) → Master Output; drive starts low so the contrast is immediately audible
+- [x] T082 [P] Create `public/lessons/19-putting-it-all-together.json` — `LessonData`: id `lesson-19-putting-it-all-together`, index 4, title "Putting It All Together", concept summarises all 5 modules and invites free exploration, task type `free`
+- [x] T083 [P] Create `public/lessons/patches/19-putting-it-all-together.json` — complete instrument: Keyboard → Oscillator (saw) → Filter (LFO on cutoff) → VCA (ADSR) → Distortion → Delay + Reverb (parallel) → Master Output; all connections pre-wired; a working, expressive synthesizer
+- [x] T084 [P] Update `public/lessons/manifest.json` — Module 5 title "Effects & Space", lessons: `['16-delay.json', '17-reverb.json', '18-distortion.json', '19-putting-it-all-together.json']`
+- [ ] T085 Manual browser validation — complete all 4 Module 5 lessons; verify delay connect validates and echo is audible, reverb connect validates and reverb tail is audible, distortion drive set-parameter validates, lesson 19 Next button enabled immediately (free task)
+
+**Checkpoint**: Module 5 complete — all 19 lessons across all 5 modules authored and playable.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

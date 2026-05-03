@@ -46,8 +46,13 @@
     {
       "id": "module-05",
       "number": 5,
-      "title": "Effects & Space (Coming Soon)",
-      "lessons": []
+      "title": "Effects & Space",
+      "lessons": [
+        "16-delay.json",
+        "17-reverb.json",
+        "18-distortion.json",
+        "19-putting-it-all-together.json"
+      ]
     }
   ]
 }

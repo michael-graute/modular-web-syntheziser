@@ -1,0 +1,18 @@
+{
+  "id": "lesson-17-reverb",
+  "moduleId": "module-05",
+  "index": 2,
+  "title": "Reverb",
+  "concept": "Delay gives you discrete, countable echoes. Reverb gives you something different: the dense, diffuse wash of thousands of tiny reflections that fill a physical space. Every room you have ever been in has a reverb — the way sound bounces off walls, ceilings, and furniture before reaching your ears. Without it, sounds feel close, dry, and intimate. With it, they feel like they exist in a real place.\n\nReverb has three main controls:\n\nRoom Size — how large the simulated space is. Small values emulate a closet or bathroom; large values create cathedral or hall acoustics.\n\nDecay — how long the reverb tail lasts before fading to silence. Short decay (under 1 s) is tight and present. Long decay (3–5 s) creates a lush, drifting tail that blurs notes together.\n\nMix — the dry/wet balance. Unlike delay, reverb is often used subtly: a mix of 20–40% adds depth without washing out the sound. At 100% mix you hear only the reverb effect with no direct signal.\n\nThe patch already has a Delay effect in the chain. Add Reverb after it by connecting the Delay's output to the Reverb's input.",
+  "patchFile": "/lessons/patches/17-reverb.json",
+  "highlightComponentTypes": ["reverb"],
+  "task": {
+    "type": "connect",
+    "instruction": "Connect the Delay's output to the Reverb's input. Click the Delay's 'output' port (right side), then click the Reverb's 'input' port (left side).",
+    "connect": {
+      "sourceComponentType": "delay",
+      "targetComponentType": "reverb",
+      "targetPortId": "input"
+    }
+  }
+}
