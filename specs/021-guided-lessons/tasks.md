@@ -76,7 +76,7 @@
 - [x] T020 [US2] Verify `LessonProgressStorage` integration in `src/lessons/LessonSidebar.ts` — confirm `loadLesson()` writes `currentLessonId` (T015), `nextLesson()` appends to `completedLessons` (T016), and `open()` with no currentLessonId loads first lesson vs. resumes at currentLessonId; no new code needed if T015–T016 are correct — task is to trace and verify
 - [x] T021 [US2] Implement Resume on Open in `src/lessons/LessonSidebar.ts` — in the `open()` method: read `lessonProgressStorage.loadProgress()`; if `currentLessonId` is set, load that lesson directly (skipping the lesson-load confirmation since no patch is on canvas yet); if null, load the first lesson from the manifest
 - [x] T022 [US2] Handle `localStorage` unavailable — in `LessonProgressStorage.ts`, when `localStorage` throws on `setItem`, fall back to in-memory store for the session; add a one-time notice in the `LessonSidebar` UI: "Progress won't be saved in private browsing mode." (shown once, dismissable); the notice is shown only when the in-memory fallback is active
-- [ ] T023 [US2] Run `vitest run tests/lessons/LessonProgressStorage.test.ts` — confirm in-memory fallback test (T009) passes
+- [x] T023 [US2] Run `vitest run tests/lessons/LessonProgressStorage.test.ts` — confirm in-memory fallback test (T009) passes
 
 **Checkpoint**: US2 fully functional — progress survives browser close and restores correctly.
 
@@ -90,8 +90,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T024 [US3] Implement curriculum overview panel in `src/lessons/LessonSidebar.ts` — add a toggle button (e.g. list/grid icon) in the sidebar header that switches between the lesson view and a curriculum overview panel; the overview panel renders each module as a section with its lessons listed; completion state per lesson is read from `lessonProgressStorage`; completed → ✓ indicator; current → highlighted; not started → dimmed opacity (CSS class `.lesson-not-started`) but clickable; clicking any lesson calls `loadLesson()`
-- [ ] T025 [US3] Ensure `manifest.json` drives the overview — `LessonSidebar` uses the loaded `LessonManifest` from `lessonLoader.loadManifest()` to build the overview (no hardcoded lesson list); manifest is loaded once on `LessonSidebar.open()` and cached; modules with no lessons in the current release still appear in the overview with a "Coming soon" placeholder
+- [x] T024 [US3] Implement curriculum overview panel in `src/lessons/LessonSidebar.ts` — add a toggle button (e.g. list/grid icon) in the sidebar header that switches between the lesson view and a curriculum overview panel; the overview panel renders each module as a section with its lessons listed; completion state per lesson is read from `lessonProgressStorage`; completed → ✓ indicator; current → highlighted; not started → dimmed opacity (CSS class `.lesson-not-started`) but clickable; clicking any lesson calls `loadLesson()`
+- [x] T025 [US3] Ensure `manifest.json` drives the overview — `LessonSidebar` uses the loaded `LessonManifest` from `lessonLoader.loadManifest()` to build the overview (no hardcoded lesson list); manifest is loaded once on `LessonSidebar.open()` and cached; modules with no lessons in the current release still appear in the overview with a "Coming soon" placeholder
 - [ ] T026 [US3] Run end-to-end curriculum navigation manually against quickstart.md Scenario 5 — verify all 5 modules visible, completion indicators correct, free navigation (no hard locks)
 
 **Checkpoint**: US3 fully functional — users can browse and jump to any lesson.
@@ -106,10 +106,10 @@
 
 ### Implementation for User Story 4
 
-- [ ] T027 [US4] Verify task validation is additive in `src/lessons/LessonTaskValidator.ts` — `connect` task validation matches by component type and port ID, not by checking that ONLY the required connection exists; extra connections must not block completion; no code change expected if T012 is implemented correctly — task is to trace and confirm with a test case
-- [ ] T028 [P] [US4] Add test in `tests/lessons/LessonTaskValidator.test.ts` — `connect` task completes even when additional `CONNECTION_ADDED` events for unrelated connections have fired first (extra patching does not interfere)
-- [ ] T029 [US4] Verify sidebar stays open during free patching — `LessonSidebar` must not close or reset when `EventType.COMPONENT_ADDED`, `COMPONENT_MOVED`, or `CONNECTION_ADDED` (for non-task connections) fires; confirm no event listener in `LessonSidebar` inadvertently closes the panel
-- [ ] T030 [US4] Run `vitest run tests/lessons/` — confirm all Phase 6 tests pass
+- [x] T027 [US4] Verify task validation is additive in `src/lessons/LessonTaskValidator.ts` — `connect` task validation matches by component type and port ID, not by checking that ONLY the required connection exists; extra connections must not block completion; no code change expected if T012 is implemented correctly — task is to trace and confirm with a test case
+- [x] T028 [P] [US4] Add test in `tests/lessons/LessonTaskValidator.test.ts` — `connect` task completes even when additional `CONNECTION_ADDED` events for unrelated connections have fired first (extra patching does not interfere)
+- [x] T029 [US4] Verify sidebar stays open during free patching — `LessonSidebar` must not close or reset when `EventType.COMPONENT_ADDED`, `COMPONENT_MOVED`, or `CONNECTION_ADDED` (for non-task connections) fires; confirm no event listener in `LessonSidebar` inadvertently closes the panel
+- [x] T030 [US4] Run `vitest run tests/lessons/` — confirm all Phase 6 tests pass
 
 **Checkpoint**: All four user stories independently functional.
 

@@ -86,4 +86,5 @@ export interface LessonState {
   isLoadingLesson: boolean;
   highlightDismissed: boolean;
   patchLoaded: boolean;
+  showingCurriculum: boolean;
 }

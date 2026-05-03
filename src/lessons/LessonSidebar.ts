@@ -1,4 +1,4 @@
-import type { LessonData, LessonManifest, LessonState } from './types';
+import type { LessonData, LessonManifest, LessonState, ModuleManifest } from './types';
 import { lessonLoader } from './LessonLoader';
 import { lessonProgressStorage } from './LessonProgressStorage';
 import { lessonTaskValidator } from './LessonTaskValidator';
@@ -7,8 +7,12 @@ import { patchManager } from '../patch/PatchManager';
 export class LessonSidebar {
   private container: HTMLDivElement;
   private contentArea: HTMLDivElement;
+  private curriculumBtn: HTMLButtonElement | null = null;
   private isVisible = false;
   private manifest: LessonManifest | null = null;
+
+  // Cache of loaded lesson data keyed by filename for curriculum navigation
+  private lessonCache = new Map<string, LessonData>();
 
   private state: LessonState = {
     currentLesson: null,
@@ -16,6 +20,7 @@ export class LessonSidebar {
     isLoadingLesson: false,
     highlightDismissed: false,
     patchLoaded: false,
+    showingCurriculum: false,
   };
 
   // Flat ordered list of lesson filenames built from manifest
@@ -130,7 +135,31 @@ export class LessonSidebar {
     `;
     closeBtn.addEventListener('click', () => this.close());
 
+    this.curriculumBtn = document.createElement('button');
+    this.curriculumBtn.textContent = '☰';
+    this.curriculumBtn.setAttribute('aria-label', 'Toggle curriculum overview');
+    this.curriculumBtn.style.cssText = `
+      position: absolute;
+      top: 0;
+      right: 56px;
+      background: none;
+      border: none;
+      color: var(--text-secondary, #aaa);
+      font-size: 1.25rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+    `;
+    this.curriculumBtn.addEventListener('click', () => this.toggleCurriculum());
+
     header.appendChild(title);
+    header.appendChild(this.curriculumBtn);
     header.appendChild(closeBtn);
     this.container.appendChild(header);
     this.container.appendChild(this.contentArea);
@@ -213,8 +242,12 @@ export class LessonSidebar {
       if (!ok) return;
     }
 
-    this.state = { ...this.state, isLoadingLesson: true, taskComplete: false, highlightDismissed: false, patchLoaded: false };
+    this.state = { ...this.state, isLoadingLesson: true, taskComplete: false, highlightDismissed: false, patchLoaded: false, showingCurriculum: false };
     this.renderLoadingState();
+
+    // Cache lesson data for curriculum labels
+    const filename = this.lessonFiles[opts?.fileIndex ?? this.indexForLessonId(lesson.id)];
+    if (filename) this.lessonCache.set(filename, lesson);
 
     // Track position in flat file list
     if (opts?.fileIndex !== undefined) {
@@ -292,6 +325,153 @@ export class LessonSidebar {
     } catch (err) {
       this.renderErrorState(`Could not load previous lesson: ${(err as Error).message}`);
     }
+  }
+
+  // ── Curriculum overview ───────────────────────────────────────────────────
+
+  private toggleCurriculum(): void {
+    this.state = { ...this.state, showingCurriculum: !this.state.showingCurriculum };
+    if (this.curriculumBtn) {
+      this.curriculumBtn.style.color = this.state.showingCurriculum
+        ? 'var(--accent-color, #0066cc)'
+        : 'var(--text-secondary, #aaa)';
+    }
+    if (this.state.showingCurriculum) {
+      this.renderCurriculum();
+    } else if (this.state.currentLesson) {
+      this.renderLesson(this.state.currentLesson);
+    } else {
+      this.renderLoadingState();
+    }
+  }
+
+  private async renderCurriculum(): Promise<void> {
+    if (!this.manifest) return;
+
+    const progress = lessonProgressStorage.loadProgress();
+    this.contentArea.innerHTML = '';
+
+    const heading = document.createElement('h3');
+    heading.textContent = 'Curriculum';
+    heading.style.cssText = `
+      margin: 0 0 16px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary, #fff);
+    `;
+    this.contentArea.appendChild(heading);
+
+    for (const mod of this.manifest.modules) {
+      this.contentArea.appendChild(this.buildModuleSection(mod, progress));
+    }
+  }
+
+  private buildModuleSection(mod: ModuleManifest, progress: { completedLessons: string[]; currentLessonId: string | null }): HTMLDivElement {
+    const section = document.createElement('div');
+    section.style.cssText = `margin-bottom: 16px;`;
+
+    const moduleTitle = document.createElement('p');
+    moduleTitle.textContent = `Module ${mod.number}: ${mod.title}`;
+    moduleTitle.style.cssText = `
+      margin: 0 0 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-secondary, #888);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    `;
+    section.appendChild(moduleTitle);
+
+    if (mod.lessons.length === 0) {
+      const placeholder = document.createElement('p');
+      placeholder.textContent = 'Coming soon';
+      placeholder.style.cssText = `
+        margin: 0;
+        font-size: 0.85rem;
+        color: var(--text-secondary, #555);
+        font-style: italic;
+        padding: 6px 0;
+      `;
+      section.appendChild(placeholder);
+      return section;
+    }
+
+    const list = document.createElement('ul');
+    list.setAttribute('role', 'list');
+    list.style.cssText = `list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px;`;
+
+    for (const filename of mod.lessons) {
+      const lessonId = this.lessonIdFromFilename(filename);
+      const isCurrent = progress.currentLessonId === lessonId;
+      const isCompleted = progress.completedLessons.includes(lessonId);
+      const isNotStarted = !isCurrent && !isCompleted;
+
+      const item = document.createElement('li');
+      item.setAttribute('role', 'listitem');
+      if (isCurrent) item.setAttribute('aria-current', 'true');
+      item.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        background: ${isCurrent ? 'var(--bg-secondary, #1a1a1a)' : 'none'};
+        border: 1px solid ${isCurrent ? 'var(--accent-color, #0066cc)' : 'transparent'};
+        opacity: ${isNotStarted ? '0.5' : '1'};
+        transition: opacity 0.15s, background 0.15s;
+      `;
+
+      const indicator = document.createElement('span');
+      indicator.style.cssText = `font-size: 0.85rem; flex-shrink: 0; width: 16px; text-align: center;`;
+      indicator.textContent = isCompleted ? '✓' : isCurrent ? '▶' : '○';
+      indicator.style.color = isCompleted ? '#4caf50' : isCurrent ? 'var(--accent-color, #0066cc)' : 'var(--text-secondary, #888)';
+
+      const label = document.createElement('span');
+      label.style.cssText = `font-size: 0.9rem; color: var(--text-primary, #fff);`;
+      label.textContent = this.labelFromFilename(filename);
+
+      item.appendChild(indicator);
+      item.appendChild(label);
+
+      item.addEventListener('click', () => this.navigateFromCurriculum(filename));
+      item.addEventListener('mouseenter', () => { if (!isCurrent) item.style.background = 'var(--bg-secondary, #1a1a1a)'; });
+      item.addEventListener('mouseleave', () => { if (!isCurrent) item.style.background = 'none'; });
+
+      list.appendChild(item);
+    }
+
+    section.appendChild(list);
+    return section;
+  }
+
+  private async navigateFromCurriculum(filename: string): Promise<void> {
+    const fileIndex = this.lessonFiles.indexOf(filename);
+    try {
+      let lesson = this.lessonCache.get(filename);
+      if (!lesson) {
+        lesson = await lessonLoader.loadLesson(filename);
+        this.lessonCache.set(filename, lesson);
+      }
+      this.state = { ...this.state, showingCurriculum: false };
+      if (this.curriculumBtn) this.curriculumBtn.style.color = 'var(--text-secondary, #aaa)';
+      await this.loadLesson(lesson, { fileIndex });
+    } catch (err) {
+      this.renderErrorState(`Could not load lesson: ${(err as Error).message}`);
+    }
+  }
+
+  private lessonIdFromFilename(filename: string): string {
+    return 'lesson-' + filename.replace('.json', '');
+  }
+
+  private labelFromFilename(filename: string): string {
+    // Convert e.g. '01-what-is-sound.json' → 'What is Sound?'
+    // We try the cache first; if not loaded, derive from filename
+    const cached = this.lessonCache.get(filename);
+    if (cached) return cached.title;
+    const slug = filename.replace('.json', '').replace(/^\d+-/, '');
+    return slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
   }
 
   // ── Rendering ─────────────────────────────────────────────────────────────
@@ -578,9 +758,11 @@ export class LessonSidebar {
     lessonProgressStorage.clearProgress();
     lessonTaskValidator.setTask(null);
     this.clearHighlights();
-    this.state = { currentLesson: null, taskComplete: false, isLoadingLesson: false, highlightDismissed: false, patchLoaded: false };
+    this.state = { currentLesson: null, taskComplete: false, isLoadingLesson: false, highlightDismissed: false, patchLoaded: false, showingCurriculum: false };
+    if (this.curriculumBtn) this.curriculumBtn.style.color = 'var(--text-secondary, #aaa)';
     this.manifest = null;
     this.lessonFiles = [];
+    this.lessonCache.clear();
     this.currentIndex = -1;
     this.loadInitialLesson();
   }
