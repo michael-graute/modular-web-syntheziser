@@ -439,8 +439,31 @@ export class LessonSidebar {
 
     // Load patch button — shown when the lesson has a patch that hasn't been loaded yet
     if (lesson.patchFile && !this.state.patchLoaded) {
-      const loadBtn = document.createElement('button');
       const isObserve = lesson.task.type === 'observe' || lesson.task.type === 'free';
+
+      if (isObserve) {
+        const notice = document.createElement('div');
+        notice.setAttribute('role', 'note');
+        notice.style.cssText = `
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          background: rgba(255, 180, 0, 0.08);
+          border: 1px solid rgba(255, 180, 0, 0.35);
+          border-radius: 6px;
+          padding: 10px 12px;
+          font-size: 0.85rem;
+          color: var(--text-secondary, #ccc);
+          line-height: 1.5;
+        `;
+        notice.innerHTML = `
+          <span style="font-size:1.1rem;flex-shrink:0;">🔊</span>
+          <span>This lesson plays audio. <strong style="color:var(--text-primary,#fff);">Check your volume</strong> before continuing.</span>
+        `;
+        this.contentArea.appendChild(notice);
+      }
+
+      const loadBtn = document.createElement('button');
       loadBtn.textContent = isObserve ? '▶ Start listening' : '▶ Load patch';
       loadBtn.setAttribute('aria-label', 'Load the lesson patch onto the canvas');
       loadBtn.style.cssText = `

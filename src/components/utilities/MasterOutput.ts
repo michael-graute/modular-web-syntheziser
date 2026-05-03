@@ -12,6 +12,7 @@ import { audioEngine } from '../../core/AudioEngine';
 export class MasterOutput extends SynthComponent {
   private inputGain: GainNode | null;
   private limiter: DynamicsCompressorNode | null;
+  private _gainBeforeMute = 0.7;
 
   constructor(id: string, position: Position) {
     super(id, ComponentType.MASTER_OUTPUT, 'Master Out', position);
@@ -148,5 +149,20 @@ export class MasterOutput extends SynthComponent {
    */
   getVolumeParam(): AudioParam | null {
     return this.inputGain ? this.inputGain.gain : null;
+  }
+
+  override isBypassable(): boolean {
+    return true;
+  }
+
+  protected override enableBypass(): void {
+    if (!this.inputGain) return;
+    this._gainBeforeMute = this.inputGain.gain.value;
+    this.inputGain.gain.setValueAtTime(0, audioEngine.getContext().currentTime);
+  }
+
+  protected override disableBypass(): void {
+    if (!this.inputGain) return;
+    this.inputGain.gain.setValueAtTime(this._gainBeforeMute, audioEngine.getContext().currentTime);
   }
 }
