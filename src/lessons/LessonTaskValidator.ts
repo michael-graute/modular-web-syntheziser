@@ -79,6 +79,8 @@ export class LessonTaskValidator {
       typeof payload.value === 'number' &&
       Math.abs(payload.value - targetValue) <= tolerance;
 
+    console.log('[LessonValidator] PARAMETER_CHANGED received:', payload, '| task:', { componentType, parameterId, targetValue }, '| match:', typeMatches, paramMatches, valueInRange);
+
     if (typeMatches && paramMatches && valueInRange) {
       this.markComplete();
     }
