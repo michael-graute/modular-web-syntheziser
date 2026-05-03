@@ -178,7 +178,7 @@
 - [x] T062 [P] Create `public/lessons/11-envelope-to-filter.json` — `LessonData`: id `lesson-11-envelope-to-filter`, index 4, title "Envelope to Filter", concept explains routing ADSR to filter cutoff_cv for the classic filter sweep sound, task type `connect`, instruction "Connect the second ADSR's output to the Filter's Cutoff CV input.", `connect: { sourceComponentType: 'adsr-envelope', targetComponentType: 'filter', targetPortId: 'cutoff_cv' }`
 - [x] T063 [P] Create `public/lessons/patches/11-envelope-to-filter.json` — full chain: Keyboard → Oscillator (saw) → Filter (cutoff 300 Hz, resonance 4) → VCA → Master Output; two ADSRs both gated from Keyboard; amp-ADSR → VCA cv pre-wired; filter-ADSR output intentionally NOT connected to filter cutoff_cv (user must make it)
 - [x] T064 [P] Update `public/lessons/manifest.json` — set Module 3 title to "Dynamics & Envelopes" (remove "Coming Soon"), lessons array: `['08-the-envelope.json', '09-attack-and-decay.json', '10-sustain-and-release.json', '11-envelope-to-filter.json']`
-- [ ] T065 Manual browser validation — navigate to Module 3, complete all 4 lessons; verify observe task advances immediately, set-parameter tasks validate within tolerance, envelope-to-filter connect task validates on the correct port
+- [x] T065 Manual browser validation — navigate to Module 3, complete all 4 lessons; verify observe task advances immediately, set-parameter tasks validate within tolerance, envelope-to-filter connect task validates on the correct port
 
 **Checkpoint**: Module 3 fully authored and playable in-app.
 
