@@ -97,13 +97,13 @@ A user connects an LFO to a VCA's CV input for tremolo (rhythmic volume variatio
 - **FR-001**: When an LFO output port is connected to any CV input port, the system MUST automatically compute an appropriate output amplitude for that connection based on the target parameter's minimum and maximum range.
 - **FR-002**: The LFO MUST create one dedicated audio scaling node per active outgoing connection, so that different destinations receive independently scaled signals from the same LFO.
 - **FR-003**: When an LFO connection is removed, the system MUST destroy the corresponding per-connection scaling node and release all associated audio resources.
-- **FR-004**: When LFO Depth is changed while connections are active, ALL active per-connection scaling nodes MUST update their amplitude immediately without reconnecting.
+- **FR-004**: When LFO Depth is changed while connections are active, ALL active per-connection scaling nodes MUST update their amplitude without reconnecting, using a short linear ramp (~5 ms) to avoid click artefacts.
 - **FR-005**: The Filter component MUST expose a "CV Amount" parameter (range 0–100%) that scales all incoming CV signals before they reach the cutoff frequency AudioParam. This replaces the internal fixed-gain scaler introduced as a workaround.
 - **FR-006**: The Filter component's `cutoff_cv` port MUST accept direct AudioParam connections (as it did before the workaround), with the CV Amount parameter controlling the modulation depth.
 - **FR-007**: The ADSR Envelope output MUST remain a normalised 0..1 signal. Scaling to the destination's range is the responsibility of the destination component (via FR-005) or the connecting adapter.
 - **FR-008**: Patch serialisation MUST preserve all LFO connection data such that loading a saved patch reconstructs the correct per-connection scaling without user intervention.
 - **FR-009**: The LFO adapter mechanism MUST be encapsulated so that other future CV sources (e.g. Step Sequencer CV output) can adopt the same pattern with minimal changes.
-- **FR-010**: The internal `cutoffCvScaler` GainNode workaround in `Filter.ts` MUST be removed. The `SynthComponent` base class fallback path (`getInputNodeByPort` for CV) introduced for this workaround MAY be retained if it has other valid uses, but MUST NOT be the primary path for Filter cutoff modulation.
+- **FR-010**: The internal `cutoffCvScaler` GainNode workaround in `Filter.ts` MUST be removed. The `SynthComponent` base class fallback path (`getInputNodeByPort` for CV) MUST be retained as a general-purpose escape hatch for future components that require AudioNode-level CV routing, but MUST NOT be the primary path for Filter cutoff modulation.
 
 ### Key Entities
 
@@ -134,3 +134,12 @@ A user connects an LFO to a VCA's CV input for tremolo (rhythmic volume variatio
 - For parameters where the centre of modulation should be the current knob value (e.g. filter cutoff), the base value stays on `filterNode.frequency.value` and the CV adds as an offset — this is the existing Web Audio model and does not change.
 - Patch files for the guided lessons (L11 envelope-to-filter) will need the Filter's new CV Amount parameter added with a non-zero default value so the ADSR sweep remains audible after the workaround is removed.
 - The Step Sequencer's CV output and other non-LFO CV sources are out of scope for this feature. They continue to connect as plain AudioParam additions.
+- **ADSR modulation direction**: The ADSR (0..1 unipolar source) drives the filter cutoff in the additive direction only — the envelope opens the filter above its base cutoff position. At CV Amount 100% the cutoff rises from the base value up to the maximum audible frequency; it never sweeps below the base cutoff. No DC offset recentring node is required.
+
+## Clarifications
+
+### Session 2026-05-04
+
+- Q: Should the ADSR (0..1 unipolar source) sweep the filter cutoff additively above its base (classic "opens the filter" behaviour), or should it recentre to sweep ±half_range around the base? → A: Unipolar additive (Option A) — ADSR adds 0..full_range above the base cutoff, consistent with classic synthesiser behaviour.
+- Q: When LFO Depth changes while connections are active, should scaling nodes update via hard `setValueAtTime` (instant, may click) or a short linear ramp (~5 ms, click-free)? → A: Short linear ramp (~5 ms) — click-free depth changes, imperceptible lag.
+- Q: Should the `SynthComponent` base class `getInputNodeByPort` CV fallback be retained as a general-purpose escape hatch or removed entirely? → A: Retain as escape hatch for future components needing AudioNode-level CV routing; must not be the primary path for Filter cutoff.
