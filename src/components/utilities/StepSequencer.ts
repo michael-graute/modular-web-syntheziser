@@ -285,7 +285,7 @@ export class StepSequencer extends SynthComponent implements TempoAware {
   /**
    * Get AudioParam for CV input (override)
    */
-  protected override getAudioParamForInput(inputId: string): AudioParam | null {
+  override getAudioParamForInput(inputId: string): AudioParam | null {
     switch (inputId) {
       case 'arpeggiate':
         return this.arpGateInputNode?.gain || null;

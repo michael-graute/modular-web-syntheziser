@@ -249,10 +249,11 @@ export class CanvasComponent {
         this.controls.push(dropdown);
       }
 
-      // Knobs for cutoff and resonance - positioned below dropdown
+      // Knobs for cutoff, resonance, and CV amount - positioned below dropdown
       const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
       const knobSize = COMPONENT.KNOB_SIZE;
-      const spacing = (this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2 - knobSize * 2) / 3;
+      const cvAmountParam = this.synthComponent.getParameter('cvAmount');
+      const spacing = (this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2 - knobSize * 3) / 4;
 
       if (cutoffParam) {
         const knob = new Knob(
@@ -270,6 +271,16 @@ export class CanvasComponent {
           knobY,
           knobSize,
           resonanceParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (cvAmountParam) {
+        const knob = new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 3 + knobSize * 2,
+          knobY,
+          knobSize,
+          cvAmountParam
         );
         this.controls.push(knob);
       }

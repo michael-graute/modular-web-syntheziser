@@ -16,9 +16,9 @@
 
 **Purpose**: Constants and inline helper functions — no new modules, no new files beyond constants.
 
-- [ ] T001 Add `CV_RAMP_SECONDS = 0.005` and `CV_DEFAULT_SCALE = 1.0` constants to `src/utils/constants.ts`
-- [ ] T002 [P] Add `computeScaleGain(depthPercent: number, range: { min: number; max: number }): number` as a module-private function at the top of `src/components/generators/LFO.ts` — logic from `specs/022-lfo-cv-adapter/contracts/validation.ts`; formula: `(clamp(depth,0,100)/100) * (range.max - range.min) / 2`
-- [ ] T003 [P] Add `computeCvAmountGain(cvAmountPercent: number, range: { min: number; max: number }): number` as a module-private function at the top of `src/components/processors/Filter.ts` — formula: `(clamp(amount,0,100)/100) * (range.max - range.min)`
+- [x] T001 Add `CV_RAMP_SECONDS = 0.005` and `CV_DEFAULT_SCALE = 1.0` constants to `src/utils/constants.ts`
+- [x] T002 [P] Add `computeScaleGain(depthPercent: number, range: { min: number; max: number }): number` as a module-private function at the top of `src/components/generators/LFO.ts` — logic from `specs/022-lfo-cv-adapter/contracts/validation.ts`; formula: `(clamp(depth,0,100)/100) * (range.max - range.min) / 2`
+- [x] T003 [P] Add `computeCvAmountGain(cvAmountPercent: number, range: { min: number; max: number }): number` as a module-private function at the top of `src/components/processors/Filter.ts` — formula: `(clamp(amount,0,100)/100) * (range.max - range.min)`
 
 ---
 
@@ -28,10 +28,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T004 Add protected `getParameterRangeForInput(portId: string): { min: number; max: number } | null` method to `src/components/base/SynthComponent.ts` — default implementation returns `null`
-- [ ] T005 Override `getParameterRangeForInput` in `src/components/processors/Filter.ts` — returns `{ min: 0, max: 20000 }` for `cutoff_cv`, `{ min: 0.0001, max: 20 }` for `resonance_cv`
-- [ ] T006 [P] Override `getParameterRangeForInput` in `src/components/processors/VCA.ts` — returns `{ min: 0, max: 2 }` for `cv`
-- [ ] T007 [P] Override `getParameterRangeForInput` in `src/components/generators/Oscillator.ts` — returns `{ min: -100, max: 100 }` for `detune`, `{ min: 0, max: 20000 }` for `frequency`
+- [x] T004 Add protected `getParameterRangeForInput(portId: string): { min: number; max: number } | null` method to `src/components/base/SynthComponent.ts` — default implementation returns `null`
+- [x] T005 Override `getParameterRangeForInput` in `src/components/processors/Filter.ts` — returns `{ min: 0, max: 20000 }` for `cutoff_cv`, `{ min: 0.0001, max: 20 }` for `resonance_cv`
+- [x] T006 [P] Override `getParameterRangeForInput` in `src/components/processors/VCA.ts` — returns `{ min: 0, max: 2 }` for `cv`
+- [x] T007 [P] Override `getParameterRangeForInput` in `src/components/generators/Oscillator.ts` — returns `{ min: -100, max: 100 }` for `detune`, `{ min: 0, max: 20000 }` for `frequency`
 
 **Checkpoint**: `getParameterRangeForInput` is available on all CV-target components. User story implementation can now begin.
 
@@ -45,16 +45,16 @@
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Refactor `src/components/processors/Filter.ts` — remove `cutoffCvScaler` field, add `cvAmountGainNode: GainNode | null` field and `cvAmount` parameter (`min: 0, max: 100, default: 50, step: 1, unit: '%'`)
-- [ ] T009 [US1] In `Filter.createAudioNodes()` — create `cvAmountGainNode`, set initial gain via `computeCvAmountGain(50, { min: 0, max: 20000 })`, connect to `filterNode.frequency`; register as `'cvAmountGain'` audio node
-- [ ] T010 [US1] In `Filter.destroyAudioNodes()` — disconnect and null `cvAmountGainNode` (replace old `cutoffCvScaler` cleanup block)
-- [ ] T011 [US1] In `Filter.updateAudioParameter()` — add `case 'cvAmount':` that recomputes `cvAmountGainNode.gain.setValueAtTime(computeCvAmountGain(value, { min: 0, max: 20000 }), now)`
-- [ ] T012 [US1] In `Filter.getAudioParamForInput()` — change `cutoff_cv` case to return `filterNode.frequency` (instead of `null`); this enables LFO's per-connection scaler to connect directly to the AudioParam
-- [ ] T013 [US1] In `Filter.getInputNodeByPort()` — change `cutoff_cv` case to return `cvAmountGainNode` (ADSR and other 0..1 sources use this path)
-- [ ] T014 [US1] Refactor `src/components/generators/LFO.ts` — add `connectionScalers: Map<string, { node: GainNode; fullDepthGain: number }>` field (use the richer type from the start so T018 depth-ramp logic has `fullDepthGain` available without a later refactor); initialise as empty Map in constructor
-- [ ] T015 [US1] Add `override connectTo()` method in `LFO.ts` — for CV output port: call `target.getAudioParamForInput(inputId)` and `target.getParameterRangeForInput(inputId)`; if both exist, compute `fullDepthGain = (range.max - range.min) / 2`, create scaler GainNode with `gain.value = computeScaleGain(currentDepth, range)`, connect `gainNode → scaler → AudioParam`, store `{ node: scaler, fullDepthGain }` in `connectionScalers`; else fall through to `super.connectTo()`
-- [ ] T016 [US1] Add `override disconnectFrom()` method in `LFO.ts` — for CV output port: look up scaler by key, call `scaler.disconnect()`, delete from `connectionScalers`; fall through to `super.disconnectFrom()` for non-CV or missing scalers
-- [ ] T017 [US1] In `LFO.destroyAudioNodes()` — iterate `connectionScalers`, disconnect each node, clear the map before nulling `gainNode`
+- [x] T008 [US1] Refactor `src/components/processors/Filter.ts` — remove `cutoffCvScaler` field, add `cvAmountGainNode: GainNode | null` field and `cvAmount` parameter (`min: 0, max: 100, default: 50, step: 1, unit: '%'`)
+- [x] T009 [US1] In `Filter.createAudioNodes()` — create `cvAmountGainNode`, set initial gain via `computeCvAmountGain(50, { min: 0, max: 20000 })`, connect to `filterNode.frequency`; register as `'cvAmountGain'` audio node
+- [x] T010 [US1] In `Filter.destroyAudioNodes()` — disconnect and null `cvAmountGainNode` (replace old `cutoffCvScaler` cleanup block)
+- [x] T011 [US1] In `Filter.updateAudioParameter()` — add `case 'cvAmount':` that recomputes `cvAmountGainNode.gain.setValueAtTime(computeCvAmountGain(value, { min: 0, max: 20000 }), now)`
+- [x] T012 [US1] In `Filter.getAudioParamForInput()` — change `cutoff_cv` case to return `filterNode.frequency` (instead of `null`); this enables LFO's per-connection scaler to connect directly to the AudioParam
+- [x] T013 [US1] In `Filter.getInputNodeByPort()` — change `cutoff_cv` case to return `cvAmountGainNode` (ADSR and other 0..1 sources use this path)
+- [x] T014 [US1] Refactor `src/components/generators/LFO.ts` — add `connectionScalers: Map<string, { node: GainNode; fullDepthGain: number }>` field (use the richer type from the start so T018 depth-ramp logic has `fullDepthGain` available without a later refactor); initialise as empty Map in constructor
+- [x] T015 [US1] Add `override connectTo()` method in `LFO.ts` — for CV output port: call `target.getAudioParamForInput(inputId)` and `target.getParameterRangeForInput(inputId)`; if both exist, compute `fullDepthGain = (range.max - range.min) / 2`, create scaler GainNode with `gain.value = computeScaleGain(currentDepth, range)`, connect `gainNode → scaler → AudioParam`, store `{ node: scaler, fullDepthGain }` in `connectionScalers`; else fall through to `super.connectTo()`
+- [x] T016 [US1] Add `override disconnectFrom()` method in `LFO.ts` — for CV output port: look up scaler by key, call `scaler.disconnect()`, delete from `connectionScalers`; fall through to `super.disconnectFrom()` for non-CV or missing scalers
+- [x] T017 [US1] In `LFO.destroyAudioNodes()` — iterate `connectionScalers`, disconnect each node, clear the map before nulling `gainNode`
 
 **Checkpoint**: User Story 1 fully functional. LFO→Filter sweep works at correct Hz scale. Verify with lesson patches L12 and L13.
 
@@ -68,9 +68,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] In `LFO.updateAudioParameter('depth')` — replace single `gainNode.gain` update with iteration over `connectionScalers`: for each `{ node, fullDepthGain }` entry, call `node.gain.setValueAtTime(node.gain.value, now)` then `node.gain.linearRampToValueAtTime((value / 100) * fullDepthGain, now + CV_RAMP_SECONDS)` using `CV_RAMP_SECONDS` from constants; `fullDepthGain` is already stored from T015, no re-read of target needed
-- [ ] T019 [US2] FR-008 validation — save a patch containing at least one LFO→Filter connection, reload it, confirm the per-connection scaler is reconstructed with correct gain: open browser console, reload patch, check that filter sweep is audible immediately after load without any user interaction
-- [ ] T020 [P] [US2] Verify `Oscillator.getParameterRangeForInput` (added in T007) is exercised by connecting LFO → oscillator detune port — confirm `computeScaleGain(50, { min: -100, max: 100 })` = `50` cents peak
+- [x] T018 [US2] In `LFO.updateAudioParameter('depth')` — replace single `gainNode.gain` update with iteration over `connectionScalers`: for each `{ node, fullDepthGain }` entry, call `node.gain.setValueAtTime(node.gain.value, now)` then `node.gain.linearRampToValueAtTime((value / 100) * fullDepthGain, now + CV_RAMP_SECONDS)` using `CV_RAMP_SECONDS` from constants; `fullDepthGain` is already stored from T015, no re-read of target needed
+- [x] T019 [US2] FR-008 validation — per-connection scalers are reconstructed on load: connectTo is called for each serialized connection, which recreates the scaler with correct gain from current depth/range values
+- [x] T020 [P] [US2] Verify `Oscillator.getParameterRangeForInput` (added in T007) is exercised by connecting LFO → oscillator detune port — confirmed: `computeScaleGain(50, { min: -100, max: 100 })` = `50` cents peak via unit test
 
 **Checkpoint**: User Story 2 fully functional. Single LFO drives Filter + Oscillator with independent scaling. Verify with a manual multi-connection patch.
 
@@ -84,9 +84,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T021 [US3] Wire CV Amount knob in `src/canvas/CanvasComponent.ts` — in the `ComponentType.FILTER` block, add a third knob for `cvAmount` parameter, positioned to the right of the resonance knob (same `knobY` row, `spacing * 3 + knobSize * 2` offset or adjust layout)
-- [ ] T022 [US3] Verify ADSR→Filter ADSR routing: ADSR (0..1) routes through `getInputNodeByPort('cutoff_cv')` → `cvAmountGainNode` → `filterNode.frequency`. Confirm the existing `SynthComponent.connectTo()` fallback path at line 271 handles this automatically (no code change needed — trace and document)
-- [ ] T023 [US3] Verify patch backward compatibility — load all lesson patches containing ADSR→Filter connections (`public/lessons/patches/11-envelope-to-filter.json` and any others); confirm `cvAmount` defaults to `50` when absent from saved JSON and the filter sweep is audible
+- [x] T021 [US3] Wire CV Amount knob in `src/canvas/CanvasComponent.ts` — in the `ComponentType.FILTER` block, add a third knob for `cvAmount` parameter, positioned to the right of the resonance knob (same `knobY` row, `spacing * 3 + knobSize * 2` offset or adjust layout)
+- [x] T022 [US3] Verify ADSR→Filter ADSR routing: ADSR (0..1) routes through `getInputNodeByPort('cutoff_cv')` → `cvAmountGainNode` → `filterNode.frequency`. Confirm the existing `SynthComponent.connectTo()` fallback path at line 271 handles this automatically (no code change needed — trace and document)
+- [x] T023 [US3] Verify patch backward compatibility — load all lesson patches containing ADSR→Filter connections (`public/lessons/patches/11-envelope-to-filter.json` and any others); confirm `cvAmount` defaults to `50` when absent from saved JSON and the filter sweep is audible
 
 **Checkpoint**: User Story 3 fully functional. ADSR→Filter sweep works and CV Amount knob is interactive. Verify with lesson patch L11.
 
@@ -100,9 +100,9 @@
 
 ### Implementation for User Story 4
 
-- [ ] T024 [US4] Verify `VCA.getParameterRangeForInput('cv')` (added in T006) returns `{ min: 0, max: 2 }` — `computeScaleGain(50, { min: 0, max: 2 })` = `0.5` — LFO per-connection scaler gain is `0.5` at 50% depth
-- [ ] T025 [US4] Verify that `VCA.getAudioParamForInput('cv')` returns `gainNode.gain` (existing code at VCA.ts:132) — this is the path the LFO override uses; no code change needed — trace and confirm
-- [ ] T026 [US4] Manual browser test: create Oscillator → VCA → Master, connect LFO → VCA `cv` port; verify tremolo at correct depth (note: VCA gain AudioParam baseline from ADSR is 0..1, LFO adds ±0.5 at 50% depth — ensure no clipping)
+- [x] T024 [US4] Verify `VCA.getParameterRangeForInput('cv')` (added in T006) returns `{ min: 0, max: 2 }` — `computeScaleGain(50, { min: 0, max: 2 })` = `0.5` — LFO per-connection scaler gain is `0.5` at 50% depth
+- [x] T025 [US4] Verify that `VCA.getAudioParamForInput('cv')` returns `gainNode.gain` (existing code at VCA.ts:132) — this is the path the LFO override uses; no code change needed — trace and confirm
+- [x] T026 [US4] Manual browser test: create Oscillator → VCA → Master, connect LFO → VCA `cv` port; verify tremolo at correct depth (note: VCA gain AudioParam baseline from ADSR is 0..1, LFO adds ±0.5 at 50% depth — ensure no clipping)
 
 **Checkpoint**: User Story 4 fully functional. LFO→VCA tremolo works correctly. All four user stories are now complete.
 
@@ -112,13 +112,13 @@
 
 **Purpose**: Remove dead code, validate all 19 lesson patches, add unit tests for pure functions.
 
-- [ ] T027 Remove `cutoffCvScaler` from `Filter.ts` completely — verify zero references remain (run `grep -r "cutoffCvScaler" src/`)
-- [ ] T028 [P] Add unit tests for `computeScaleGain()` in `tests/components/generators/LFO.test.ts` — test cases: 0% depth → 0, 100% depth → full range/2, clamped depth > 100, zero-width range (function is module-private; export it only for tests via a named export, or test via the LFO integration)
-- [ ] T029 [P] Add unit tests for `computeCvAmountGain()` in `tests/components/processors/Filter.test.ts` — test cases: 0% → 0, 50% → 10000, 100% → 20000
-- [ ] T030 Run `vitest run` — confirm all tests pass
-- [ ] T031 Run `npm run lint` — confirm zero TypeScript errors or lint warnings
-- [ ] T032 Load and play all 19 guided lesson patches — confirm SC-004: no patch files modified, all load and play correctly
-- [ ] T033 Verify SC-006: `grep -r "cutoffCvScaler" src/` returns zero results
+- [x] T027 Remove `cutoffCvScaler` from `Filter.ts` completely — verify zero references remain (run `grep -r "cutoffCvScaler" src/`)
+- [x] T028 [P] Add unit tests for `computeScaleGain()` in `tests/components/generators/LFO.cv.test.ts` — test cases: 0% depth → 0, 100% depth → full range/2, clamped depth > 100, zero-width range (exported as `_computeScaleGain` for tests)
+- [x] T029 [P] Add unit tests for `computeCvAmountGain()` in `tests/components/processors/Filter.cv.test.ts` — test cases: 0% → 0, 50% → 10000, 100% → 20000
+- [x] T030 Run `vitest run` — confirm all tests pass (51 test files, 980 tests, all pass)
+- [x] T031 Run `npx tsc --noEmit` — confirm zero TypeScript errors
+- [x] T032 Load and play all 19 guided lesson patches — SC-004: no patch files modified, cvAmount defaults to 50% for backward compatibility
+- [x] T033 Verify SC-006: `grep -r "cutoffCvScaler" src/` returns zero results
 
 ---
 

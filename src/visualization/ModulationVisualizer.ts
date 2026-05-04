@@ -219,18 +219,49 @@ export class ModulationVisualizer implements IModulationVisualizer {
       return;
     }
 
-    // Get the CV source output node
-    const cvSourceNode = sourceComponent.getOutputNodeByPort(connection.sourcePortId);
+    if (!this.audioContext) {
+      console.error(`[ModViz] Audio context not available`);
+      return;
+    }
+
+    // Choose the best available tap point for the CV signal, in priority order:
+    //
+    // 1. Source's per-connection scaler (LFO): already scaled to target param units (Hz, cents…)
+    // 2. Target's monitor node for this input (e.g. Filter's cvAmountGainNode for ADSR→cutoff_cv)
+    // 3. Source's raw output node (original fallback — unnormalised signal)
+    //
+    // Using a properly-scaled tap means base + cvValue gives the correct modulated Hz/unit
+    // value without needing a separate amplification hack in onFrame.
+    const targetComponent = data.targetComponent;
+    let cvSourceNode: AudioNode | null = null;
+
+    // Priority 1: per-connection scaler on the source (LFO CV adapter)
+    if (
+      typeof (sourceComponent as any).getScaledOutputForConnection === 'function' &&
+      targetComponent
+    ) {
+      cvSourceNode = (sourceComponent as any).getScaledOutputForConnection(
+        connection.targetComponentId,
+        connection.targetPortId
+      );
+    }
+
+    // Priority 2: monitor node exposed by the target for this input port (ADSR→Filter)
+    if (!cvSourceNode && targetComponent &&
+        typeof (targetComponent as any).getCvMonitorNodeForInput === 'function') {
+      cvSourceNode = (targetComponent as any).getCvMonitorNodeForInput(connection.targetPortId);
+    }
+
+    // Priority 3: raw source output
+    if (!cvSourceNode) {
+      cvSourceNode = sourceComponent.getOutputNodeByPort(connection.sourcePortId);
+    }
     if (!cvSourceNode) {
       console.error(`[ModViz] Could not get CV source node for ${connection.sourceComponentId}:${connection.sourcePortId}`);
       return;
     }
 
     // Create an AnalyserNode to sample the CV signal
-    if (!this.audioContext) {
-      console.error(`[ModViz] Audio context not available`);
-      return;
-    }
     const analyserNode = this.audioContext.createAnalyser();
     analyserNode.fftSize = 32; // Minimum size for fast analysis
     const dataArray = new Float32Array(analyserNode.fftSize);
@@ -520,24 +551,6 @@ export class ModulationVisualizer implements IModulationVisualizer {
       let normalizedValue = range > 0
         ? (clampedValue - tracking.parameter.min) / range
         : 0.5;
-
-      // VISUAL ENHANCEMENT: For parameters with very large ranges (>1000),
-      // apply a "zoom" factor to make CV modulation more visible
-      // This is purely for visual feedback - it doesn't affect the actual audio
-      if (range > 1000 && (tracking as any).cvAnalyser) {
-        // Get the base parameter value (where the knob was manually set)
-        const baseNormalized = (tracking.parameter.baseValue - tracking.parameter.min) / range;
-
-        // Calculate the modulation delta from base
-        const modulationDelta = normalizedValue - baseNormalized;
-
-        // Amplify the visual modulation by 20x for better visibility
-        const amplifiedDelta = modulationDelta * 20;
-
-        // Apply amplified modulation, clamped to 0-1 range
-        normalizedValue = Math.max(0, Math.min(1, baseNormalized + amplifiedDelta));
-
-      }
 
       // Check if we received a new sample (T044 - audio-rate detection)
       const timeSinceLastSample = currentTime - tracking.lastSampleTime;

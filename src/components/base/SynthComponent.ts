@@ -321,9 +321,18 @@ export abstract class SynthComponent {
   /**
    * Get AudioParam for a specific input port (override in subclasses for CV inputs)
    */
-  protected getAudioParamForInput(_inputId: string): AudioParam | null {
+  getAudioParamForInput(_inputId: string): AudioParam | null {
     // Default implementation returns null
     // Subclasses should override to provide AudioParams for CV inputs
+    return null;
+  }
+
+  /**
+   * Get the parameter range (min/max) for a given CV input port.
+   * Used by the LFO adapter to compute per-connection scaling.
+   * Subclasses override this for each CV input port they expose.
+   */
+  getParameterRangeForInput(_portId: string): { min: number; max: number } | null {
     return null;
   }
 

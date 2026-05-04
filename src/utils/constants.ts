@@ -103,6 +103,14 @@ export const LFO = {
 } as const;
 
 /**
+ * CV adapter constants
+ */
+export const CV = {
+  RAMP_SECONDS: 0.005, // 5 ms linear ramp for click-free gain changes
+  DEFAULT_SCALE: 1.0,  // Fallback scale when no parameter range is available
+} as const;
+
+/**
  * Effect constants
  */
 export const EFFECTS = {

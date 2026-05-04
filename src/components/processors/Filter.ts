@@ -12,6 +12,22 @@ import { AUDIO } from '../../utils/constants';
  */
 const FILTER_TYPE_LIST: BiquadFilterType[] = ['lowpass', 'highpass', 'bandpass', 'notch'];
 
+const CUTOFF_RANGE = { min: AUDIO.MIN_FREQUENCY, max: AUDIO.MAX_FREQUENCY };
+
+/**
+ * Compute the gain for the Filter's cvAmountGainNode.
+ * Scales a unipolar 0..1 CV signal (e.g. ADSR) into Hz.
+ * At cvAmountPercent=100%, a full 0..1 signal maps to 0..(paramMax − paramMin).
+ * Uses full paramRange (not ÷2) because ADSR is unipolar, unlike the bipolar LFO.
+ */
+function computeCvAmountGain(cvAmountPercent: number, range: { min: number; max: number }): number {
+  const clamped = Math.max(0, Math.min(100, cvAmountPercent));
+  return (clamped / 100) * (range.max - range.min);
+}
+
+// Exported for unit tests only — not part of the public API
+export { computeCvAmountGain as _computeCvAmountGain };
+
 /**
  * Filter component for audio processing
  */
@@ -19,7 +35,7 @@ export class Filter extends SynthComponent {
   private inputGain: GainNode | null;
   private filterNode: BiquadFilterNode | null;
   private outputGain: GainNode | null;
-  private cutoffCvScaler: GainNode | null;
+  private cvAmountGainNode: GainNode | null;
 
   constructor(id: string, position: Position) {
     super(id, ComponentType.FILTER, 'Filter', position);
@@ -35,11 +51,13 @@ export class Filter extends SynthComponent {
     this.addParameter('type', 'Type', 0, 0, 3, 1, '');
     this.addParameter('cutoff', 'Cutoff', 1000, AUDIO.MIN_FREQUENCY, AUDIO.MAX_FREQUENCY, 1, 'Hz');
     this.addParameter('resonance', 'Resonance', 1, AUDIO.MIN_Q, AUDIO.MAX_Q, 0.01, '');
+    // CV Amount: scales unipolar CV sources (ADSR 0..1) into Hz; default 50% gives audible sweep
+    this.addParameter('cvAmount', 'CV Amount', 50, 0, 100, 1, '%');
 
     this.inputGain = null;
     this.filterNode = null;
     this.outputGain = null;
-    this.cutoffCvScaler = null;
+    this.cvAmountGainNode = null;
   }
 
   /**
@@ -79,16 +97,14 @@ export class Filter extends SynthComponent {
       resonanceParam.linkAudioParam(this.filterNode.Q);
     }
 
-    // Scaler: CV sources (0–1 range) connect here as an AudioNode input.
-    // The scaler multiplies the signal by its gain before adding to filterNode.frequency.
-    // gain = 5000 means a full 0–1 envelope sweeps the cutoff up by 5000 Hz.
-    // CV scaler: multiplies normalised −1..+1 CV (LFO, ADSR) into Hz.
-    // Gain 4000 → full-depth LFO sweeps ±4000 Hz; ADSR 0..1 sweeps 0..4000 Hz.
-    // Base cutoff is set on filterNode.frequency.value so the CV adds as an offset.
-    // Lesson patches keep base cutoff ≥ 500 Hz so the negative swing never hits 0.
-    this.cutoffCvScaler = ctx.createGain();
-    this.cutoffCvScaler.gain.value = 4000;
-    this.cutoffCvScaler.connect(this.filterNode.frequency);
+    // CV Amount GainNode: unipolar CV sources (ADSR 0..1) connect here.
+    // The gain scales 0..1 signals into Hz — at 50% CV Amount, full ADSR adds 0..10000 Hz.
+    // LFO connections bypass this node and connect directly to filterNode.frequency
+    // via their own per-connection scaler (see LFO.connectTo override).
+    const cvAmount = this.getParameter('cvAmount')?.getValue() ?? 50;
+    this.cvAmountGainNode = ctx.createGain();
+    this.cvAmountGainNode.gain.value = computeCvAmountGain(cvAmount, CUTOFF_RANGE);
+    this.cvAmountGainNode.connect(this.filterNode.frequency);
 
     // Connect: input -> filter -> output
     this.inputGain.connect(this.filterNode);
@@ -98,7 +114,7 @@ export class Filter extends SynthComponent {
     this.registerAudioNode('inputGain', this.inputGain);
     this.registerAudioNode('filter', this.filterNode);
     this.registerAudioNode('outputGain', this.outputGain);
-    this.registerAudioNode('cutoffCvScaler', this.cutoffCvScaler);
+    this.registerAudioNode('cvAmountGain', this.cvAmountGainNode);
 
     console.log(`Filter ${this.id} created with type: ${this.filterNode.type}`);
   }
@@ -107,9 +123,9 @@ export class Filter extends SynthComponent {
    * Destroy audio nodes
    */
   destroyAudioNodes(): void {
-    if (this.cutoffCvScaler) {
-      this.cutoffCvScaler.disconnect();
-      this.cutoffCvScaler = null;
+    if (this.cvAmountGainNode) {
+      this.cvAmountGainNode.disconnect();
+      this.cvAmountGainNode = null;
     }
 
     if (this.filterNode) {
@@ -143,7 +159,6 @@ export class Filter extends SynthComponent {
 
     switch (parameterId) {
       case 'type':
-        // Change filter type
         const typeIndex = Math.round(value);
         this.filterNode.type = FILTER_TYPE_LIST[typeIndex] || 'lowpass';
         break;
@@ -152,6 +167,14 @@ export class Filter extends SynthComponent {
         break;
       case 'resonance':
         this.filterNode.Q.setValueAtTime(value, now);
+        break;
+      case 'cvAmount':
+        if (this.cvAmountGainNode) {
+          this.cvAmountGainNode.gain.setValueAtTime(
+            computeCvAmountGain(value, CUTOFF_RANGE),
+            now
+          );
+        }
         break;
     }
   }
@@ -193,13 +216,19 @@ export class Filter extends SynthComponent {
   }
 
   /**
-   * Get AudioParam for CV input (override from base class)
+   * Get AudioParam for CV input (override from base class).
+   *
+   * cutoff_cv intentionally returns null so the base-class connectTo() falls
+   * through to getInputNodeByPort() → cvAmountGainNode for unipolar sources
+   * (ADSR, etc.).  The LFO's connectTo() override calls getDirectCutoffParam()
+   * instead to bypass cvAmountGainNode with its own per-connection scaler.
+   *
+   * resonance_cv still returns an AudioParam directly — no scaling node needed.
    */
-  protected override getAudioParamForInput(inputId: string): AudioParam | null {
+  override getAudioParamForInput(inputId: string): AudioParam | null {
     switch (inputId) {
       case 'cutoff_cv':
-        // Handled via getInputNodeByPort — CV routes through a scaling GainNode
-        return null;
+        return null; // force routing through cvAmountGainNode for unipolar sources
       case 'resonance_cv':
         return this.getResonanceParam();
       default:
@@ -207,11 +236,50 @@ export class Filter extends SynthComponent {
     }
   }
 
+  /**
+   * Direct access to filterNode.frequency for CV sources that bring their own
+   * scaling (e.g. LFO per-connection scaler).  Only call this when you are
+   * certain the signal is already scaled to Hz.
+   */
+  getDirectCutoffParam(): AudioParam | null {
+    return this.getCutoffParam();
+  }
+
+  /**
+   * Get AudioNode for CV input (override from base class).
+   * Unipolar CV sources (ADSR 0..1) use this path — they connect to
+   * cvAmountGainNode which scales into Hz before reaching filterNode.frequency.
+   */
   protected override getInputNodeByPort(portId: string): AudioNode | null {
     if (portId === 'cutoff_cv') {
-      return this.cutoffCvScaler;
+      return this.cvAmountGainNode;
     }
     return super.getInputNodeByPort(portId);
+  }
+
+  /**
+   * Return a monitoring tap node for a given input port.
+   * The ModulationVisualizer can connect an AnalyserNode here to read the
+   * already-scaled signal (in Hz) rather than the raw 0..1 CV source.
+   * For cutoff_cv the tap point is cvAmountGainNode — its output carries
+   * the ADSR signal scaled to Hz by the CV Amount setting.
+   */
+  getCvMonitorNodeForInput(portId: string): AudioNode | null {
+    if (portId === 'cutoff_cv') {
+      return this.cvAmountGainNode;
+    }
+    return null;
+  }
+
+  override getParameterRangeForInput(portId: string): { min: number; max: number } | null {
+    switch (portId) {
+      case 'cutoff_cv':
+        return CUTOFF_RANGE;
+      case 'resonance_cv':
+        return { min: AUDIO.MIN_Q, max: AUDIO.MAX_Q };
+      default:
+        return null;
+    }
   }
 
   /**

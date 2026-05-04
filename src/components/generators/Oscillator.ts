@@ -169,12 +169,23 @@ export class Oscillator extends SynthComponent {
   /**
    * Get AudioParam for CV input (override from base class)
    */
-  protected override getAudioParamForInput(inputId: string): AudioParam | null {
+  override getAudioParamForInput(inputId: string): AudioParam | null {
     switch (inputId) {
       case 'frequency':
         return this.getFrequencyParam();
       case 'detune':
         return this.getDetuneParam();
+      default:
+        return null;
+    }
+  }
+
+  override getParameterRangeForInput(portId: string): { min: number; max: number } | null {
+    switch (portId) {
+      case 'frequency':
+        return { min: AUDIO.MIN_FREQUENCY, max: AUDIO.MAX_FREQUENCY };
+      case 'detune':
+        return { min: AUDIO.MIN_DETUNE, max: AUDIO.MAX_DETUNE };
       default:
         return null;
     }
