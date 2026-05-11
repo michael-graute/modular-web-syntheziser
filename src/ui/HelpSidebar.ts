@@ -197,6 +197,7 @@ export class HelpSidebar {
       { id: 'patches', label: 'Patches' },
       { id: 'shortcuts', label: 'Shortcuts' },
       { id: 'tips', label: 'Tips & Tricks' },
+      { id: 'guided-lessons', label: 'Guided Lessons' },
     ];
 
     sections.forEach(section => {
@@ -388,6 +389,8 @@ export class HelpSidebar {
         return this.getShortcutsContent();
       case 'tips':
         return this.getTipsContent();
+      case 'guided-lessons':
+        return this.getGuidedLessonsContent();
       default:
         return '<h2>Section not found</h2>';
     }
@@ -1197,6 +1200,95 @@ export class HelpSidebar {
         <p style="color: var(--text-secondary, #cccccc); margin: 0;">
           Experiment! The best way to learn synthesis is by trying different combinations of components and connections.
           There are no wrong answers in sound design.
+        </p>
+      </div>
+    `;
+  }
+
+  /**
+   * Guided Lessons section content
+   */
+  private getGuidedLessonsContent(): string {
+    return `
+      <h2 style="margin-top: 0; color: var(--text-primary, #ffffff);">Guided Lessons</h2>
+
+      <p style="color: var(--text-secondary, #cccccc);">
+        Guided Lessons is a structured, in-app learning mode that walks you through the fundamentals of audio synthesis — step by step, hands-on, at your own pace.
+      </p>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Getting Started</h3>
+      <ol style="color: var(--text-secondary, #cccccc);">
+        <li style="margin-bottom: 12px;">
+          <strong style="color: var(--text-primary, #ffffff);">Open Lesson Mode:</strong>
+          Click the <strong style="color: var(--text-primary, #ffffff);">Learn</strong> button in the top toolbar.
+          The Lesson Sidebar slides in from the right.
+        </li>
+        <li style="margin-bottom: 12px;">
+          <strong style="color: var(--text-primary, #ffffff);">Follow the lesson:</strong>
+          Each lesson loads a prepared patch onto the canvas, explains a concept, and gives you a task to complete.
+        </li>
+        <li style="margin-bottom: 12px;">
+          <strong style="color: var(--text-primary, #ffffff);">Complete the task:</strong>
+          Follow the task instruction — make a connection, change a parameter, or simply observe — then click <strong>Next</strong> to advance.
+        </li>
+        <li style="margin-bottom: 12px;">
+          <strong style="color: var(--text-primary, #ffffff);">Experiment freely:</strong>
+          The canvas is always live. You can add components and patch freely during any lesson; extra connections do not affect task validation.
+        </li>
+      </ol>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Curriculum Overview</h3>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Click the list icon inside the Lesson Sidebar to open the curriculum overview. All modules and lessons are visible with completion indicators:
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong style="color: var(--text-primary, #ffffff);">✓ Completed</strong> — lesson finished</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">▶ Current</strong> — lesson in progress (highlighted)</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">Not started</strong> — dimmed but always clickable</li>
+      </ul>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Lessons are never hard-locked — you can jump to any lesson at any time.
+      </p>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Task Types</h3>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li style="margin-bottom: 8px;">
+          <strong style="color: var(--text-primary, #ffffff);">Connect</strong> — draw a specific cable connection on the canvas; the task auto-completes the moment the correct connection is made.
+        </li>
+        <li style="margin-bottom: 8px;">
+          <strong style="color: var(--text-primary, #ffffff);">Set Parameter</strong> — change a parameter to a target value; completes the first time the value enters the target range (no need to hold it there).
+        </li>
+        <li style="margin-bottom: 8px;">
+          <strong style="color: var(--text-primary, #ffffff);">Observe</strong> — listen or watch; no validation required. Click Next when you are ready.
+        </li>
+        <li style="margin-bottom: 8px;">
+          <strong style="color: var(--text-primary, #ffffff);">Free</strong> — explore freely; no constraint. Click Next when you are ready.
+        </li>
+      </ul>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Progress & Persistence</h3>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li>Progress is saved automatically to <strong style="color: var(--text-primary, #ffffff);">browser storage</strong> after each completed lesson.</li>
+        <li>When you return to the app and click Learn, the sidebar reopens at your last position.</li>
+        <li>To start over, open the settings menu inside Lesson Mode and click <strong style="color: var(--text-primary, #ffffff);">Reset Progress</strong>. This clears the full curriculum and returns to Lesson 1.</li>
+        <li>In private browsing mode, progress is kept in memory for the session but is not saved between visits.</li>
+      </ul>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Module 1 — Synthesis Fundamentals</h3>
+      <p style="color: var(--text-secondary, #cccccc);">The initial release ships three lessons covering the very basics:</p>
+      <ol style="color: var(--text-secondary, #cccccc);">
+        <li style="margin-bottom: 8px;"><strong style="color: var(--text-primary, #ffffff);">What is Sound?</strong> — Introduces sound as vibration; listens to a simple oscillator patch.</li>
+        <li style="margin-bottom: 8px;"><strong style="color: var(--text-primary, #ffffff);">The Oscillator</strong> — Explains the oscillator module and how to connect it to the keyboard for pitch control.</li>
+        <li style="margin-bottom: 8px;"><strong style="color: var(--text-primary, #ffffff);">Waveform Shapes</strong> — Explores how different waveforms change the timbre of a sound.</li>
+      </ol>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Modules 2–5 (filters, envelopes, effects, advanced patching) will be added in future updates.
+      </p>
+
+      <div style="background: var(--bg-secondary, #1a1a1a); padding: 16px; border-radius: 8px; border-left: 4px solid var(--accent-color, #0066cc); margin-top: 24px;">
+        <h4 style="margin-top: 0; color: var(--text-primary, #ffffff);">Tip</h4>
+        <p style="color: var(--text-secondary, #cccccc); margin: 0;">
+          You can keep the Lesson Sidebar open while patching freely on the canvas — the sidebar stays active and the task remains completable even if you add extra components or connections.
         </p>
       </div>
     `;

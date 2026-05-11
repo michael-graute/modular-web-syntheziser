@@ -42,6 +42,9 @@ It is currently in ongoing development. New features and optimizations are imple
 - **Chord Finder**: Chord reference and progression generator. Displays all diatonic chords for a selected key in a circular layout, generates musically coherent chord progressions, and outputs chord notes as CV signals (Hz) for direct connection to oscillators.
 - **Collider**: Physics-based CV/Gate generator. Simulates bouncing balls on a 2D canvas — each collision triggers a gate and emits a CV note from a selected musical scale. Configurable ball count, speed presets, BPM, gate size, and scale (Major, Harmonic Minor, Natural Minor, Lydian, Mixolydian).
 
+#### Learning
+- **Guided Lessons**: Structured, in-app learning mode for users with no prior synthesis knowledge. Step through a curriculum of short lessons — each loads a prepared patch, explains a concept, and invites a hands-on task. Progress is saved to browser storage and restored on return visits. The full canvas remains live during any lesson for free experimentation.
+
 #### Analyzers
 - **Oscilloscope**: Real-time audio visualization with three display modes:
   - Waveform view (time-domain)
@@ -161,6 +164,19 @@ npm run preview
 3. Connect the Chord Finder CV outputs to three **Oscillator** frequency inputs
 4. Click any chord node in the circle — the oscillators play the corresponding chord
 5. Hold a chord node to sustain; release to stop
+
+### Learning Synthesis with Guided Lessons
+
+1. Click **Learn** in the top toolbar to open the Lesson Sidebar
+2. The first lesson loads automatically with a prepared patch and concept explanation
+3. Complete the task shown in the sidebar (connect cables, adjust a parameter, or observe)
+4. Click **Next** to advance — progress is saved automatically
+5. Open the **curriculum overview** (list icon in the sidebar) to browse all modules and jump to any lesson
+
+**Module 1 — Synthesis Fundamentals** (initial release):
+- Lesson 1: What is Sound?
+- Lesson 2: The Oscillator
+- Lesson 3: Waveform Shapes
 
 ### Saving and Loading Patches
 
