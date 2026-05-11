@@ -295,9 +295,28 @@ export abstract class SynthComponent {
       outputPort.connect(inputPort.id);
       inputPort.connect(outputPort.id);
 
+      // Notify target that a CV/gate connection arrived on this input port
+      target.onInputConnected(inputId);
+
     } catch (error) {
       console.error(`Failed to connect components:`, error);
     }
+  }
+
+  /**
+   * Called when a CV or audio connection is established to one of this component's inputs.
+   * Subclasses can override to react (e.g. zero a base parameter so the CV is the sole driver).
+   */
+  onInputConnected(_portId: string): void {
+    // default: no-op
+  }
+
+  /**
+   * Called when a connection to one of this component's inputs is removed.
+   * Subclasses can override to restore base parameter values.
+   */
+  onInputDisconnected(_portId: string): void {
+    // default: no-op
   }
 
   /**
@@ -387,6 +406,9 @@ export abstract class SynthComponent {
         // Update port connection state
         outputPort.disconnect();
         inputPort.disconnect();
+
+        // Notify target that this input lost its connection
+        target.onInputDisconnected(inputId);
       } else {
         // Fallback: disconnect all (legacy behavior)
         const outputNode = this.getOutputNode();

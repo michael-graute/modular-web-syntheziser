@@ -194,6 +194,12 @@ export class ModulationVisualizer implements IModulationVisualizer {
     const connection = data.connection;
     const sourceComponent = data.sourceComponent;
 
+    // AudioEngine also emits CONNECTION_ADDED with a minimal payload (no connection object).
+    // Ignore those events — only process the full events from ConnectionManager.
+    if (!connection || !sourceComponent) {
+      return;
+    }
+
     // Store connection
     this.connections.set(connection.id, connection);
 

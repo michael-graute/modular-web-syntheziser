@@ -192,6 +192,29 @@ export class Oscillator extends SynthComponent {
   }
 
   /**
+   * When a CV source connects to the frequency input, zero the oscillator's base
+   * frequency so the CV signal is the sole driver (not additive on top of the knob value).
+   */
+  override onInputConnected(portId: string): void {
+    if (portId === 'frequency' && this.oscillator) {
+      const ctx = audioEngine.getContext();
+      this.oscillator.frequency.setValueAtTime(0, ctx.currentTime);
+    }
+  }
+
+  /**
+   * When the frequency CV connection is removed, restore the base frequency from
+   * the knob parameter value so the oscillator plays at the manually set pitch.
+   */
+  override onInputDisconnected(portId: string): void {
+    if (portId === 'frequency' && this.oscillator) {
+      const ctx = audioEngine.getContext();
+      const base = this.getParameter('frequency')?.getValue() ?? 0;
+      this.oscillator.frequency.setValueAtTime(base, ctx.currentTime);
+    }
+  }
+
+  /**
    * Start monitoring frequency changes and log them
    */
   private startFrequencyMonitoring(): void {

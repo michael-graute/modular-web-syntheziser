@@ -226,6 +226,9 @@ export class LFO extends SynthComponent {
       inputPort.connect(outputPort.id);
     }
 
+    // Notify target (mirrors the onInputConnected call in super.connectTo)
+    target.onInputConnected(inputId);
+
     console.log(`✓ LFO ${this.id} → ${target.id}:${inputId} (CV scaler gain=${scalerGain.toFixed(2)})`);
   }
 
@@ -251,6 +254,9 @@ export class LFO extends SynthComponent {
       const inputPort = target.inputs.get(inputId);
       if (outputPort) outputPort.disconnect();
       if (inputPort) inputPort.disconnect();
+
+      // Notify target (mirrors onInputDisconnected call in super.disconnectFrom)
+      target.onInputDisconnected(inputId);
 
       console.log(`✓ LFO ${this.id} disconnected from ${target.id}:${inputId} (scaler removed)`);
       return;

@@ -557,13 +557,12 @@ export class Canvas {
       }
     }
 
-    // Check if clicking on a connection for deletion
+    // Check if clicking on a connection for deletion — plain click on the cable removes it
     const clickedConnectionId = this.connectionManager.getConnectionAt(
       worldPos.x,
       worldPos.y
     );
-    if (clickedConnectionId && e.shiftKey) {
-      // Delete connection with Shift+Click
+    if (clickedConnectionId) {
       this.connectionManager.removeConnection(clickedConnectionId);
       return;
     }
