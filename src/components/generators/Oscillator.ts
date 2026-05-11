@@ -33,7 +33,7 @@ export class Oscillator extends SynthComponent {
     // Add parameters
     // Waveform: 0=sine, 1=square, 2=sawtooth, 3=triangle
     this.addParameter('waveform', 'Waveform', 0, 0, 3, 1, '');
-    this.addParameter('frequency', 'Frequency', 0, AUDIO.MIN_FREQUENCY, AUDIO.MAX_FREQUENCY, 1, 'Hz');
+    this.addParameter('frequency', 'Frequency', 220, AUDIO.MIN_FREQUENCY, AUDIO.MAX_FREQUENCY, 1, 'Hz');
     this.addParameter('detune', 'Detune', 0, AUDIO.MIN_DETUNE, AUDIO.MAX_DETUNE, 1, 'cents');
 
     this.oscillator = null;

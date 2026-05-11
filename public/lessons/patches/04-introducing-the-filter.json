@@ -17,7 +17,7 @@
       "position": { "x": 290, "y": 160 },
       "parameters": {
         "waveform": 2,
-        "frequency": 440,
+        "frequency": 220,
         "detune": 0
       }
     },

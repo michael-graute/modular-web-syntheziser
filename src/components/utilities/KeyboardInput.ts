@@ -43,7 +43,7 @@ export class KeyboardInput extends SynthComponent {
 
     // Create ConstantSourceNodes for CV outputs
     this.frequencyNode = ctx.createConstantSource();
-    this.frequencyNode.offset.value = 440; // A4 default
+    this.frequencyNode.offset.value = 220; // A3 default
     this.frequencyNode.start();
 
     this.gateNode = ctx.createConstantSource();
@@ -256,7 +256,7 @@ export class KeyboardInput extends SynthComponent {
    * Returns 440 if no note is active.
    */
   getCurrentFrequency(): number {
-    if (this.activeNotes.size === 0) return 440;
+    if (this.activeNotes.size === 0) return 220;
     return Array.from(this.activeNotes.values()).pop()!;
   }
 
