@@ -1,0 +1,18 @@
+{
+  "id": "lesson-16-delay",
+  "moduleId": "module-05",
+  "index": 1,
+  "title": "Delay",
+  "concept": "So far you have been shaping sound — its pitch, tone, and dynamics. Now you will learn about effects: processors that add space, texture, and character after the sound has been shaped.\n\nDelay is the simplest spatial effect. It records the incoming audio and plays it back one or more times after a short interval, creating distinct echoes. The key controls are:\n\nTime — how long after the original sound the echo appears. Short times (under 100 ms) create a slap-back effect used on vocals and guitars. Longer times (250–500 ms) give the classic rhythmic echo sound.\n\nFeedback — how much of the echo feeds back into the delay input, creating multiple repeats. At 0% you get a single echo. As feedback increases, the echoes multiply and decay gradually. At very high values (above 90%) the echoes build up indefinitely — use with caution.\n\nMix — the balance between the dry (unaffected) signal and the wet (delayed) signal.\n\nThe patch has a full synthesizer chain ready. Connect the VCA's output to the Delay's input to add echo to the sound.",
+  "patchFile": "/lessons/patches/16-delay.json",
+  "highlightComponentTypes": ["delay"],
+  "task": {
+    "type": "connect",
+    "instruction": "Connect the VCA's audio output to the Delay's input. Click the VCA's 'output' port (right side), then click the Delay's 'input' port (left side).",
+    "connect": {
+      "sourceComponentType": "vca",
+      "targetComponentType": "delay",
+      "targetPortId": "input"
+    }
+  }
+}

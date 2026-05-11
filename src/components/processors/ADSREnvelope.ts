@@ -204,7 +204,7 @@ export class ADSREnvelope extends SynthComponent {
    * ADSR doesn't use AudioParam for gate, it uses trigger methods
    * But we need to implement this for the connection system
    */
-  protected override getAudioParamForInput(_inputId: string): AudioParam | null {
+  override getAudioParamForInput(_inputId: string): AudioParam | null {
     // ADSR uses trigger methods (triggerGateOn/Off) instead of AudioParam
     // Return null to indicate no direct AudioParam connection
     return null;

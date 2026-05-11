@@ -272,7 +272,7 @@ export class NoiseGenerator extends SynthComponent {
   /**
    * Get AudioParam for CV input (override from base class)
    */
-  protected override getAudioParamForInput(inputId: string): AudioParam | null {
+  override getAudioParamForInput(inputId: string): AudioParam | null {
     switch (inputId) {
       case 'amplitude':
         // Return the CV scaler's gain AudioParam

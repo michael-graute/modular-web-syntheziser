@@ -1,0 +1,18 @@
+{
+  "id": "lesson-12-lfo-to-filter",
+  "moduleId": "module-04",
+  "index": 1,
+  "title": "LFO to Filter",
+  "concept": "So far, modulation has been applied manually — you turned a knob. But synthesizers can modulate themselves automatically, creating movement and life in a sound without you doing anything.\n\nThe LFO (Low Frequency Oscillator) is the main modulation source. It generates a repeating waveform — just like an audio oscillator — but at a much slower rate (typically 0.01–20 Hz, far below the threshold of hearing). That slow, cycling signal can be connected to any CV input to make it move up and down automatically over time.\n\nConnecting the LFO to the filter's cutoff is one of the most classic synthesis techniques. The cutoff rises and falls in time with the LFO, creating a sweeping, wah-like effect. Slow rates give a gentle wash; fast rates give a rhythmic, bubbling texture.\n\nThe patch has a Keyboard, Oscillator, Filter, VCA, and ADSR all pre-wired. The LFO is running but not connected to anything yet. Connect its output to the Filter's Cutoff CV input and hear the filter start moving.",
+  "patchFile": "/lessons/patches/12-lfo-to-filter.json",
+  "highlightComponentTypes": ["lfo", "filter"],
+  "task": {
+    "type": "connect",
+    "instruction": "Connect the LFO's output to the Filter's Cutoff CV input. Click the LFO's 'output' port (right side), then click the Filter's 'cutoff cv' input port (left side).",
+    "connect": {
+      "sourceComponentType": "lfo",
+      "targetComponentType": "filter",
+      "targetPortId": "cutoff_cv"
+    }
+  }
+}

@@ -530,12 +530,23 @@ export class Canvas {
       const dropdowns = component.getDropdownControls();
       for (const dropdown of dropdowns) {
         if (dropdown.isDropdownOpen()) {
-          // Let the dropdown handle the click (menu item, button, or outside click)
+          // Snapshot value before click so we can detect actual changes
+          const param = dropdown.getParameter();
+          const valueBefore = param.getValue();
+
           if (dropdown.onMouseDown(worldPos.x, worldPos.y)) {
-            // Dropdown handled it (selected an item or toggled)
+            // Dropdown handled it (selected an item or closed)
             if (component.synthComponent) {
-              const param = dropdown.getParameter();
-              component.synthComponent.setParameterValue(param.id, param.getValue());
+              const valueAfter = param.getValue();
+              component.synthComponent.setParameterValue(param.id, valueAfter);
+              if (valueAfter !== valueBefore) {
+                eventBus.emit(EventType.PARAMETER_CHANGED, {
+                  componentId: component.synthComponent.id,
+                  componentType: component.synthComponent.type,
+                  parameterId: component.bareParamId(param.id),
+                  value: valueAfter,
+                });
+              }
             }
             return; // Don't process any other interactions
           } else {
@@ -546,13 +557,12 @@ export class Canvas {
       }
     }
 
-    // Check if clicking on a connection for deletion
+    // Check if clicking on a connection for deletion — plain click on the cable removes it
     const clickedConnectionId = this.connectionManager.getConnectionAt(
       worldPos.x,
       worldPos.y
     );
-    if (clickedConnectionId && e.shiftKey) {
-      // Delete connection with Shift+Click
+    if (clickedConnectionId) {
       this.connectionManager.removeConnection(clickedConnectionId);
       return;
     }

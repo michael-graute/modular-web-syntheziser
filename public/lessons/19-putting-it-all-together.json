@@ -1,0 +1,13 @@
+{
+  "id": "lesson-19-putting-it-all-together",
+  "moduleId": "module-05",
+  "index": 4,
+  "title": "Putting It All Together",
+  "concept": "You have now learned every major building block of subtractive synthesis:\n\nOscillators generate raw sound — the raw material, shaped by waveform and pitch.\nFilters sculpt the tone — removing frequencies, adding resonance, opening and closing.\nEnvelopes shape dynamics — controlling how sounds begin, sustain, and end.\nLFOs add movement — cyclic modulation of any parameter for life and expression.\nFM synthesis generates complex timbres through audio-rate modulation.\nEffects add space and character — delay, reverb, and distortion.\n\nThis final patch brings everything together in a single working instrument. The signal flows from Keyboard through Oscillator and Filter, shaped by an ADSR envelope through a VCA, modulated by an LFO, then coloured by Distortion and placed in space by Delay and Reverb.\n\nThere is no task here. This is your sandbox. Try changing waveforms, sweeping the filter, adjusting the envelope, slowing the LFO, pushing the distortion. Every knob you turn and every connection you make is a creative decision — and now you understand why it sounds the way it does.\n\nWelcome to synthesis.",
+  "patchFile": "/lessons/patches/19-putting-it-all-together.json",
+  "highlightComponentTypes": [],
+  "task": {
+    "type": "free",
+    "instruction": "Explore freely. Try changing the oscillator waveform, sweeping the filter cutoff, adjusting the ADSR, or tweaking the LFO rate. There is no wrong answer — just listen and experiment."
+  }
+}

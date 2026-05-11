@@ -1,0 +1,114 @@
+{
+  "name": "Lesson 15 — FM Synthesis",
+  "version": "1.0.0",
+  "created": "2026-05-03T00:00:00.000Z",
+  "modified": "2026-05-03T00:00:00.000Z",
+  "globalBpm": 120,
+  "components": [
+    {
+      "id": "lesson-15-keyboard",
+      "type": "keyboard-input",
+      "position": { "x": 60, "y": 220 },
+      "parameters": {}
+    },
+    {
+      "id": "lesson-15-modulator",
+      "type": "oscillator",
+      "position": { "x": 260, "y": 360 },
+      "parameters": {
+        "waveform": 0,
+        "frequency": 440,
+        "detune": 0
+      }
+    },
+    {
+      "id": "lesson-15-carrier",
+      "type": "fm-oscillator",
+      "position": { "x": 480, "y": 120 },
+      "parameters": {
+        "waveform": 0,
+        "frequency": 440,
+        "detune": 0,
+        "fmDepth": 200
+      }
+    },
+    {
+      "id": "lesson-15-adsr",
+      "type": "adsr-envelope",
+      "position": { "x": 260, "y": 500 },
+      "parameters": {
+        "attack": 0.02,
+        "decay": 0.3,
+        "sustain": 0.5,
+        "release": 0.5
+      }
+    },
+    {
+      "id": "lesson-15-vca",
+      "type": "vca",
+      "position": { "x": 700, "y": 200 },
+      "parameters": {
+        "gain": 0
+      }
+    },
+    {
+      "id": "lesson-15-master-output",
+      "type": "master-output",
+      "position": { "x": 900, "y": 200 },
+      "parameters": {
+        "volume": 0.6,
+        "limiter": 1
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "lesson-15-conn-kbd-carrier-freq",
+      "sourceComponentId": "lesson-15-keyboard",
+      "sourcePortId": "frequency",
+      "targetComponentId": "lesson-15-carrier",
+      "targetPortId": "frequency",
+      "signalType": "cv"
+    },
+    {
+      "id": "lesson-15-conn-kbd-mod-freq",
+      "sourceComponentId": "lesson-15-keyboard",
+      "sourcePortId": "frequency",
+      "targetComponentId": "lesson-15-modulator",
+      "targetPortId": "frequency",
+      "signalType": "cv"
+    },
+    {
+      "id": "lesson-15-conn-kbd-gate",
+      "sourceComponentId": "lesson-15-keyboard",
+      "sourcePortId": "gate",
+      "targetComponentId": "lesson-15-adsr",
+      "targetPortId": "gate",
+      "signalType": "gate"
+    },
+    {
+      "id": "lesson-15-conn-carrier-vca",
+      "sourceComponentId": "lesson-15-carrier",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-15-vca",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "lesson-15-conn-adsr-vca",
+      "sourceComponentId": "lesson-15-adsr",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-15-vca",
+      "targetPortId": "cv",
+      "signalType": "cv"
+    },
+    {
+      "id": "lesson-15-conn-vca-out",
+      "sourceComponentId": "lesson-15-vca",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-15-master-output",
+      "targetPortId": "input",
+      "signalType": "audio"
+    }
+  ]
+}

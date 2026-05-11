@@ -1,0 +1,19 @@
+{
+  "id": "lesson-09-attack-and-decay",
+  "moduleId": "module-03",
+  "index": 2,
+  "title": "Attack & Decay",
+  "concept": "The first two stages of the ADSR envelope shape the beginning of a note.\n\nAttack is the time from key press to peak level. A very short attack (near 0 s) gives an instant, punchy start — percussive sounds like drums and plucked strings have short attacks. A long attack (1–3 s) creates a slow swell, like a string section fading in or a pad that breathes.\n\nDecay is the time from peak level down to the Sustain level. A short decay with a low sustain gives a note that punches and immediately drops — the basis of many bass and lead sounds. A long decay blends the peak smoothly into the held note.\n\nThe patch starts with a very short attack. Change the Attack to 1.5 seconds and hear the note bloom in slowly rather than starting instantly.",
+  "patchFile": "/lessons/patches/09-attack-and-decay.json",
+  "highlightComponentTypes": ["adsr-envelope"],
+  "task": {
+    "type": "set-parameter",
+    "instruction": "Set the ADSR's Attack to 1.5 s. Raise the Attack knob on the ADSR Envelope component, then press a key and hear the note swell in slowly.",
+    "setParameter": {
+      "componentType": "adsr-envelope",
+      "parameterId": "attack",
+      "targetValue": 1.5,
+      "tolerance": 0.3
+    }
+  }
+}

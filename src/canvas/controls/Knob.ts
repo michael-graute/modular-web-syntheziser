@@ -107,12 +107,20 @@ export class Knob implements IVisualizableControl {
       ctx.fillText(this.parameter.name, centerX, this.y - 2);
     }
 
-    // Draw value below
+    // Draw value below — show live modulated value when animated by visualizer
     ctx.fillStyle = '#ffffff';
     ctx.font = '10px -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-    ctx.fillText(this.parameter.getDisplayValue(), centerX, this.y + this.size + 2);
+    let displayText: string;
+    if (this.visualValue !== null) {
+      const liveValue = this.parameter.min + this.visualValue * (this.parameter.max - this.parameter.min);
+      const rounded = Math.round(liveValue / this.parameter.step) * this.parameter.step;
+      displayText = `${rounded.toFixed(2)}${this.parameter.unit}`;
+    } else {
+      displayText = this.parameter.getDisplayValue();
+    }
+    ctx.fillText(displayText, centerX, this.y + this.size + 2);
   }
 
   /**

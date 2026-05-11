@@ -1,0 +1,18 @@
+{
+  "id": "lesson-07-shaping-amplitude",
+  "moduleId": "module-02",
+  "index": 4,
+  "title": "Shaping Amplitude",
+  "concept": "Until now, notes start and stop abruptly the moment you press and release a key. Real instruments do not behave that way — a piano note fades out after you release the key, a bowed string has a slow attack. To control how a note evolves over time, synthesizers use an Envelope.\n\nThe ADSR Envelope is the standard envelope shape:\n\nAttack: How long it takes the note to reach full volume after a key is pressed.\nDecay: How long it takes to fall from full volume to the Sustain level.\nSustain: The volume level held as long as the key is held down.\nRelease: How long the note fades out after the key is released.\n\nThe Envelope generates a CV signal that rises and falls according to these settings. To use it, you connect the Envelope's output to a VCA (Voltage Controlled Amplifier). The VCA lets the envelope shape the volume of the audio signal passing through it.\n\nThe patch already has everything connected except the gate signal: the Keyboard needs to tell the ADSR when a key is pressed. Connect the Keyboard's Gate output to the ADSR's Gate input to activate the envelope.",
+  "patchFile": "/lessons/patches/07-shaping-amplitude.json",
+  "highlightComponentTypes": ["adsr-envelope", "vca"],
+  "task": {
+    "type": "connect",
+    "instruction": "Connect the Keyboard's gate output to the ADSR's gate input. Click the Keyboard's 'gate' output port (right side), then click the ADSR's 'gate' input port (left side). Then press a key — the note should now fade in and out smoothly.",
+    "connect": {
+      "sourceComponentType": "keyboard-input",
+      "targetComponentType": "adsr-envelope",
+      "targetPortId": "gate"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "lesson-11-envelope-to-filter",
+  "moduleId": "module-03",
+  "index": 4,
+  "title": "Envelope to Filter",
+  "concept": "You have used the ADSR envelope to control volume via a VCA. But an envelope can control anything that accepts a CV signal — including the Filter's cutoff frequency.\n\nWhen an envelope opens and closes the filter cutoff, the sound brightens and darkens in sync with the note shape. This is one of the most recognisable sounds in synthesis: a note hits, the filter sweeps open, then closes as the note decays. It gives sounds an expressive, vowel-like quality — like the sound is 'speaking'.\n\nThe patch already has the full signal chain with the amplitude envelope driving the VCA. A second ADSR is ready to control the filter, but its output is not yet connected. Connect this second ADSR's output to the Filter's Cutoff CV input and hear the filter open with every keypress.",
+  "patchFile": "/lessons/patches/11-envelope-to-filter.json",
+  "highlightComponentTypes": ["adsr-envelope", "filter"],
+  "task": {
+    "type": "connect",
+    "instruction": "Connect the second ADSR's output to the Filter's Cutoff CV input. Click the lower ADSR's 'output' port (right side), then click the Filter's 'cutoff cv' input port (left side).",
+    "connect": {
+      "sourceComponentType": "adsr-envelope",
+      "targetComponentType": "filter",
+      "targetPortId": "cutoff_cv"
+    }
+  }
+}

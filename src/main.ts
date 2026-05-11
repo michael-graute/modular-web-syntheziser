@@ -19,6 +19,7 @@ import { factoryPatchLoader } from './patch/FactoryPatchLoader';
 import { SaveModal } from './ui/SaveModal';
 import { LoadModal } from './ui/LoadModal';
 import { HelpSidebar } from './ui/HelpSidebar';
+import { lessonSidebar } from './lessons/LessonSidebar';
 import { ModulationVisualizer } from './visualization';
 import { AcceptanceStorage } from './storage/AcceptanceStorage';
 import { WelcomeDialog } from './ui/WelcomeDialog';
@@ -167,10 +168,20 @@ function setupPatchManagement(): void {
     }
   });
 
-  // Help button
+  // Help button — close lesson sidebar for mutual exclusion
   if (btnHelp) {
     btnHelp.addEventListener('click', () => {
+      lessonSidebar.close();
       helpSidebar?.toggle();
+    });
+  }
+
+  // Learn button — close help sidebar for mutual exclusion
+  const btnLearn = document.getElementById('btn-learn');
+  if (btnLearn) {
+    btnLearn.addEventListener('click', () => {
+      helpSidebar?.close();
+      lessonSidebar.toggle();
     });
   }
 
@@ -541,26 +552,38 @@ function trackComponentParameters(visualComponent: CanvasComponent): void {
 }
 
 /**
- * Setup audio resume on user interaction (Chrome autoplay policy)
+ * Setup audio resume on user interaction (Chrome autoplay policy).
+ *
+ * The AudioContext can be suspended by the browser at any time — not just on
+ * first load. Native dialogs (confirm/alert), tab switching, and the gap in
+ * audio output during a patch reload can all cause auto-suspension. We keep a
+ * persistent listener so any user interaction wakes the context back up, and
+ * we also resume explicitly after every PATCH_LOADED event.
  */
 function setupAudioResume(): void {
   const resumeAudio = async () => {
     try {
-      await audioEngine.resume();
-      if (audioEngine.getState() === 'running') {
-        updateStatus('Ready - Audio enabled');
-        document.removeEventListener('click', resumeAudio);
-        document.removeEventListener('keydown', resumeAudio);
-        console.log('✅ Audio context resumed');
+      if (audioEngine.getState() !== 'running') {
+        await audioEngine.resume();
+        if (audioEngine.getState() === 'running') {
+          updateStatus('Ready - Audio enabled');
+          console.log('✅ Audio context resumed');
+        }
       }
     } catch (error) {
       console.error('Failed to resume audio:', error);
     }
   };
 
-  // Resume on first user interaction
-  document.addEventListener('click', resumeAudio, { once: true });
-  document.addEventListener('keydown', resumeAudio, { once: true });
+  // Keep listener persistent — the context can suspend again after patch loads
+  // or tab switches, so a one-time listener is not sufficient.
+  document.addEventListener('click', resumeAudio);
+  document.addEventListener('keydown', resumeAudio);
+
+  // Resume immediately after every patch load. The clearCanvas → oscillator.stop()
+  // cycle creates a gap in audio output that causes browsers to auto-suspend the
+  // AudioContext. This ensures the context is running before notes are played.
+  eventBus.on(EventType.PATCH_LOADED, resumeAudio);
 }
 
 /**

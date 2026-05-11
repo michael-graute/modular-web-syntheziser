@@ -1,0 +1,58 @@
+{
+  "modules": [
+    {
+      "id": "module-01",
+      "number": 1,
+      "title": "Sound Basics",
+      "lessons": [
+        "01-what-is-sound.json",
+        "02-the-oscillator.json",
+        "03-waveform-shapes.json"
+      ]
+    },
+    {
+      "id": "module-02",
+      "number": 2,
+      "title": "Shaping Sound",
+      "lessons": [
+        "04-introducing-the-filter.json",
+        "05-filter-cutoff.json",
+        "06-resonance.json",
+        "07-shaping-amplitude.json"
+      ]
+    },
+    {
+      "id": "module-03",
+      "number": 3,
+      "title": "Dynamics & Envelopes",
+      "lessons": [
+        "08-the-envelope.json",
+        "09-attack-and-decay.json",
+        "10-sustain-and-release.json",
+        "11-envelope-to-filter.json"
+      ]
+    },
+    {
+      "id": "module-04",
+      "number": 4,
+      "title": "Modulation",
+      "lessons": [
+        "12-lfo-to-filter.json",
+        "13-lfo-rate-and-depth.json",
+        "14-vibrato.json",
+        "15-fm-synthesis.json"
+      ]
+    },
+    {
+      "id": "module-05",
+      "number": 5,
+      "title": "Effects & Space",
+      "lessons": [
+        "16-delay.json",
+        "17-reverb.json",
+        "18-distortion.json",
+        "19-putting-it-all-together.json"
+      ]
+    }
+  ]
+}

@@ -128,9 +128,16 @@ export class VCA extends SynthComponent {
   /**
    * Get AudioParam for CV input (override from base class)
    */
-  protected override getAudioParamForInput(inputId: string): AudioParam | null {
+  override getAudioParamForInput(inputId: string): AudioParam | null {
     if (inputId === 'cv') {
       return this.getGainParam();
+    }
+    return null;
+  }
+
+  override getParameterRangeForInput(portId: string): { min: number; max: number } | null {
+    if (portId === 'cv') {
+      return { min: AUDIO.MIN_GAIN, max: AUDIO.MAX_GAIN };
     }
     return null;
   }

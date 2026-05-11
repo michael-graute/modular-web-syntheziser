@@ -1,0 +1,18 @@
+{
+  "id": "lesson-02-the-oscillator",
+  "moduleId": "module-01",
+  "index": 2,
+  "title": "The Oscillator",
+  "concept": "An oscillator is the primary sound source in a synthesizer. It generates a continuous electrical signal that vibrates at a set frequency — and that frequency determines the pitch you hear.\n\nOn its own, an oscillator plays a fixed pitch. To play different notes, you connect a Keyboard to it. The Keyboard sends a CV (Control Voltage) signal that tells the oscillator what frequency to play — one voltage per octave, following the 1V/octave standard.\n\nThe oscillator has a Frequency input port on its left side. The Keyboard has a Frequency output port on its right side. When you connect them, playing a key on the keyboard changes the oscillator's pitch in real time.\n\nRight now the patch has the Keyboard and Oscillator components, but the frequency connection is missing. Your task is to make it.",
+  "patchFile": "/lessons/patches/02-the-oscillator.json",
+  "highlightComponentTypes": ["oscillator", "keyboard-input"],
+  "task": {
+    "type": "connect",
+    "instruction": "Connect the Keyboard's frequency output to the Oscillator's frequency input. Click the Keyboard's 'frequency' output port (right side), then click the Oscillator's 'frequency' input port (left side).",
+    "connect": {
+      "sourceComponentType": "keyboard-input",
+      "targetComponentType": "oscillator",
+      "targetPortId": "frequency"
+    }
+  }
+}

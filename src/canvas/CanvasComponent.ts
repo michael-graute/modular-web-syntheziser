@@ -249,10 +249,11 @@ export class CanvasComponent {
         this.controls.push(dropdown);
       }
 
-      // Knobs for cutoff and resonance - positioned below dropdown
+      // Knobs for cutoff, resonance, and CV amount - positioned below dropdown
       const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
       const knobSize = COMPONENT.KNOB_SIZE;
-      const spacing = (this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2 - knobSize * 2) / 3;
+      const cvAmountParam = this.synthComponent.getParameter('cvAmount');
+      const spacing = (this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2 - knobSize * 3) / 4;
 
       if (cutoffParam) {
         const knob = new Knob(
@@ -270,6 +271,16 @@ export class CanvasComponent {
           knobY,
           knobSize,
           resonanceParam
+        );
+        this.controls.push(knob);
+      }
+
+      if (cvAmountParam) {
+        const knob = new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 3 + knobSize * 2,
+          knobY,
+          knobSize,
+          cvAmountParam
         );
         this.controls.push(knob);
       }
@@ -1891,6 +1902,12 @@ export class CanvasComponent {
           if (this.synthComponent) {
             const param = control.getParameter();
             this.synthComponent.setParameterValue(param.id, param.getValue());
+            eventBus.emit(EventType.PARAMETER_CHANGED, {
+              componentId: this.synthComponent.id,
+              componentType: this.synthComponent.type,
+              parameterId: this.bareParamId(param.id),
+              value: param.getValue(),
+            });
           }
           return true;
         }
@@ -1930,6 +1947,12 @@ export class CanvasComponent {
           if (this.synthComponent) {
             const param = control.getParameter();
             this.synthComponent.setParameterValue(param.id, param.getValue());
+            eventBus.emit(EventType.PARAMETER_CHANGED, {
+              componentId: this.synthComponent.id,
+              componentType: this.synthComponent.type,
+              parameterId: this.bareParamId(param.id),
+              value: param.getValue(),
+            });
           }
           return true;
         }
@@ -1939,6 +1962,12 @@ export class CanvasComponent {
           if (this.synthComponent) {
             const param = control.getParameter();
             this.synthComponent.setParameterValue(param.id, param.getValue());
+            eventBus.emit(EventType.PARAMETER_CHANGED, {
+              componentId: this.synthComponent.id,
+              componentType: this.synthComponent.type,
+              parameterId: this.bareParamId(param.id),
+              value: param.getValue(),
+            });
           }
           return true;
         }
@@ -2003,5 +2032,11 @@ export class CanvasComponent {
    */
   getDropdownControls(): Dropdown[] {
     return this.controls.filter(control => control instanceof Dropdown) as Dropdown[];
+  }
+
+  // Parameter IDs are stored as 'componentId:paramName' — strip the prefix for events.
+  bareParamId(prefixedId: string): string {
+    const colon = prefixedId.indexOf(':');
+    return colon >= 0 ? prefixedId.slice(colon + 1) : prefixedId;
   }
 }

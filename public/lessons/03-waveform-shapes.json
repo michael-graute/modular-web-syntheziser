@@ -1,0 +1,19 @@
+{
+  "id": "lesson-03-waveform-shapes",
+  "moduleId": "module-01",
+  "index": 3,
+  "title": "Waveform Shapes",
+  "concept": "The shape of a waveform determines its timbre — the character or colour of a sound. Different waveform shapes contain different harmonic overtones on top of the fundamental frequency.\n\nSine wave: The purest sound. A single frequency, no overtones. Smooth and flute-like.\n\nSquare wave: Adds odd-numbered harmonics (3rd, 5th, 7th…). Produces a hollow, buzzy tone — think vintage video game sounds or a clarinet.\n\nSawtooth wave: Adds both odd and even harmonics in large amounts. Produces a bright, rich, brassy sound — great for leads and bass.\n\nTriangle wave: Similar to sine but with a few odd harmonics. Sounds softer and rounder than square — somewhere between sine and square.\n\nThe Oscillator's Waveform control lets you switch between these shapes. Your task is to change it to Square and hear the difference.",
+  "patchFile": "/lessons/patches/03-waveform-shapes.json",
+  "highlightComponentTypes": ["oscillator"],
+  "task": {
+    "type": "set-parameter",
+    "instruction": "Change the Oscillator's waveform to Square. Click the Waveform dropdown on the Oscillator component and select 'Square'. Listen to how the sound changes.",
+    "setParameter": {
+      "componentType": "oscillator",
+      "parameterId": "waveform",
+      "targetValue": 1,
+      "tolerance": 0
+    }
+  }
+}

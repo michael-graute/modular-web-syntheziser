@@ -1,0 +1,62 @@
+{
+  "name": "Lesson 4 — Introducing the Filter",
+  "version": "1.0.0",
+  "created": "2026-05-03T00:00:00.000Z",
+  "modified": "2026-05-03T00:00:00.000Z",
+  "globalBpm": 120,
+  "components": [
+    {
+      "id": "lesson-04-keyboard",
+      "type": "keyboard-input",
+      "position": { "x": 60, "y": 160 },
+      "parameters": {}
+    },
+    {
+      "id": "lesson-04-oscillator",
+      "type": "oscillator",
+      "position": { "x": 290, "y": 160 },
+      "parameters": {
+        "waveform": 2,
+        "frequency": 440,
+        "detune": 0
+      }
+    },
+    {
+      "id": "lesson-04-filter",
+      "type": "filter",
+      "position": { "x": 520, "y": 160 },
+      "parameters": {
+        "type": 0,
+        "cutoff": 800,
+        "resonance": 1
+      }
+    },
+    {
+      "id": "lesson-04-master-output",
+      "type": "master-output",
+      "position": { "x": 750, "y": 160 },
+      "parameters": {
+        "volume": 0.6,
+        "limiter": 1
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "lesson-04-conn-kbd-freq",
+      "sourceComponentId": "lesson-04-keyboard",
+      "sourcePortId": "frequency",
+      "targetComponentId": "lesson-04-oscillator",
+      "targetPortId": "frequency",
+      "signalType": "cv"
+    },
+    {
+      "id": "lesson-04-conn-filter-out",
+      "sourceComponentId": "lesson-04-filter",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-04-master-output",
+      "targetPortId": "input",
+      "signalType": "audio"
+    }
+  ]
+}

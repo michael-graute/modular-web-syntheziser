@@ -266,10 +266,17 @@ export abstract class SynthComponent {
           if (inputId === 'frequency' && target.type === 'oscillator') {
             console.log(`💡 Tip: Set ${target.name} frequency knob to 0 Hz for direct CV control, or use it as an offset/transpose`);
           }
-        } else if (outputPort.type !== 'gate' || target.type !== 'adsr-envelope') {
-          // Only warn if it's not a gate->ADSR connection (which doesn't use AudioParam)
-          console.warn(`Cannot connect CV: no AudioParam found for input ${inputId}`);
-          return;
+        } else {
+          // Fallback: try an AudioNode input (e.g. a scaling GainNode that routes CV into a freq param)
+          const cvInputNode = target.getInputNodeByPort(inputId);
+          if (cvInputNode) {
+            outputNode.connect(cvInputNode);
+            console.log(`✓ Connected ${this.name}:${outputPort.name} (CV) -> ${target.name}:${inputPort.name} (AudioNode)`);
+          } else if (outputPort.type !== 'gate' || target.type !== 'adsr-envelope') {
+            // Only warn if it's not a gate->ADSR connection (which doesn't use AudioParam)
+            console.warn(`Cannot connect CV: no AudioParam found for input ${inputId}`);
+            return;
+          }
         }
       } else {
         // Regular audio connection (AudioNode -> AudioNode)
@@ -288,9 +295,28 @@ export abstract class SynthComponent {
       outputPort.connect(inputPort.id);
       inputPort.connect(outputPort.id);
 
+      // Notify target that a CV/gate connection arrived on this input port
+      target.onInputConnected(inputId);
+
     } catch (error) {
       console.error(`Failed to connect components:`, error);
     }
+  }
+
+  /**
+   * Called when a CV or audio connection is established to one of this component's inputs.
+   * Subclasses can override to react (e.g. zero a base parameter so the CV is the sole driver).
+   */
+  onInputConnected(_portId: string): void {
+    // default: no-op
+  }
+
+  /**
+   * Called when a connection to one of this component's inputs is removed.
+   * Subclasses can override to restore base parameter values.
+   */
+  onInputDisconnected(_portId: string): void {
+    // default: no-op
   }
 
   /**
@@ -314,9 +340,18 @@ export abstract class SynthComponent {
   /**
    * Get AudioParam for a specific input port (override in subclasses for CV inputs)
    */
-  protected getAudioParamForInput(_inputId: string): AudioParam | null {
+  getAudioParamForInput(_inputId: string): AudioParam | null {
     // Default implementation returns null
     // Subclasses should override to provide AudioParams for CV inputs
+    return null;
+  }
+
+  /**
+   * Get the parameter range (min/max) for a given CV input port.
+   * Used by the LFO adapter to compute per-connection scaling.
+   * Subclasses override this for each CV input port they expose.
+   */
+  getParameterRangeForInput(_portId: string): { min: number; max: number } | null {
     return null;
   }
 
@@ -343,6 +378,13 @@ export abstract class SynthComponent {
           if (targetParam) {
             outputNode.disconnect(targetParam);
             console.log(`✓ Disconnected ${this.name}:${outputPort.name} from ${target.name}:${inputPort.name} (AudioParam)`);
+          } else {
+            // Fallback: CV connected via AudioNode (e.g. scaling GainNode)
+            const cvInputNode = target.getInputNodeByPort(inputId);
+            if (cvInputNode) {
+              outputNode.disconnect(cvInputNode);
+              console.log(`✓ Disconnected ${this.name}:${outputPort.name} from ${target.name}:${inputPort.name} (AudioNode)`);
+            }
           }
 
           // If this was a gate connection to ADSR, unregister
@@ -364,6 +406,9 @@ export abstract class SynthComponent {
         // Update port connection state
         outputPort.disconnect();
         inputPort.disconnect();
+
+        // Notify target that this input lost its connection
+        target.onInputDisconnected(inputId);
       } else {
         // Fallback: disconnect all (legacy behavior)
         const outputNode = this.getOutputNode();

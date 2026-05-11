@@ -1,0 +1,113 @@
+{
+  "name": "Lesson 8 — The Envelope",
+  "version": "1.0.0",
+  "created": "2026-05-03T00:00:00.000Z",
+  "modified": "2026-05-03T00:00:00.000Z",
+  "globalBpm": 120,
+  "components": [
+    {
+      "id": "lesson-08-keyboard",
+      "type": "keyboard-input",
+      "position": { "x": 60, "y": 200 },
+      "parameters": {}
+    },
+    {
+      "id": "lesson-08-oscillator",
+      "type": "oscillator",
+      "position": { "x": 250, "y": 120 },
+      "parameters": {
+        "waveform": 2,
+        "frequency": 440,
+        "detune": 0
+      }
+    },
+    {
+      "id": "lesson-08-filter",
+      "type": "filter",
+      "position": { "x": 440, "y": 120 },
+      "parameters": {
+        "type": 0,
+        "cutoff": 2000,
+        "resonance": 1
+      }
+    },
+    {
+      "id": "lesson-08-adsr",
+      "type": "adsr-envelope",
+      "position": { "x": 250, "y": 320 },
+      "parameters": {
+        "attack": 0.3,
+        "decay": 0.2,
+        "sustain": 0.7,
+        "release": 0.8
+      }
+    },
+    {
+      "id": "lesson-08-vca",
+      "type": "vca",
+      "position": { "x": 630, "y": 200 },
+      "parameters": {
+        "gain": 0
+      }
+    },
+    {
+      "id": "lesson-08-master-output",
+      "type": "master-output",
+      "position": { "x": 820, "y": 200 },
+      "parameters": {
+        "volume": 0.6,
+        "limiter": 1
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "lesson-08-conn-kbd-freq",
+      "sourceComponentId": "lesson-08-keyboard",
+      "sourcePortId": "frequency",
+      "targetComponentId": "lesson-08-oscillator",
+      "targetPortId": "frequency",
+      "signalType": "cv"
+    },
+    {
+      "id": "lesson-08-conn-kbd-gate",
+      "sourceComponentId": "lesson-08-keyboard",
+      "sourcePortId": "gate",
+      "targetComponentId": "lesson-08-adsr",
+      "targetPortId": "gate",
+      "signalType": "gate"
+    },
+    {
+      "id": "lesson-08-conn-osc-filter",
+      "sourceComponentId": "lesson-08-oscillator",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-08-filter",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "lesson-08-conn-filter-vca",
+      "sourceComponentId": "lesson-08-filter",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-08-vca",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "lesson-08-conn-adsr-vca",
+      "sourceComponentId": "lesson-08-adsr",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-08-vca",
+      "targetPortId": "cv",
+      "signalType": "cv"
+    },
+    {
+      "id": "lesson-08-conn-vca-out",
+      "sourceComponentId": "lesson-08-vca",
+      "sourcePortId": "output",
+      "targetComponentId": "lesson-08-master-output",
+      "targetPortId": "input",
+      "signalType": "audio"
+    }
+  ]
+}

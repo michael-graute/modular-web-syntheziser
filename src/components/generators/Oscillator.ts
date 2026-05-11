@@ -169,7 +169,7 @@ export class Oscillator extends SynthComponent {
   /**
    * Get AudioParam for CV input (override from base class)
    */
-  protected override getAudioParamForInput(inputId: string): AudioParam | null {
+  override getAudioParamForInput(inputId: string): AudioParam | null {
     switch (inputId) {
       case 'frequency':
         return this.getFrequencyParam();
@@ -177,6 +177,40 @@ export class Oscillator extends SynthComponent {
         return this.getDetuneParam();
       default:
         return null;
+    }
+  }
+
+  override getParameterRangeForInput(portId: string): { min: number; max: number } | null {
+    switch (portId) {
+      case 'frequency':
+        return { min: AUDIO.MIN_FREQUENCY, max: AUDIO.MAX_FREQUENCY };
+      case 'detune':
+        return { min: AUDIO.MIN_DETUNE, max: AUDIO.MAX_DETUNE };
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * When a CV source connects to the frequency input, zero the oscillator's base
+   * frequency so the CV signal is the sole driver (not additive on top of the knob value).
+   */
+  override onInputConnected(portId: string): void {
+    if (portId === 'frequency' && this.oscillator) {
+      const ctx = audioEngine.getContext();
+      this.oscillator.frequency.setValueAtTime(0, ctx.currentTime);
+    }
+  }
+
+  /**
+   * When the frequency CV connection is removed, restore the base frequency from
+   * the knob parameter value so the oscillator plays at the manually set pitch.
+   */
+  override onInputDisconnected(portId: string): void {
+    if (portId === 'frequency' && this.oscillator) {
+      const ctx = audioEngine.getContext();
+      const base = this.getParameter('frequency')?.getValue() ?? 0;
+      this.oscillator.frequency.setValueAtTime(base, ctx.currentTime);
     }
   }
 
