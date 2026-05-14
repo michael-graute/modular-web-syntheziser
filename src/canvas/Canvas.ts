@@ -345,7 +345,16 @@ export class Canvas {
    */
   private handlePointerMove(e: PointerEvent): void {
     const ptr = this.activePointers.get(e.pointerId);
-    if (!ptr) return;
+
+    // No active pointer, but if we're in CONNECTING mode we still need to update
+    // the preview cable to follow the cursor (click-to-start, click-to-end flow).
+    if (!ptr) {
+      if (this.interactionMode === InteractionMode.CONNECTING) {
+        const { screenX, screenY } = getEventPosition(e, this.canvas);
+        this.handleMouseMove(this.syntheticMouseEvent(e, screenX, screenY));
+      }
+      return;
+    }
 
     const { screenX, screenY } = getEventPosition(e, this.canvas);
     ptr.currentX = screenX;
@@ -557,12 +566,12 @@ export class Canvas {
       }
     }
 
-    // Check if clicking on a connection for deletion — plain click on the cable removes it
+    // Check if shift-clicking on a connection for deletion — shift+click on the cable removes it
     const clickedConnectionId = this.connectionManager.getConnectionAt(
       worldPos.x,
       worldPos.y
     );
-    if (clickedConnectionId) {
+    if (clickedConnectionId && e.shiftKey) {
       this.connectionManager.removeConnection(clickedConnectionId);
       return;
     }
