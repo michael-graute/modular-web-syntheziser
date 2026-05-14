@@ -22,6 +22,7 @@ import type { Looper } from '../components/utilities/Looper';
 import type { BarCount } from '../components/utilities/LooperConstants';
 import { eventBus } from '../core/EventBus';
 import { EventType } from '../core/types';
+import { midiEngine } from '../midi/MidiEngine';
 
 type Control = Knob | Dropdown | Slider | Button;
 
@@ -1573,8 +1574,29 @@ export class CanvasComponent {
    * Render UI controls
    */
   private renderControls(ctx: CanvasRenderingContext2D): void {
+    const mappings = midiEngine.getMappings();
+    const mappedParams = new Set(mappings.map((m) => m.componentId === this.synthComponent?.id ? m.parameterName : null).filter(Boolean));
+
     this.controls.forEach(control => {
       control.render(ctx);
+
+      // Draw a small MIDI-assigned dot on controls that have an active mapping
+      if ((control instanceof Knob || control instanceof Slider) && mappedParams.size > 0) {
+        const param = control.getParameter();
+        const paramName = this.bareParamId(param.id);
+        if (mappedParams.has(paramName)) {
+          const bounds = control.getBounds();
+          const dotR = 3;
+          const dotX = bounds.x + bounds.width - dotR - 1;
+          const dotY = bounds.y + dotR + 1;
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(dotX, dotY, dotR, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(66, 165, 245, 0.9)';
+          ctx.fill();
+          ctx.restore();
+        }
+      }
     });
   }
 
@@ -1886,6 +1908,22 @@ export class CanvasComponent {
    * Returns true if a control handled the event
    */
   handleControlMouseDown(x: number, y: number): boolean {
+    // MIDI Learn interception: if learn mode is active, the first knob/slider click
+    // registers a mapping instead of adjusting the parameter normally.
+    if (midiEngine.isLearnActive() && this.synthComponent) {
+      for (const control of this.controls) {
+        const isHit =
+          (control instanceof Knob && control.containsPoint(x, y)) ||
+          (control instanceof Slider && control.containsPoint(x, y));
+        if (isHit) {
+          const param = control.getParameter();
+          const paramName = this.bareParamId(param.id);
+          midiEngine.startLearn(this.synthComponent.id, paramName);
+          return true;
+        }
+      }
+    }
+
     // Check bypass button first
     if (this.bypassButton?.handleMouseDown(x, y)) {
       return true;

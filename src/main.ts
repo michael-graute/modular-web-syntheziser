@@ -29,6 +29,8 @@ import { GlobalBpmControl } from './ui/GlobalBpmControl';
 import { globalTransportController } from './core/GlobalTransportController';
 import { GlobalTransportControl } from './ui/GlobalTransportControl';
 import { ContextMenu } from './ui/ContextMenu';
+import { midiEngine } from './midi/MidiEngine';
+import { MidiToolbar } from './ui/MidiToolbar';
 
 // Ensure singletons are initialized at app startup
 void globalBpmController;
@@ -315,6 +317,27 @@ async function init(): Promise<void> {
     return;
   }
 
+  // Initialize MIDI engine (graceful — no error if MIDI unavailable)
+  await midiEngine.init();
+  new MidiToolbar();
+
+  // Route MIDI note events to the existing note trigger functions
+  eventBus.on(EventType.NOTE_ON, (data) => {
+    const payload = data as { note: number; velocity: number };
+    triggerNoteOn(payload.note, payload.velocity);
+  });
+  eventBus.on(EventType.NOTE_OFF, (data) => {
+    const payload = data as { note: number };
+    triggerNoteOff(payload.note);
+  });
+
+  // Escape cancels an active MIDI Learn session
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && midiEngine.isLearnActive()) {
+      midiEngine.cancelLearn();
+    }
+  });
+
   // Initialize canvas system
   const canvasElement = document.getElementById('synth-canvas') as HTMLCanvasElement;
   if (canvasElement) {
@@ -323,6 +346,16 @@ async function init(): Promise<void> {
 
     // Set canvas for patch manager
     patchManager.setCanvas(canvas);
+
+    // Give MidiEngine a way to resolve componentId → SynthComponent
+    midiEngine.setComponentResolver((id: string) => {
+      const components = canvas!.getComponents();
+      for (const vc of components) {
+        const sc = (vc as any).getSynthComponent?.();
+        if (sc?.id === id) return sc;
+      }
+      return null;
+    });
 
     // Listen for component add requests from drag-and-drop
     eventBus.on(EventType.COMPONENT_ADD_REQUESTED, (data: any) => {

@@ -356,6 +356,17 @@ export abstract class SynthComponent {
   }
 
   /**
+   * Get the min/max range for a named parameter (simple ID).
+   * Used by MidiEngine to scale CC values into the parameter's native range.
+   * Returns { min: 0, max: 1 } as a safe fallback for unknown parameters.
+   */
+  getParameterRange(parameterName: string): { min: number; max: number } {
+    const param = this.parameters.get(parameterName);
+    if (param) return { min: param.min, max: param.max };
+    return { min: 0, max: 1 };
+  }
+
+  /**
    * Disconnect from another component
    */
   disconnectFrom(target: SynthComponent, outputId?: string, inputId?: string): void {

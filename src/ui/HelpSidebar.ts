@@ -194,6 +194,7 @@ export class HelpSidebar {
       { id: 'components', label: 'Components' },
       { id: 'connections', label: 'Connections' },
       { id: 'keyboard', label: 'Keyboard' },
+      { id: 'midi', label: 'MIDI' },
       { id: 'patches', label: 'Patches' },
       { id: 'shortcuts', label: 'Shortcuts' },
       { id: 'tips', label: 'Tips & Tricks' },
@@ -383,6 +384,8 @@ export class HelpSidebar {
         return this.getConnectionsContent();
       case 'keyboard':
         return this.getKeyboardContent();
+      case 'midi':
+        return this.getMidiContent();
       case 'patches':
         return this.getPatchesContent();
       case 'shortcuts':
@@ -1085,6 +1088,18 @@ export class HelpSidebar {
           <td style="padding: 12px 0; font-family: monospace;">Spacebar</td>
         </tr>
       </table>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">MIDI</h3>
+      <table style="width: 100%; border-collapse: collapse; color: var(--text-secondary, #cccccc);">
+        <tr style="border-bottom: 1px solid var(--border-color, #444);">
+          <td style="padding: 12px 0; font-weight: 600; color: var(--text-primary, #ffffff);">Action</td>
+          <td style="padding: 12px 0; font-weight: 600; color: var(--text-primary, #ffffff);">Shortcut</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border-color, #444);">
+          <td style="padding: 12px 0;">Cancel MIDI Learn</td>
+          <td style="padding: 12px 0; font-family: monospace;">Escape</td>
+        </tr>
+      </table>
     `;
   }
 
@@ -1202,6 +1217,90 @@ export class HelpSidebar {
           There are no wrong answers in sound design.
         </p>
       </div>
+    `;
+  }
+
+  /**
+   * MIDI section content
+   */
+  private getMidiContent(): string {
+    return `
+      <h2 style="margin-top: 0; color: var(--text-primary, #ffffff);">MIDI Support</h2>
+
+      <p style="color: var(--text-secondary, #cccccc);">
+        Connect a USB MIDI keyboard or controller to play notes and control parameters in real time.
+        MIDI support uses the Web MIDI API — Chrome and Edge work out of the box; Firefox and Safari may require a browser extension.
+      </p>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Connecting a Device</h3>
+      <ol style="color: var(--text-secondary, #cccccc);">
+        <li style="margin-bottom: 10px;">Plug in your USB MIDI keyboard or controller.</li>
+        <li style="margin-bottom: 10px;">Open (or reload) the app — the browser will request MIDI permission. Click <strong style="color: var(--text-primary, #ffffff);">Allow</strong>.</li>
+        <li style="margin-bottom: 10px;">The device appears automatically in the <strong style="color: var(--text-primary, #ffffff);">MIDI toolbar</strong> below the canvas. A green dot confirms the connection.</li>
+        <li style="margin-bottom: 10px;">If you have multiple devices, use the dropdown to pick the active one.</li>
+        <li style="margin-bottom: 10px;">Play notes — the on-screen keyboard highlights the keys in real time.</li>
+      </ol>
+
+      <div style="background: var(--bg-secondary, #1a1a1a); padding: 12px 16px; border-radius: 8px; border-left: 4px solid #4caf50; margin: 16px 0;">
+        <p style="color: var(--text-secondary, #cccccc); margin: 0;">
+          <strong style="color: var(--text-primary, #ffffff);">Status indicators</strong> in the toolbar:
+          <br>● <strong style="color: #4caf50;">Green dot</strong> — device connected and active
+          <br>● <strong style="color: #888;">Grey dot</strong> — MIDI available but no device detected
+          <br>● <strong style="color: #444;">Dark dot</strong> — Web MIDI not available in this browser
+        </p>
+      </div>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Playing Notes via MIDI</h3>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Once a device is connected, notes played on the MIDI keyboard trigger all <strong style="color: var(--text-primary, #ffffff);">Keyboard Input</strong> components on the canvas — exactly the same as clicking the on-screen piano.
+        Velocity is passed through, so dynamics respond to how hard you press the keys.
+      </p>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">MIDI Learn — Map CC to Parameters</h3>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Any knob or slider on any component can be assigned to a physical CC controller:
+      </p>
+      <ol style="color: var(--text-secondary, #cccccc);">
+        <li style="margin-bottom: 10px;">
+          Click <strong style="color: var(--text-primary, #ffffff);">MIDI Learn</strong> in the toolbar — the button turns blue and the app enters "waiting for click" mode.
+        </li>
+        <li style="margin-bottom: 10px;">
+          Click any <strong style="color: var(--text-primary, #ffffff);">knob or slider</strong> on the canvas — it pulses with a blue glow to show it is waiting for a CC message.
+        </li>
+        <li style="margin-bottom: 10px;">
+          Turn a <strong style="color: var(--text-primary, #ffffff);">physical knob or fader</strong> on your MIDI controller — the mapping is created instantly.
+        </li>
+        <li style="margin-bottom: 10px;">
+          The MIDI Learn button resets. The mapped control now shows a <strong style="color: var(--text-primary, #ffffff);">small blue dot</strong> in its corner.
+        </li>
+      </ol>
+      <p style="color: var(--text-secondary, #cccccc);">
+        To abort at any step, click <strong style="color: var(--text-primary, #ffffff);">Cancel Learn</strong> in the toolbar, or press <strong style="color: var(--text-primary, #ffffff);">Escape</strong>.
+      </p>
+      <div style="background: var(--bg-secondary, #1a1a1a); padding: 12px 16px; border-radius: 8px; border-left: 4px solid var(--accent-color, #0066cc); margin: 8px 0 16px;">
+        <p style="color: var(--text-secondary, #cccccc); margin: 0;">
+          <strong style="color: var(--text-primary, #ffffff);">Tip:</strong> CC values are automatically scaled to each parameter's full range.
+          A filter cutoff mapped to CC 74 will sweep from its minimum to maximum regardless of what value range the knob physically sends.
+        </p>
+      </div>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Managing Mappings</h3>
+      <ol style="color: var(--text-secondary, #cccccc);">
+        <li style="margin-bottom: 10px;">Click <strong style="color: var(--text-primary, #ffffff);">Mappings</strong> in the toolbar to open the MIDI Mappings panel.</li>
+        <li style="margin-bottom: 10px;">The table lists every active assignment: Component, Parameter, CC number, and Channel.</li>
+        <li style="margin-bottom: 10px;">Click <strong style="color: var(--text-primary, #ffffff);">Delete</strong> on a row to remove that single mapping.</li>
+        <li style="margin-bottom: 10px;">Click <strong style="color: var(--text-primary, #ffffff);">Clear All</strong> (with confirmation) to remove every mapping at once.</li>
+      </ol>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Patch Persistence</h3>
+      <p style="color: var(--text-secondary, #cccccc);">
+        All MIDI mappings are saved as part of the patch. When you save and reload a patch — or export and import a JSON file — every mapping is restored automatically. Legacy patches without MIDI mappings load without any issues.
+      </p>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">MIDI Channels</h3>
+      <p style="color: var(--text-secondary, #cccccc);">
+        By default, MIDI Learn captures the channel of the first CC message received and stores it with the mapping. A mapping on <strong style="color: var(--text-primary, #ffffff);">Channel 0</strong> acts as <em>omni</em> — it matches incoming messages on any channel.
+      </p>
     `;
   }
 
