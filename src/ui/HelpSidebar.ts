@@ -1301,6 +1301,23 @@ export class HelpSidebar {
       <p style="color: var(--text-secondary, #cccccc);">
         By default, MIDI Learn captures the channel of the first CC message received and stores it with the mapping. A mapping on <strong style="color: var(--text-primary, #ffffff);">Channel 0</strong> acts as <em>omni</em> — it matches incoming messages on any channel.
       </p>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">MIDI Monitor</h3>
+      <p style="color: var(--text-secondary, #cccccc);">
+        The MIDI Monitor is a floating diagnostic window that shows every incoming MIDI message in real time — useful for checking what your controller is actually sending before or after setting up mappings.
+      </p>
+      <ol style="color: var(--text-secondary, #cccccc);">
+        <li style="margin-bottom: 10px;">Click <strong style="color: var(--text-primary, #ffffff);">MIDI Monitor</strong> in the toolbar to open the window.</li>
+        <li style="margin-bottom: 10px;">Each incoming message appears as a new row: <strong style="color: var(--text-primary, #ffffff);">Time · Type · Channel · Data 1 · Data 2</strong>.</li>
+        <li style="margin-bottom: 10px;">The log auto-scrolls to the latest entry. Scroll up manually to pause auto-scroll; scroll back to the bottom to resume.</li>
+        <li style="margin-bottom: 10px;">Click <strong style="color: var(--text-primary, #ffffff);">Clear Log</strong> to empty the list instantly.</li>
+        <li style="margin-bottom: 10px;">Drag the title bar to reposition the window. Press <strong style="color: var(--text-primary, #ffffff);">Escape</strong> or click <strong style="color: var(--text-primary, #ffffff);">✕</strong> to close it.</li>
+      </ol>
+      <div style="background: var(--bg-secondary, #1a1a1a); padding: 12px 16px; border-radius: 8px; border-left: 4px solid var(--accent-color, #0066cc); margin: 8px 0 16px;">
+        <p style="color: var(--text-secondary, #cccccc); margin: 0;">
+          <strong style="color: var(--text-primary, #ffffff);">Tip:</strong> The log is capped at 500 entries. Older messages are removed automatically once the cap is reached, so the window stays responsive even during high-frequency CC or clock messages.
+        </p>
+      </div>
     `;
   }
 
