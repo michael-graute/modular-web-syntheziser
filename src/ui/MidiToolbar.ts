@@ -1,4 +1,5 @@
 import { midiEngine } from '../midi/MidiEngine';
+import { MidiMappingsModal } from './MidiMappingsModal';
 import { eventBus } from '../core/EventBus';
 import { EventType } from '../core/types';
 import type { MidiDeviceInfo } from '../core/types';
@@ -8,6 +9,8 @@ export class MidiToolbar {
   private statusEl: HTMLSpanElement;
   private select: HTMLSelectElement;
   private learnBtn: HTMLButtonElement;
+  private mappingsBtn: HTMLButtonElement;
+  private mappingsModal: MidiMappingsModal;
   private unsubConnected: (() => void) | null = null;
   private unsubDisconnected: (() => void) | null = null;
   private unsubLearnStarted: (() => void) | null = null;
@@ -17,6 +20,8 @@ export class MidiToolbar {
   constructor() {
     const mount = document.getElementById('midi-toolbar');
     if (!mount) throw new Error('MidiToolbar: #midi-toolbar not found');
+
+    this.mappingsModal = new MidiMappingsModal();
 
     this.container = document.createElement('div');
     this.container.className = 'midi-toolbar';
@@ -34,9 +39,15 @@ export class MidiToolbar {
     this.learnBtn.disabled = true;
     this.learnBtn.title = 'Click to enter MIDI Learn mode, then click a knob';
 
+    this.mappingsBtn = document.createElement('button');
+    this.mappingsBtn.className = 'midi-mappings-open-btn';
+    this.mappingsBtn.textContent = 'Mappings';
+    this.mappingsBtn.title = 'View and manage MIDI CC mappings';
+
     this.container.appendChild(this.statusEl);
     this.container.appendChild(this.select);
     this.container.appendChild(this.learnBtn);
+    this.container.appendChild(this.mappingsBtn);
     mount.appendChild(this.container);
 
     this.select.addEventListener('change', () => {
@@ -50,6 +61,10 @@ export class MidiToolbar {
       } else {
         midiEngine.enableLearnMode();
       }
+    });
+
+    this.mappingsBtn.addEventListener('click', () => {
+      this.mappingsModal.open();
     });
 
     this.unsubConnected = eventBus.on(EventType.MIDI_DEVICE_CONNECTED, () => this.refresh());

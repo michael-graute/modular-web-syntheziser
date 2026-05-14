@@ -95,12 +95,12 @@
 
 ### Implementation for User Story 3
 
-- [ ] T027 [US3] Add `getMappings(): MidiMapping[]` to `MidiEngine` — returns `Array.from(this.mappings.values())`
-- [ ] T028 [US3] Add `removeMapping(componentId: string, parameterName: string): void` to `MidiEngine` — deletes from registry, emits `MIDI_MAPPINGS_CHANGED`
-- [ ] T029 [US3] Add `clearAllMappings(): void` to `MidiEngine` — clears registry, emits `MIDI_MAPPINGS_CHANGED`
-- [ ] T030 [P] [US3] Create `src/ui/MidiMappingsModal.ts` — modal following the existing Welcome Dialog pattern: hidden by default; `open()` / `close()` methods; renders a table of mappings with columns (Component, Parameter, CC, Channel) plus a Delete button per row; renders a "Clear All" button with a `window.confirm()` guard; subscribes to `MIDI_MAPPINGS_CHANGED` to refresh table while open
-- [ ] T031 [US3] Wire "Mappings" button in `MidiToolbar` to `midiMappingsModal.open()`; instantiate `MidiMappingsModal` in `src/main.ts`
-- [ ] T032 [US3] Add modal styles to `src/styles/components.css`: `.midi-mappings-modal` overlay, `.midi-mappings-table` table layout, empty-state message when no mappings exist
+- [X] T027 [US3] Add `getMappings(): MidiMapping[]` to `MidiEngine` — returns `Array.from(this.mappings.values())`
+- [X] T028 [US3] Add `removeMapping(componentId: string, parameterName: string): void` to `MidiEngine` — deletes from registry, emits `MIDI_MAPPINGS_CHANGED`
+- [X] T029 [US3] Add `clearAllMappings(): void` to `MidiEngine` — clears registry, emits `MIDI_MAPPINGS_CHANGED`
+- [X] T030 [P] [US3] Create `src/ui/MidiMappingsModal.ts` — modal following the existing Welcome Dialog pattern: hidden by default; `open()` / `close()` methods; renders a table of mappings with columns (Component, Parameter, CC, Channel) plus a Delete button per row; renders a "Clear All" button with a `window.confirm()` guard; subscribes to `MIDI_MAPPINGS_CHANGED` to refresh table while open
+- [X] T031 [US3] Wire "Mappings" button in `MidiToolbar` to `midiMappingsModal.open()`; instantiate `MidiMappingsModal` in `src/main.ts`
+- [X] T032 [US3] Add modal styles to `src/styles/components.css`: `.midi-mappings-modal` overlay, `.midi-mappings-table` table layout, empty-state message when no mappings exist
 
 **Checkpoint**: US3 complete. All three user stories independently functional. `vitest run` passes.
 

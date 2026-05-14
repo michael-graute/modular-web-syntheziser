@@ -417,3 +417,167 @@
   outline-offset: 1px;
   border-radius: 2px;
 }
+
+/* ---- Mappings button in toolbar ---- */
+.midi-mappings-open-btn {
+  font-size: 12px;
+  padding: 2px 10px;
+  background: var(--color-bg-tertiary, #2a2a2a);
+  color: var(--color-text-primary, #eee);
+  border: 1px solid var(--color-border-primary, #444);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.midi-mappings-open-btn:hover {
+  background: var(--color-bg-hover, #3a3a3a);
+}
+
+/* ---- MIDI Mappings Modal ---- */
+.midi-mappings-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+}
+
+.midi-mappings-modal {
+  background: var(--color-bg-primary, #1a1a1a);
+  border: 1px solid var(--color-border-primary, #333);
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  width: 580px;
+  max-width: 90vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.midi-mappings-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border-primary, #333);
+  flex-shrink: 0;
+}
+
+.midi-mappings-modal__title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #eee);
+}
+
+.midi-mappings-modal__close {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary, #aaa);
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.midi-mappings-modal__close:hover {
+  background: var(--color-bg-hover, #3a3a3a);
+  color: var(--color-text-primary, #eee);
+}
+
+.midi-mappings-modal__body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.midi-mappings-modal__footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--color-border-primary, #333);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.midi-mappings-empty {
+  color: var(--color-text-secondary, #888);
+  font-size: 0.875rem;
+  margin: 0;
+  padding: 12px 0;
+}
+
+.midi-mappings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  color: var(--color-text-primary, #eee);
+}
+
+.midi-mappings-table th {
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--color-border-primary, #333);
+  color: var(--color-text-secondary, #aaa);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.midi-mappings-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.midi-mappings-table tr:last-child td {
+  border-bottom: none;
+}
+
+.midi-mappings-btn {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 3px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.midi-mappings-btn--secondary {
+  background: var(--color-bg-tertiary, #2a2a2a);
+  color: var(--color-text-primary, #eee);
+  border: 1px solid var(--color-border-primary, #444);
+}
+
+.midi-mappings-btn--secondary:hover {
+  background: var(--color-bg-hover, #3a3a3a);
+}
+
+.midi-mappings-btn--danger {
+  background: #c62828;
+  color: #fff;
+}
+
+.midi-mappings-btn--danger:hover {
+  background: #b71c1c;
+}
+
+.midi-mappings-btn--small {
+  padding: 2px 8px;
+  font-size: 11px;
+}
