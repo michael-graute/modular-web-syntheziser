@@ -331,6 +331,13 @@ async function init(): Promise<void> {
     triggerNoteOff(payload.note);
   });
 
+  // Escape cancels an active MIDI Learn session
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && midiEngine.isLearnActive()) {
+      midiEngine.cancelLearn();
+    }
+  });
+
   // Initialize canvas system
   const canvasElement = document.getElementById('synth-canvas') as HTMLCanvasElement;
   if (canvasElement) {
@@ -339,6 +346,16 @@ async function init(): Promise<void> {
 
     // Set canvas for patch manager
     patchManager.setCanvas(canvas);
+
+    // Give MidiEngine a way to resolve componentId → SynthComponent
+    midiEngine.setComponentResolver((id: string) => {
+      const components = canvas!.getComponents();
+      for (const vc of components) {
+        const sc = (vc as any).getSynthComponent?.();
+        if (sc?.id === id) return sc;
+      }
+      return null;
+    });
 
     // Listen for component add requests from drag-and-drop
     eventBus.on(EventType.COMPONENT_ADD_REQUESTED, (data: any) => {

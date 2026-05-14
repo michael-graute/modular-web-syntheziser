@@ -22,6 +22,7 @@ import type { Looper } from '../components/utilities/Looper';
 import type { BarCount } from '../components/utilities/LooperConstants';
 import { eventBus } from '../core/EventBus';
 import { EventType } from '../core/types';
+import { midiEngine } from '../midi/MidiEngine';
 
 type Control = Knob | Dropdown | Slider | Button;
 
@@ -1886,6 +1887,22 @@ export class CanvasComponent {
    * Returns true if a control handled the event
    */
   handleControlMouseDown(x: number, y: number): boolean {
+    // MIDI Learn interception: if learn mode is active, the first knob/slider click
+    // registers a mapping instead of adjusting the parameter normally.
+    if (midiEngine.isLearnActive() && this.synthComponent) {
+      for (const control of this.controls) {
+        const isHit =
+          (control instanceof Knob && control.containsPoint(x, y)) ||
+          (control instanceof Slider && control.containsPoint(x, y));
+        if (isHit) {
+          const param = control.getParameter();
+          const paramName = this.bareParamId(param.id);
+          midiEngine.startLearn(this.synthComponent.id, paramName);
+          return true;
+        }
+      }
+    }
+
     // Check bypass button first
     if (this.bypassButton?.handleMouseDown(x, y)) {
       return true;

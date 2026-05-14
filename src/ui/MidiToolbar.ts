@@ -10,6 +10,9 @@ export class MidiToolbar {
   private learnBtn: HTMLButtonElement;
   private unsubConnected: (() => void) | null = null;
   private unsubDisconnected: (() => void) | null = null;
+  private unsubLearnStarted: (() => void) | null = null;
+  private unsubLearnCompleted: (() => void) | null = null;
+  private unsubLearnCancelled: (() => void) | null = null;
 
   constructor() {
     const mount = document.getElementById('midi-toolbar');
@@ -18,21 +21,18 @@ export class MidiToolbar {
     this.container = document.createElement('div');
     this.container.className = 'midi-toolbar';
 
-    // Status indicator
     this.statusEl = document.createElement('span');
     this.statusEl.className = 'midi-status';
 
-    // Device picker
     this.select = document.createElement('select');
     this.select.className = 'midi-device-select';
     this.select.title = 'MIDI Input Device';
 
-    // MIDI Learn button (inactive in Phase 3 — wired in Phase 4)
     this.learnBtn = document.createElement('button');
     this.learnBtn.className = 'midi-learn-btn';
     this.learnBtn.textContent = 'MIDI Learn';
     this.learnBtn.disabled = true;
-    this.learnBtn.title = 'MIDI Learn (available after device connected)';
+    this.learnBtn.title = 'Click to enter MIDI Learn mode, then click a knob';
 
     this.container.appendChild(this.statusEl);
     this.container.appendChild(this.select);
@@ -44,8 +44,31 @@ export class MidiToolbar {
       midiEngine.setActiveInput(val || null);
     });
 
+    this.learnBtn.addEventListener('click', () => {
+      if (midiEngine.isLearnActive()) {
+        midiEngine.cancelLearn();
+      } else {
+        midiEngine.enableLearnMode();
+      }
+    });
+
     this.unsubConnected = eventBus.on(EventType.MIDI_DEVICE_CONNECTED, () => this.refresh());
     this.unsubDisconnected = eventBus.on(EventType.MIDI_DEVICE_DISCONNECTED, () => this.refresh());
+
+    this.unsubLearnStarted = eventBus.on(EventType.MIDI_LEARN_STARTED, () => {
+      this.learnBtn.classList.add('active');
+      this.learnBtn.textContent = 'Cancel Learn';
+    });
+
+    this.unsubLearnCompleted = eventBus.on(EventType.MIDI_LEARN_COMPLETED, () => {
+      this.learnBtn.classList.remove('active');
+      this.learnBtn.textContent = 'MIDI Learn';
+    });
+
+    this.unsubLearnCancelled = eventBus.on(EventType.MIDI_LEARN_CANCELLED, () => {
+      this.learnBtn.classList.remove('active');
+      this.learnBtn.textContent = 'MIDI Learn';
+    });
 
     this.refresh();
   }
@@ -54,7 +77,6 @@ export class MidiToolbar {
     const inputs = midiEngine.getAvailableInputs();
     const currentId = midiEngine.activeInputId;
 
-    // Rebuild options
     this.select.innerHTML = '';
     if (inputs.length === 0) {
       const opt = document.createElement('option');
@@ -94,7 +116,13 @@ export class MidiToolbar {
   destroy(): void {
     this.unsubConnected?.();
     this.unsubDisconnected?.();
+    this.unsubLearnStarted?.();
+    this.unsubLearnCompleted?.();
+    this.unsubLearnCancelled?.();
     this.unsubConnected = null;
     this.unsubDisconnected = null;
+    this.unsubLearnStarted = null;
+    this.unsubLearnCompleted = null;
+    this.unsubLearnCancelled = null;
   }
 }

@@ -2,16 +2,27 @@ import type { MidiMapping, MidiLearnSession, MidiDeviceInfo, PatchData } from '.
 import { EventType } from '../core/types';
 import { eventBus } from '../core/EventBus';
 import { NoteMapper } from '../keyboard/NoteMapper';
-import { mappingKey, sanitiseMidiMappings } from './midiValidation';
+import { mappingKey, scaleCcToParam, sanitiseMidiMappings } from './midiValidation';
+import type { SynthComponent } from '../components/base/SynthComponent';
 
 class MidiEngine {
   private mappings: Map<string, MidiMapping> = new Map();
   private learnSession: MidiLearnSession | null = null;
+  // True while the toolbar "MIDI Learn" button is toggled but no control has been clicked yet
+  learnModeEnabled: boolean = false;
   activeInputId: string | null = null;
   midiAccess: MIDIAccess | null = null;
 
+  // Injected by main.ts after canvas is ready
+  private componentResolver: ((id: string) => SynthComponent | null) | null = null;
+
+  setComponentResolver(fn: (id: string) => SynthComponent | null): void {
+    this.componentResolver = fn;
+  }
+
+  /** True when the toolbar has toggled learn mode (waiting for a control click) */
   isLearnActive(): boolean {
-    return this.learnSession !== null;
+    return this.learnModeEnabled || this.learnSession !== null;
   }
 
   async init(): Promise<void> {
@@ -27,24 +38,20 @@ class MidiEngine {
       return;
     }
 
-    // Emit connected event for each input already present
     this.midiAccess.inputs.forEach((input) => {
       eventBus.emit(EventType.MIDI_DEVICE_CONNECTED, { deviceName: input.name ?? input.id });
     });
 
-    // Auto-select the first available device
     const inputs = Array.from(this.midiAccess.inputs.values());
     if (inputs.length > 0) {
       this.setActiveInput(inputs[0]!.id);
     }
 
-    // Hot-plug
     this.midiAccess.onstatechange = (e) => {
       const port = e.port;
       if (!port || port.type !== 'input') return;
       if (port.state === 'connected') {
         eventBus.emit(EventType.MIDI_DEVICE_CONNECTED, { deviceName: port.name ?? port.id });
-        // Auto-select if nothing is currently active
         if (!this.activeInputId) {
           this.setActiveInput(port.id);
         }
@@ -71,7 +78,6 @@ class MidiEngine {
   }
 
   setActiveInput(deviceId: string | null): void {
-    // Unregister previous listener
     if (this.activeInputId && this.midiAccess) {
       const prev = this.midiAccess.inputs.get(this.activeInputId);
       if (prev) prev.onmidimessage = null;
@@ -87,6 +93,38 @@ class MidiEngine {
     }
   }
 
+  enableLearnMode(): void {
+    this.learnModeEnabled = true;
+    this.learnSession = null;
+    eventBus.emit(EventType.MIDI_LEARN_STARTED, { componentId: '', parameterName: '' });
+  }
+
+  startLearn(componentId: string, parameterName: string): void {
+    this.learnModeEnabled = false;
+    this.learnSession = { componentId, parameterName };
+    eventBus.emit(EventType.MIDI_LEARN_STARTED, { componentId, parameterName });
+  }
+
+  cancelLearn(): void {
+    this.learnModeEnabled = false;
+    this.learnSession = null;
+    eventBus.emit(EventType.MIDI_LEARN_CANCELLED, {});
+  }
+
+  getMappings(): MidiMapping[] {
+    return Array.from(this.mappings.values());
+  }
+
+  removeMapping(componentId: string, parameterName: string): void {
+    this.mappings.delete(mappingKey(componentId, parameterName));
+    eventBus.emit(EventType.MIDI_MAPPINGS_CHANGED, {});
+  }
+
+  clearAllMappings(): void {
+    this.mappings.clear();
+    eventBus.emit(EventType.MIDI_MAPPINGS_CHANGED, {});
+  }
+
   private handleMidiMessage(event: MIDIMessageEvent): void {
     const data = event.data;
     if (!data || data.length < 2) return;
@@ -96,16 +134,62 @@ class MidiEngine {
     const byte2 = data.length > 2 ? data[2]! : 0;
 
     const msgType = status & 0xf0;
+    const channel = status & 0x0f;
 
     if (msgType === 0x90 && byte2 > 0) {
-      // Note On
       const frequency = NoteMapper.midiToFrequency(byte1);
       eventBus.emit(EventType.NOTE_ON, { note: byte1, velocity: byte2 / 127, frequency });
     } else if (msgType === 0x80 || (msgType === 0x90 && byte2 === 0)) {
-      // Note Off
       eventBus.emit(EventType.NOTE_OFF, { note: byte1 });
+    } else if (msgType === 0xb0) {
+      // CC message
+      const cc = byte1;
+      const ccValue = byte2;
+
+      if (this.learnSession) {
+        // Complete learn: resolve parameter range, create mapping
+        const { componentId, parameterName } = this.learnSession;
+        const component = this.componentResolver?.(componentId) ?? null;
+        const range = component
+          ? component.getParameterRange(parameterName)
+          : { min: 0, max: 1 };
+
+        const mapping: MidiMapping = {
+          componentId,
+          parameterName,
+          channel,
+          cc,
+          minValue: range.min,
+          maxValue: range.max,
+        };
+
+        this.mappings.set(mappingKey(componentId, parameterName), mapping);
+        this.learnSession = null;
+        eventBus.emit(EventType.MIDI_LEARN_COMPLETED, { mapping });
+        eventBus.emit(EventType.MIDI_MAPPINGS_CHANGED, {});
+      } else {
+        this.dispatchCc(channel, cc, ccValue);
+      }
     }
-    // CC handling deferred to Phase 4 (T020)
+  }
+
+  private dispatchCc(channel: number, cc: number, value: number): void {
+    this.mappings.forEach((mapping) => {
+      // channel 0 = omni: match any channel
+      if (mapping.cc !== cc) return;
+      if (mapping.channel !== 0 && mapping.channel !== channel) return;
+
+      const scaled = scaleCcToParam(value, mapping.minValue, mapping.maxValue);
+      const component = this.componentResolver?.(mapping.componentId) ?? null;
+      if (!component) return;
+
+      component.setParameterValue(mapping.parameterName, scaled);
+      eventBus.emit(EventType.PARAMETER_CHANGED, {
+        componentId: mapping.componentId,
+        parameterId: mapping.parameterName,
+        value: scaled,
+      });
+    });
   }
 
   saveToPatch(patch: PatchData): void {
