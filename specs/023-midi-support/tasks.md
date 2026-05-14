@@ -16,10 +16,10 @@
 
 **Purpose**: Create new directories and extend existing type/event infrastructure that all later phases depend on.
 
-- [ ] T001 Create `src/midi/` directory (empty placeholder for MidiEngine)
-- [ ] T002 [P] Add `MidiMapping`, `MidiLearnSession`, `MidiDeviceInfo` interfaces to `src/core/types.ts` (from `specs/023-midi-support/contracts/types.ts`)
-- [ ] T003 [P] Add six MIDI `EventType` values to `src/core/types.ts`: `MIDI_DEVICE_CONNECTED`, `MIDI_DEVICE_DISCONNECTED`, `MIDI_LEARN_STARTED`, `MIDI_LEARN_COMPLETED`, `MIDI_LEARN_CANCELLED`, `MIDI_MAPPINGS_CHANGED`
-- [ ] T004 [P] Add `midiMappings?: MidiMapping[]` optional field to the `PatchData` interface in `src/core/types.ts`
+- [X] T001 Create `src/midi/` directory (empty placeholder for MidiEngine)
+- [X] T002 [P] Add `MidiMapping`, `MidiLearnSession`, `MidiDeviceInfo` interfaces to `src/core/types.ts` (from `specs/023-midi-support/contracts/types.ts`)
+- [X] T003 [P] Add six MIDI `EventType` values to `src/core/types.ts`: `MIDI_DEVICE_CONNECTED`, `MIDI_DEVICE_DISCONNECTED`, `MIDI_LEARN_STARTED`, `MIDI_LEARN_COMPLETED`, `MIDI_LEARN_CANCELLED`, `MIDI_MAPPINGS_CHANGED`
+- [X] T004 [P] Add `midiMappings?: MidiMapping[]` optional field to the `PatchData` interface in `src/core/types.ts`
 
 **Checkpoint**: Type infrastructure ready — all downstream files can import new types without errors.
 
@@ -31,12 +31,12 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T005 Create `src/midi/MidiEngine.ts` — singleton class with: `requestAccess()` calling `navigator.requestMIDIAccess({ sysex: false })`; internal `Map<string, MidiMapping>` registry keyed by `componentId:parameterName`; internal `learnSession: MidiLearnSession | null = null`; `activeInputId: string | null`; `midiAccess: MIDIAccess | null`; `isLearnActive(): boolean` returning `this.learnSession !== null`; export singleton `midiEngine`. No dispatch logic yet.
-- [ ] T006 Add `saveToPatch(patch: PatchData): void` method to `MidiEngine` that writes `patch.midiMappings = Array.from(this.mappings.values())`
-- [ ] T007 Add `loadFromPatch(patch: PatchData): void` method to `MidiEngine` that replaces the registry with `sanitiseMidiMappings(patch.midiMappings ?? [])` — import `sanitiseMidiMappings` from a new `src/midi/midiValidation.ts` (copy logic from `specs/023-midi-support/contracts/validation.ts`)
-- [ ] T008 Create `src/midi/midiValidation.ts` — copy `isValidMidiMapping`, `scaleCcToParam`, `mappingKey`, `sanitiseMidiMappings` constants and functions verbatim from `specs/023-midi-support/contracts/validation.ts`
-- [ ] T009 Modify `src/patch/PatchSerializer.ts` — call `midiEngine.saveToPatch(patch)` during serialisation (after existing `globalBpmController.saveToPatch(patch)` call) and `midiEngine.loadFromPatch(patch)` during deserialisation (after components are recreated)
-- [ ] T010 Add `<div id="midi-toolbar"></div>` to `index.html` immediately below the `.canvas-container` closing tag and above the `.keyboard-section`
+- [X] T005 Create `src/midi/MidiEngine.ts` — singleton class with: `requestAccess()` calling `navigator.requestMIDIAccess({ sysex: false })`; internal `Map<string, MidiMapping>` registry keyed by `componentId:parameterName`; internal `learnSession: MidiLearnSession | null = null`; `activeInputId: string | null`; `midiAccess: MIDIAccess | null`; `isLearnActive(): boolean` returning `this.learnSession !== null`; export singleton `midiEngine`. No dispatch logic yet.
+- [X] T006 Add `saveToPatch(patch: PatchData): void` method to `MidiEngine` that writes `patch.midiMappings = Array.from(this.mappings.values())`
+- [X] T007 Add `loadFromPatch(patch: PatchData): void` method to `MidiEngine` that replaces the registry with `sanitiseMidiMappings(patch.midiMappings ?? [])` — import `sanitiseMidiMappings` from a new `src/midi/midiValidation.ts` (copy logic from `specs/023-midi-support/contracts/validation.ts`)
+- [X] T008 Create `src/midi/midiValidation.ts` — copy `isValidMidiMapping`, `scaleCcToParam`, `mappingKey`, `sanitiseMidiMappings` constants and functions verbatim from `specs/023-midi-support/contracts/validation.ts`
+- [X] T009 Modify `src/patch/PatchSerializer.ts` — call `midiEngine.saveToPatch(patch)` during serialisation (after existing `globalBpmController.saveToPatch(patch)` call) and `midiEngine.loadFromPatch(patch)` during deserialisation (after components are recreated)
+- [X] T010 Add `<div id="midi-toolbar"></div>` to `index.html` immediately below the `.canvas-container` closing tag and above the `.keyboard-section`
 
 **Checkpoint**: `MidiEngine` exists, patch round-trips include MIDI mappings, HTML has toolbar mount point. Run `npx tsc --noEmit` — zero errors expected.
 

@@ -107,6 +107,7 @@ export interface PatchData {
   modified: string;
   description?: string; // Optional description for factory patches
   globalBpm?: number; // Global BPM value; absent in legacy patches (defaults to 120 on load)
+  midiMappings?: MidiMapping[]; // CC-to-parameter bindings; absent in legacy patches (treated as [])
   components: ComponentData[];
   connections: Connection[];
 }
@@ -161,6 +162,12 @@ export enum EventType {
   TRANSPORT_STOP = 'transport:stop',
   TRANSPORT_BEAT = 'transport:beat',
   COMPONENT_LONG_PRESS = 'component:long-press',
+  MIDI_DEVICE_CONNECTED = 'midi:device-connected',
+  MIDI_DEVICE_DISCONNECTED = 'midi:device-disconnected',
+  MIDI_LEARN_STARTED = 'midi:learn-started',
+  MIDI_LEARN_COMPLETED = 'midi:learn-completed',
+  MIDI_LEARN_CANCELLED = 'midi:learn-cancelled',
+  MIDI_MAPPINGS_CHANGED = 'midi:mappings-changed',
 }
 
 /**
@@ -244,6 +251,42 @@ export interface TempoAware {
    * Takes effect at the component's next natural timing boundary.
    */
   applyGlobalBpm(bpm: number): void;
+}
+
+/**
+ * Persistent CC-to-parameter binding stored inside PatchData.
+ * Uniquely identified by (componentId, parameterName).
+ */
+export interface MidiMapping {
+  componentId: string;
+  parameterName: string;
+  /** MIDI channel 0–15; 0 means omni (accept on any channel) */
+  channel: number;
+  /** CC number 0–127 */
+  cc: number;
+  /** Parameter's minimum value — used for linear scaling */
+  minValue: number;
+  /** Parameter's maximum value — used for linear scaling */
+  maxValue: number;
+}
+
+/**
+ * Transient state held during a MIDI Learn session.
+ * Never serialised; discarded on page reload or cancel.
+ */
+export interface MidiLearnSession {
+  componentId: string;
+  parameterName: string;
+}
+
+/**
+ * Runtime representation of a connected MIDI input device.
+ * Not persisted in PatchData.
+ */
+export interface MidiDeviceInfo {
+  id: string;
+  name: string;
+  connected: boolean;
 }
 
 /**

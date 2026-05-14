@@ -6,6 +6,7 @@ import { PatchData, ComponentData, Connection as ConnectionType } from '../core/
 import type { SynthComponent } from '../components/base/SynthComponent';
 import type { Connection } from '../core/Connection';
 import { globalBpmController } from '../core/GlobalBpmController';
+import { midiEngine } from '../midi/MidiEngine';
 
 /**
  * Serializes patch data to JSON format
@@ -40,7 +41,9 @@ export class PatchSerializer {
       connections: connectionData,
     };
 
-    return globalBpmController.saveToPatch(patch);
+    const patchWithBpm = globalBpmController.saveToPatch(patch);
+    midiEngine.saveToPatch(patchWithBpm);
+    return patchWithBpm;
   }
 
   /**
@@ -137,6 +140,12 @@ export class PatchSerializer {
     if (typeof data.globalBpm === 'number') {
       validated.globalBpm = data.globalBpm;
     }
+
+    if (Array.isArray(data.midiMappings)) {
+      validated.midiMappings = data.midiMappings;
+    }
+
+    midiEngine.loadFromPatch(validated);
 
     return validated;
   }
