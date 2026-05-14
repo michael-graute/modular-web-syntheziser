@@ -1,4 +1,4 @@
-import type { MidiMapping, MidiLearnSession, MidiDeviceInfo, PatchData } from '../core/types';
+import type { MidiMapping, MidiLearnSession, MidiDeviceInfo, PatchData, MidiRawMessagePayload } from '../core/types';
 import { EventType } from '../core/types';
 import { eventBus } from '../core/EventBus';
 import { NoteMapper } from '../keyboard/NoteMapper';
@@ -132,6 +132,9 @@ class MidiEngine {
     const status = data[0]!;
     const byte1 = data[1]!;
     const byte2 = data.length > 2 ? data[2]! : 0;
+
+    const rawPayload: MidiRawMessagePayload = { status, byte1, byte2, timestamp: performance.now() };
+    eventBus.emit(EventType.MIDI_MESSAGE_RECEIVED, rawPayload);
 
     const msgType = status & 0xf0;
     const channel = status & 0x0f;

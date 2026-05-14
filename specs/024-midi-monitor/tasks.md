@@ -17,8 +17,8 @@
 
 **Purpose**: Add the new EventType and payload type that all subsequent work depends on.
 
-- [ ] T001 Add `MIDI_MESSAGE_RECEIVED` to `EventType` enum in `src/core/types.ts`
-- [ ] T002 Add `MidiRawMessagePayload` interface to `src/core/types.ts` (after `MidiLearnSession`)
+- [X] T001 Add `MIDI_MESSAGE_RECEIVED` to `EventType` enum in `src/core/types.ts`
+- [X] T002 Add `MidiRawMessagePayload` interface to `src/core/types.ts` (after `MidiLearnSession`)
 
 **Checkpoint**: Types compile — `EventType.MIDI_MESSAGE_RECEIVED` and `MidiRawMessagePayload` are importable across the codebase.
 
@@ -30,7 +30,7 @@
 
 **⚠️ CRITICAL**: US1 and US2 both depend on this phase being complete before work begins.
 
-- [ ] T003 Emit `EventType.MIDI_MESSAGE_RECEIVED` at the top of `handleMidiMessage()` in `src/midi/MidiEngine.ts`, carrying a `MidiRawMessagePayload` with `status`, `byte1`, `byte2`, and `performance.now()` timestamp
+- [X] T003 Emit `EventType.MIDI_MESSAGE_RECEIVED` at the top of `handleMidiMessage()` in `src/midi/MidiEngine.ts`, carrying a `MidiRawMessagePayload` with `status`, `byte1`, `byte2`, and `performance.now()` timestamp
 
 **Checkpoint**: Foundation ready — any subscriber calling `eventBus.on(EventType.MIDI_MESSAGE_RECEIVED, ...)` will now receive all raw MIDI messages.
 
@@ -44,11 +44,11 @@
 
 ### Implementation
 
-- [ ] T004 [US1] Create `src/ui/MidiMonitorWindow.ts` — class skeleton with constructor, `open()`, `close()`, and `isOpen` flag; build the floating window DOM structure (title bar, empty log container, footer with "Clear Log" button); append to `document.body` on first `open()` call
-- [ ] T005 [US1] Implement pointer-based drag on the title bar in `src/ui/MidiMonitorWindow.ts`: `pointerdown` sets capture + stores offset, `pointermove` updates `style.left` / `style.top`, `pointerup` releases capture
-- [ ] T006 [US1] Add idempotent guard to `open()` in `src/ui/MidiMonitorWindow.ts`: if `isOpen` is true, focus/scroll the window into view instead of re-opening
-- [ ] T007 [US1] Add "MIDI Monitor" button (`monitorBtn`) to `MidiToolbar` constructor in `src/ui/MidiToolbar.ts`: create button, append after `mappingsBtn`, wire click to `this.monitorWindow.open()`; instantiate `MidiMonitorWindow` as `this.monitorWindow`
-- [ ] T008 [P] [US1] Add `.midi-monitor-window`, `.midi-monitor-window__header`, `.midi-monitor-window__log`, `.midi-monitor-window__footer`, and `.midi-monitor-open-btn` CSS rules to `src/styles/components.css` (floating layout: `position: fixed`, `z-index: var(--z-index-popover)`, `min-width: 480px`, `max-height: 400px`, flex column)
+- [X] T004 [US1] Create `src/ui/MidiMonitorWindow.ts` — class skeleton with constructor, `open()`, `close()`, and `isOpen` flag; build the floating window DOM structure (title bar, empty log container, footer with "Clear Log" button); append to `document.body` on first `open()` call
+- [X] T005 [US1] Implement pointer-based drag on the title bar in `src/ui/MidiMonitorWindow.ts`: `pointerdown` sets capture + stores offset, `pointermove` updates `style.left` / `style.top`, `pointerup` releases capture
+- [X] T006 [US1] Add idempotent guard to `open()` in `src/ui/MidiMonitorWindow.ts`: if `isOpen` is true, focus/scroll the window into view instead of re-opening
+- [X] T007 [US1] Add "MIDI Monitor" button (`monitorBtn`) to `MidiToolbar` constructor in `src/ui/MidiToolbar.ts`: create button, append after `mappingsBtn`, wire click to `this.monitorWindow.open()`; instantiate `MidiMonitorWindow` as `this.monitorWindow`
+- [X] T008 [P] [US1] Add `.midi-monitor-window`, `.midi-monitor-window__header`, `.midi-monitor-window__log`, `.midi-monitor-window__footer`, and `.midi-monitor-open-btn` CSS rules to `src/styles/components.css` (floating layout: `position: fixed`, `z-index: var(--z-index-popover)`, `min-width: 480px`, `max-height: 400px`, flex column)
 
 **Checkpoint**: US1 fully functional — button visible in toolbar, window opens/focuses/closes correctly, drag works, no duplicate windows.
 
@@ -62,11 +62,11 @@
 
 ### Implementation
 
-- [ ] T009 [P] [US2] Add pure formatting helpers to `src/ui/MidiMonitorWindow.ts` (inline from `contracts/validation.ts`): `formatWallClock(date)`, `parseMidiType(status)`, `parseMidiChannel(status)`, `formatData1(status, byte1)`, `formatData2(status, byte2)`, `formatMidiLogEntry(payload)`; add `MIDI_TYPE_LABELS` constant and `midiNoteToName()` helper; add `MAX_LOG_ENTRIES = 500` constant
-- [ ] T010 [US2] Implement `appendEntry(payload: MidiRawMessagePayload)` in `src/ui/MidiMonitorWindow.ts`: call `formatMidiLogEntry()`, create a `<div class="midi-monitor-entry">` row with 5 columns (wallTime, type, channel, data1, data2), append to log container; if `entries.length >= MAX_LOG_ENTRIES` remove `container.firstChild` and `entries.shift()` before appending; push to `entries` array
-- [ ] T011 [US2] Subscribe to `EventType.MIDI_MESSAGE_RECEIVED` inside `open()` in `src/ui/MidiMonitorWindow.ts`: store unsubscribe handle in `this.unsubscribe`; call `this.appendEntry(payload)` on each event; unsubscribe in `close()`
-- [ ] T012 [US2] Implement auto-scroll in `src/ui/MidiMonitorWindow.ts`: after each `appendEntry()` call, if `this.autoScroll` is true set `logContainer.scrollTop = logContainer.scrollHeight`; add `scroll` event listener on `logContainer` to set `autoScroll = false` when user scrolls up (threshold: `scrollTop + clientHeight < scrollHeight - 2`), and `autoScroll = true` when back at bottom
-- [ ] T013 [P] [US2] Add `.midi-monitor-entry` CSS grid rule to `src/styles/components.css`: 5-column grid (`time | type | ch | data1 | data2`), monospace font, `font-size: 11px`, alternating row background, truncate overflow
+- [X] T009 [P] [US2] Add pure formatting helpers to `src/ui/MidiMonitorWindow.ts` (inline from `contracts/validation.ts`): `formatWallClock(date)`, `parseMidiType(status)`, `parseMidiChannel(status)`, `formatData1(status, byte1)`, `formatData2(status, byte2)`, `formatMidiLogEntry(payload)`; add `MIDI_TYPE_LABELS` constant and `midiNoteToName()` helper; add `MAX_LOG_ENTRIES = 500` constant
+- [X] T010 [US2] Implement `appendEntry(payload: MidiRawMessagePayload)` in `src/ui/MidiMonitorWindow.ts`: call `formatMidiLogEntry()`, create a `<div class="midi-monitor-entry">` row with 5 columns (wallTime, type, channel, data1, data2), append to log container; if `entries.length >= MAX_LOG_ENTRIES` remove `container.firstChild` and `entries.shift()` before appending; push to `entries` array
+- [X] T011 [US2] Subscribe to `EventType.MIDI_MESSAGE_RECEIVED` inside `open()` in `src/ui/MidiMonitorWindow.ts`: store unsubscribe handle in `this.unsubscribe`; call `this.appendEntry(payload)` on each event; unsubscribe in `close()`
+- [X] T012 [US2] Implement auto-scroll in `src/ui/MidiMonitorWindow.ts`: after each `appendEntry()` call, if `this.autoScroll` is true set `logContainer.scrollTop = logContainer.scrollHeight`; add `scroll` event listener on `logContainer` to set `autoScroll = false` when user scrolls up (threshold: `scrollTop + clientHeight < scrollHeight - 2`), and `autoScroll = true` when back at bottom
+- [X] T013 [P] [US2] Add `.midi-monitor-entry` CSS grid rule to `src/styles/components.css`: 5-column grid (`time | type | ch | data1 | data2`), monospace font, `font-size: 11px`, alternating row background, truncate overflow
 
 **Checkpoint**: US2 fully functional — live MIDI events appear in real time, all standard message types correctly labelled, FIFO cap enforced at 500, auto-scroll works with manual override.
 
@@ -80,7 +80,7 @@
 
 ### Implementation
 
-- [ ] T014 [US3] Implement `clearLog()` in `src/ui/MidiMonitorWindow.ts`: set `this.entries = []`, set `this.logContainer.innerHTML = ''`, reset `this.autoScroll = true`; wire the footer "Clear Log" button's click listener to call `this.clearLog()`
+- [X] T014 [US3] Implement `clearLog()` in `src/ui/MidiMonitorWindow.ts`: set `this.entries = []`, set `this.logContainer.innerHTML = ''`, reset `this.autoScroll = true`; wire the footer "Clear Log" button's click listener to call `this.clearLog()`
 
 **Checkpoint**: US3 fully functional — Clear Log button empties list instantly; new events log normally afterwards.
 
@@ -90,13 +90,13 @@
 
 **Purpose**: Unit test coverage for pure formatting logic and window behaviour.
 
-- [ ] T015 [P] Create `tests/ui/MidiMonitorWindow.test.ts` — test `formatWallClock` outputs `HH:MM:SS.mmm` format
-- [ ] T016 [P] Add test in `tests/ui/MidiMonitorWindow.test.ts` — `parseMidiType(0x90)` returns `"Note On"`, `parseMidiType(0xF8)` returns `"Clock"`, unknown byte returns `"Unknown"`
-- [ ] T017 [P] Add test in `tests/ui/MidiMonitorWindow.test.ts` — `parseMidiChannel(0x90)` returns `"1"`, `parseMidiChannel(0xF8)` returns `"—"`
-- [ ] T018 [P] Add test in `tests/ui/MidiMonitorWindow.test.ts` — `midiNoteToName(60)` returns `"C4 (60)"`, `midiNoteToName(69)` returns `"A4 (69)"`
-- [ ] T019 [P] Add test in `tests/ui/MidiMonitorWindow.test.ts` — `formatData1(0x90, 60)` returns note name; `formatData1(0xB0, 7)` returns `"CC 7"`; `formatData2(0xC0, 0)` returns `""`
-- [ ] T020 [P] Add test in `tests/ui/MidiMonitorWindow.test.ts` — FIFO cap: after 501 calls to `appendEntry()`, `entries.length === 500` and oldest entry is gone
-- [ ] T021 [P] Add test in `tests/ui/MidiMonitorWindow.test.ts` — `clearLog()` sets `entries` to `[]`
+- [X] T015 [P] Create `tests/ui/MidiMonitorWindow.test.ts` — test `formatWallClock` outputs `HH:MM:SS.mmm` format
+- [X] T016 [P] Add test in `tests/ui/MidiMonitorWindow.test.ts` — `parseMidiType(0x90)` returns `"Note On"`, `parseMidiType(0xF8)` returns `"Clock"`, unknown byte returns `"Unknown"`
+- [X] T017 [P] Add test in `tests/ui/MidiMonitorWindow.test.ts` — `parseMidiChannel(0x90)` returns `"1"`, `parseMidiChannel(0xF8)` returns `"—"`
+- [X] T018 [P] Add test in `tests/ui/MidiMonitorWindow.test.ts` — `midiNoteToName(60)` returns `"C4 (60)"`, `midiNoteToName(69)` returns `"A4 (69)"`
+- [X] T019 [P] Add test in `tests/ui/MidiMonitorWindow.test.ts` — `formatData1(0x90, 60)` returns note name; `formatData1(0xB0, 7)` returns `"CC 7"`; `formatData2(0xC0, 0)` returns `""`
+- [X] T020 [P] Add test in `tests/ui/MidiMonitorWindow.test.ts` — FIFO cap: after 501 calls to `appendEntry()`, `entries.length === 500` and oldest entry is gone
+- [X] T021 [P] Add test in `tests/ui/MidiMonitorWindow.test.ts` — `clearLog()` sets `entries` to `[]`
 
 **Checkpoint**: `vitest run tests/ui/MidiMonitorWindow.test.ts` passes with ≥ 80% coverage of formatting helpers.
 
@@ -106,9 +106,9 @@
 
 **Purpose**: Accessibility, keyboard close, and final integration check.
 
-- [ ] T022 Add `aria-label="Close MIDI Monitor"` to the close button and `role="log"` + `aria-live="polite"` to the log container in `src/ui/MidiMonitorWindow.ts`
-- [ ] T023 Add `keydown` listener in `src/ui/MidiMonitorWindow.ts`: close window when `Escape` is pressed and `isOpen` is true (consistent with `MidiMappingsModal` behaviour)
-- [ ] T024 Verify linting passes with `npm run lint`; fix any strict-mode TypeScript errors introduced across all modified files
+- [X] T022 Add `aria-label="Close MIDI Monitor"` to the close button and `role="log"` + `aria-live="polite"` to the log container in `src/ui/MidiMonitorWindow.ts`
+- [X] T023 Add `keydown` listener in `src/ui/MidiMonitorWindow.ts`: close window when `Escape` is pressed and `isOpen` is true (consistent with `MidiMappingsModal` behaviour)
+- [X] T024 Verify linting passes with `npm run lint`; fix any strict-mode TypeScript errors introduced across all modified files
 - [ ] T025 Manual smoke-test per `quickstart.md`: open monitor with no device connected, connect device, trigger all MIDI message types, verify labels, trigger 501+ events, verify cap, clear log, close and reopen
 
 ---

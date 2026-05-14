@@ -168,6 +168,7 @@ export enum EventType {
   MIDI_LEARN_COMPLETED = 'midi:learn-completed',
   MIDI_LEARN_CANCELLED = 'midi:learn-cancelled',
   MIDI_MAPPINGS_CHANGED = 'midi:mappings-changed',
+  MIDI_MESSAGE_RECEIVED = 'midi:message-received',
 }
 
 /**
@@ -268,6 +269,17 @@ export interface MidiMapping {
   minValue: number;
   /** Parameter's maximum value — used for linear scaling */
   maxValue: number;
+}
+
+/**
+ * Payload emitted with MIDI_MESSAGE_RECEIVED event.
+ * Carries the raw bytes of every incoming MIDI message before any routing.
+ */
+export interface MidiRawMessagePayload {
+  status: number;
+  byte1: number;
+  byte2: number;
+  timestamp: number;
 }
 
 /**
