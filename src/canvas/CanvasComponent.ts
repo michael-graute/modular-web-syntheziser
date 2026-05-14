@@ -1574,8 +1574,29 @@ export class CanvasComponent {
    * Render UI controls
    */
   private renderControls(ctx: CanvasRenderingContext2D): void {
+    const mappings = midiEngine.getMappings();
+    const mappedParams = new Set(mappings.map((m) => m.componentId === this.synthComponent?.id ? m.parameterName : null).filter(Boolean));
+
     this.controls.forEach(control => {
       control.render(ctx);
+
+      // Draw a small MIDI-assigned dot on controls that have an active mapping
+      if ((control instanceof Knob || control instanceof Slider) && mappedParams.size > 0) {
+        const param = control.getParameter();
+        const paramName = this.bareParamId(param.id);
+        if (mappedParams.has(paramName)) {
+          const bounds = control.getBounds();
+          const dotR = 3;
+          const dotX = bounds.x + bounds.width - dotR - 1;
+          const dotY = bounds.y + dotR + 1;
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(dotX, dotY, dotR, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(66, 165, 245, 0.9)';
+          ctx.fill();
+          ctx.restore();
+        }
+      }
     });
   }
 

@@ -340,6 +340,7 @@
 .midi-toolbar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 4px 12px;
   background: var(--color-bg-secondary, #1e1e1e);

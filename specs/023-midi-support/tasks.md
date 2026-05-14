@@ -110,10 +110,10 @@
 
 **Purpose**: Unit and integration test coverage for critical logic per constitution requirements (≥80% for critical logic, 100% for utility functions).
 
-- [ ] T033 [P] Create `tests/midi/midiValidation.test.ts` — 100% coverage of `isValidMidiMapping`, `scaleCcToParam`, `mappingKey`, `sanitiseMidiMappings` (boundary values: cc=0, cc=127, channel=0, channel=15, maxValue=minValue edge case)
-- [ ] T034 [P] Create `tests/midi/MidiEngine.test.ts` — unit tests using a mock `MIDIAccess` object: device enumeration, note-on/off dispatch to eventBus, CC dispatch with value scaling, MIDI Learn state machine (start → receive CC → complete; start → cancel), `saveToPatch` / `loadFromPatch` round-trip, omni-channel matching (channel=0 matches any incoming channel)
-- [ ] T035 [P] Extend `tests/patch/PatchSerializer.test.ts` — add round-trip tests: patch with `midiMappings` serialises and deserialises correctly; legacy patch without `midiMappings` loads without error (treated as empty array)
-- [ ] T036 Create `tests/ui/MidiToolbar.test.ts` — DOM tests via jsdom: toolbar renders in `#midi-toolbar`; device picker updates on `MIDI_DEVICE_CONNECTED` event; MIDI Learn button toggles active state
+- [X] T033 [P] Create `tests/midi/midiValidation.test.ts` — 100% coverage of `isValidMidiMapping`, `scaleCcToParam`, `mappingKey`, `sanitiseMidiMappings` (boundary values: cc=0, cc=127, channel=0, channel=15, maxValue=minValue edge case)
+- [X] T034 [P] Create `tests/midi/MidiEngine.test.ts` — unit tests using a mock `MIDIAccess` object: device enumeration, note-on/off dispatch to eventBus, CC dispatch with value scaling, MIDI Learn state machine (start → receive CC → complete; start → cancel), `saveToPatch` / `loadFromPatch` round-trip, omni-channel matching (channel=0 matches any incoming channel)
+- [X] T035 [P] Extend `tests/patch/PatchSerializer.test.ts` — add round-trip tests: patch with `midiMappings` serialises and deserialises correctly; legacy patch without `midiMappings` loads without error (treated as empty array)
+- [X] T036 Create `tests/ui/MidiToolbar.test.ts` — DOM tests via jsdom: toolbar renders in `#midi-toolbar`; device picker updates on `MIDI_DEVICE_CONNECTED` event; MIDI Learn button toggles active state
 
 **Checkpoint**: `vitest run` green across all new and extended test files.
 
@@ -121,11 +121,11 @@
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T037 [P] Verify `npx tsc --noEmit` reports zero errors across all new and modified files
-- [ ] T038 [P] Run `npm run lint` — fix any warnings introduced by new files
-- [ ] T039 Add `.midi-learn-assigned` subtle indicator to `CanvasComponent` rendered controls that have an active mapping (small MIDI icon or coloured dot in corner of the knob)
-- [ ] T040 Verify MIDI toolbar displays correctly at all existing viewport sizes (no layout overflow); adjust `.midi-toolbar` CSS if needed
-- [ ] T041 [P] Update `specs/023-midi-support/quickstart.md` if any implementation details diverged from the plan
+- [X] T037 [P] Verify `npx tsc --noEmit` reports zero errors across all new and modified files
+- [X] T038 [P] Run `npm run lint` — fix any warnings introduced by new files
+- [X] T039 Add `.midi-learn-assigned` subtle indicator to `CanvasComponent` rendered controls that have an active mapping (small MIDI icon or coloured dot in corner of the knob)
+- [X] T040 Verify MIDI toolbar displays correctly at all existing viewport sizes (no layout overflow); adjust `.midi-toolbar` CSS if needed
+- [X] T041 [P] Update `specs/023-midi-support/quickstart.md` if any implementation details diverged from the plan
 
 ---
 
