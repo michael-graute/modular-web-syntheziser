@@ -52,6 +52,15 @@ It is currently in ongoing development. New features and optimizations are imple
   - Split view (both waveform and spectrum)
   - Rendered directly on the main canvas for pixel-crisp output at all zoom levels and high-DPI displays
 
+### MIDI Support
+
+- **MIDI Input**: Connect any Web MIDI-compatible keyboard or controller — the browser requests permission on first use and automatically selects the first available device
+- **MIDI Toolbar**: Always-visible bar below the canvas with a device picker, MIDI Learn button, and Mappings button
+- **MIDI Learn**: Map any physical CC knob or slider to any on-screen parameter — click "MIDI Learn", click a knob on the canvas, then turn the physical controller
+- **CC Parameter Control**: Real-time CC-to-parameter mapping with automatic range scaling; channel 0 = omni (matches any MIDI channel)
+- **MIDI Mappings Modal**: View all active CC assignments (component, parameter, CC number, channel) with per-row Delete and "Clear All" controls
+- **Patch Persistence**: All MIDI mappings are saved and restored with the patch file — mappings survive save/load and export/import
+
 ### Canvas Features
 
 - **Visual Patching**: Drag and drop components onto the canvas
@@ -178,6 +187,30 @@ npm run preview
 - Lesson 2: The Oscillator
 - Lesson 3: Waveform Shapes
 
+### Using a MIDI Controller
+
+1. Connect a USB MIDI keyboard or controller to your computer
+2. Open the app — the browser will request MIDI permission; click **Allow**
+3. The device appears automatically in the **MIDI toolbar** below the canvas
+4. Play notes on the controller — the on-screen keyboard highlights in real time
+5. Use the device picker dropdown to switch between multiple connected devices
+
+#### MIDI Learn — mapping CC knobs to parameters
+
+1. Click the **MIDI Learn** button in the MIDI toolbar (it turns blue)
+2. Click any knob or slider on a canvas component — it pulses to show it is waiting
+3. Turn a physical CC knob on your controller — the mapping is confirmed instantly
+4. The MIDI Learn button resets; the mapped knob now has a small blue dot indicator
+5. Press **Escape** or click **Cancel Learn** at any time to abort
+
+#### Managing MIDI Mappings
+
+- Click **Mappings** in the MIDI toolbar to open the mappings overview
+- The table shows every active assignment: Component, Parameter, CC number, Channel
+- Click **Delete** next to a row to remove that mapping
+- Click **Clear All** (with confirmation) to remove all mappings at once
+- Mappings are saved with your patch and restored on load
+
 ### Saving and Loading Patches
 
 - **Save**: Click the "Save" button to save the current patch to browser storage
@@ -193,6 +226,7 @@ npm run preview
 - **Delete/Backspace**: Delete selected components
 - **Ctrl/Cmd + Click**: Multi-select components
 - **Shift + Click** on connection: Delete connection
+- **Escape**: Cancel an active MIDI Learn session
 
 ## Project Structure
 
@@ -212,6 +246,7 @@ src/
 ├── physics/            # Physics engine for Collider (PhysicsEngine, CollisionResolver)
 ├── music/              # Musical utilities (MusicalScale, WeightedRandomSelector)
 ├── timing/             # BPM and gate duration calculations
+├── midi/               # MIDI engine, CC dispatch, learn state machine
 ├── core/               # Core engine and types
 ├── ui/                 # User interface components
 ├── utils/              # Utility functions and constants
@@ -249,7 +284,7 @@ src/
 - Safari: ✅ Fully supported
 - Opera: ✅ Fully supported
 
-Note: Requires a modern browser with Web Audio API support.
+Note: Requires a modern browser with Web Audio API support. MIDI input requires Web MIDI API support — available in Chrome/Edge; Firefox and Safari require a browser extension or flag.
 
 ## Acknowledgments
 
