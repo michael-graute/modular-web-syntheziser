@@ -1,5 +1,6 @@
 import { midiEngine } from '../midi/MidiEngine';
 import { MidiMappingsModal } from './MidiMappingsModal';
+import { MidiMonitorWindow } from './MidiMonitorWindow';
 import { eventBus } from '../core/EventBus';
 import { EventType } from '../core/types';
 import type { MidiDeviceInfo } from '../core/types';
@@ -10,7 +11,9 @@ export class MidiToolbar {
   private select: HTMLSelectElement;
   private learnBtn: HTMLButtonElement;
   private mappingsBtn: HTMLButtonElement;
+  private monitorBtn: HTMLButtonElement;
   private mappingsModal: MidiMappingsModal;
+  private monitorWindow: MidiMonitorWindow;
   private unsubConnected: (() => void) | null = null;
   private unsubDisconnected: (() => void) | null = null;
   private unsubLearnStarted: (() => void) | null = null;
@@ -22,6 +25,7 @@ export class MidiToolbar {
     if (!mount) throw new Error('MidiToolbar: #midi-toolbar not found');
 
     this.mappingsModal = new MidiMappingsModal();
+    this.monitorWindow = new MidiMonitorWindow();
 
     this.container = document.createElement('div');
     this.container.className = 'midi-toolbar';
@@ -44,10 +48,16 @@ export class MidiToolbar {
     this.mappingsBtn.textContent = 'Mappings';
     this.mappingsBtn.title = 'View and manage MIDI CC mappings';
 
+    this.monitorBtn = document.createElement('button');
+    this.monitorBtn.className = 'midi-monitor-open-btn';
+    this.monitorBtn.textContent = 'MIDI Monitor';
+    this.monitorBtn.title = 'Open the MIDI Monitor to view incoming MIDI events';
+
     this.container.appendChild(this.statusEl);
     this.container.appendChild(this.select);
     this.container.appendChild(this.learnBtn);
     this.container.appendChild(this.mappingsBtn);
+    this.container.appendChild(this.monitorBtn);
     mount.appendChild(this.container);
 
     this.select.addEventListener('change', () => {
@@ -65,6 +75,10 @@ export class MidiToolbar {
 
     this.mappingsBtn.addEventListener('click', () => {
       this.mappingsModal.open();
+    });
+
+    this.monitorBtn.addEventListener('click', () => {
+      this.monitorWindow.open();
     });
 
     this.unsubConnected = eventBus.on(EventType.MIDI_DEVICE_CONNECTED, () => this.refresh());
