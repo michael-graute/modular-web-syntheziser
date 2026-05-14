@@ -23,6 +23,8 @@ export class KeyboardController {
   private currentChordNotes: number[] = [];
   private unsubscribeChordOn: (() => void) | null = null;
   private unsubscribeChordOff: (() => void) | null = null;
+  private unsubscribeMidiNoteOn: (() => void) | null = null;
+  private unsubscribeMidiNoteOff: (() => void) | null = null;
 
   constructor(
     keyboardCanvas: HTMLCanvasElement,
@@ -36,6 +38,7 @@ export class KeyboardController {
     this.setupKeyboard();
     this.setupQwertyInput();
     this.subscribeToChordEvents();
+    this.subscribeToMidiNoteEvents();
   }
 
   /**
@@ -61,14 +64,33 @@ export class KeyboardController {
   }
 
   /**
+   * Subscribe to MIDI note events so MIDI-triggered notes highlight on-screen keys.
+   */
+  private subscribeToMidiNoteEvents(): void {
+    this.unsubscribeMidiNoteOn = eventBus.on(EventType.NOTE_ON, (data) => {
+      const payload = data as { note: number; velocity: number };
+      this.keyboard.pressKeyFromChordFinder(payload.note);
+    });
+
+    this.unsubscribeMidiNoteOff = eventBus.on(EventType.NOTE_OFF, (data) => {
+      const payload = data as { note: number };
+      this.keyboard.releaseKeyFromChordFinder(payload.note);
+    });
+  }
+
+  /**
    * Release EventBus subscriptions and clear chord highlight state.
    * Call when removing the Keyboard module from the canvas.
    */
   destroy(): void {
     this.unsubscribeChordOn?.();
     this.unsubscribeChordOff?.();
+    this.unsubscribeMidiNoteOn?.();
+    this.unsubscribeMidiNoteOff?.();
     this.unsubscribeChordOn = null;
     this.unsubscribeChordOff = null;
+    this.unsubscribeMidiNoteOn = null;
+    this.unsubscribeMidiNoteOff = null;
     this.keyboard.releaseAllChordFinderKeys();
     this.currentChordNotes = [];
   }

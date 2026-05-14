@@ -29,6 +29,8 @@ import { GlobalBpmControl } from './ui/GlobalBpmControl';
 import { globalTransportController } from './core/GlobalTransportController';
 import { GlobalTransportControl } from './ui/GlobalTransportControl';
 import { ContextMenu } from './ui/ContextMenu';
+import { midiEngine } from './midi/MidiEngine';
+import { MidiToolbar } from './ui/MidiToolbar';
 
 // Ensure singletons are initialized at app startup
 void globalBpmController;
@@ -314,6 +316,20 @@ async function init(): Promise<void> {
     showError('Failed to initialize audio engine. Please refresh the page.');
     return;
   }
+
+  // Initialize MIDI engine (graceful — no error if MIDI unavailable)
+  await midiEngine.init();
+  new MidiToolbar();
+
+  // Route MIDI note events to the existing note trigger functions
+  eventBus.on(EventType.NOTE_ON, (data) => {
+    const payload = data as { note: number; velocity: number };
+    triggerNoteOn(payload.note, payload.velocity);
+  });
+  eventBus.on(EventType.NOTE_OFF, (data) => {
+    const payload = data as { note: number };
+    triggerNoteOff(payload.note);
+  });
 
   // Initialize canvas system
   const canvasElement = document.getElementById('synth-canvas') as HTMLCanvasElement;
