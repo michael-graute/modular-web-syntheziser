@@ -8,7 +8,7 @@ The first version of this project was built in October 2025 by an experienced de
 
 It is currently in ongoing development. New features and optimizations are implemented once in a while.
 
-![screenshot patch](./screenshot-patch.png)
+![screenshot full application](./screenshot-full.png)
 
 ## Features
 
