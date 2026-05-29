@@ -16,6 +16,7 @@ import { MasterOutput } from './utilities/MasterOutput';
 import { Mixer } from './utilities/Mixer';
 import { Collider } from './utilities/Collider';
 import { ChordFinder } from './utilities/ChordFinder';
+import { Quantizer } from './utilities/Quantizer';
 import { Looper } from './utilities/Looper';
 import { Delay } from './effects/Delay';
 import { Reverb } from './effects/Reverb';
@@ -142,6 +143,15 @@ export function registerAllComponents(): void {
     'Utilities',
     (id, position) => new Collider(id, 'Collider', position),
     calculateComponentDimensions(ComponentType.COLLIDER)
+  );
+
+  componentRegistry.register(
+    ComponentType.QUANTIZER,
+    'Quantizer',
+    'Snaps CV to the nearest note in a musical scale',
+    'Utilities',
+    (id, position) => new Quantizer(id, position),
+    calculateComponentDimensions(ComponentType.QUANTIZER)
   );
 
   componentRegistry.register(

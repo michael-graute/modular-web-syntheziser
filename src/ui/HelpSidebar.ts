@@ -780,6 +780,25 @@ export class HelpSidebar {
         <li><strong>Outputs:</strong> Note 1 CV, Note 2 CV, Note 3 CV (1V/oct), Gate</li>
       </ul>
 
+      <h4 style="color: var(--text-primary, #ffffff);">Quantizer</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Snaps a continuously varying CV signal to the nearest note in a musical scale.
+        Connect an LFO, Collider, or any CV source to create in-tune melodies from free-running modulation.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>CV In:</strong> Incoming CV signal to quantize (1V/octave)</li>
+        <li><strong>Trig:</strong> Optional gate/trigger input — when connected, output only updates on a rising edge (rhythmically locked pitch steps)</li>
+        <li><strong>CV Out:</strong> Quantized CV output (Hz, connects directly to oscillator Frequency CV)</li>
+        <li><strong>Root:</strong> Root note of the scale (C – B)</li>
+        <li><strong>Scale:</strong> Scale type — Major, Natural Minor, Harmonic Minor, Lydian, Mixolydian, Pentatonic Major, Pentatonic Minor, Chromatic</li>
+        <li><strong>Note display:</strong> Shows the currently output pitch (e.g. "A#4")</li>
+      </ul>
+      <p style="color: var(--text-secondary, #cccccc);">
+        <strong style="color: var(--text-primary, #ffffff);">Typical patch:</strong>
+        LFO → Quantizer CV In → Oscillator Frequency CV → Filter → Master Out.
+        For trigger-locked stepping: Step Sequencer Gate → Quantizer Trig.
+      </p>
+
       <h4 style="color: var(--text-primary, #ffffff);">Master Output</h4>
       <p style="color: var(--text-secondary, #cccccc);">
         Final output to speakers/headphones. Required for hearing audio.
