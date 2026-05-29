@@ -156,6 +156,7 @@ export class Sidebar {
       [ComponentType.FLANGER]: '〜',
       [ComponentType.PHASER]: '◎',
       [ComponentType.TREMOLO]: '∿',
+      [ComponentType.QUANTIZER]: '♯',
     };
     return icons[type] || '□';
   }

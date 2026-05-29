@@ -19,6 +19,7 @@ import type { StepSequencer } from '../components/utilities/StepSequencer';
 import type { Collider } from '../components/utilities/Collider';
 import type { ChordFinder } from '../components/utilities/ChordFinder';
 import type { Looper } from '../components/utilities/Looper';
+import type { Quantizer } from '../components/utilities/Quantizer';
 import type { BarCount } from '../components/utilities/LooperConstants';
 import { eventBus } from '../core/EventBus';
 import { EventType } from '../core/types';
@@ -1408,6 +1409,61 @@ export class CanvasComponent {
         this._looperRafId = requestAnimationFrame(renderLoop);
       }
     }
+
+    // Quantizer controls: root note dropdown, scale type dropdown
+    if (this.type === ComponentType.QUANTIZER && this.synthComponent) {
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      const rootNoteParam = this.synthComponent.getParameter('rootNote');
+      const scaleTypeParam = this.synthComponent.getParameter('scaleType');
+
+      const dropdownY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const dropdownWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+
+      const noteOptions: DropdownOption[] = [
+        { value: 0, label: 'C' }, { value: 1, label: 'C#' }, { value: 2, label: 'D' },
+        { value: 3, label: 'D#' }, { value: 4, label: 'E' }, { value: 5, label: 'F' },
+        { value: 6, label: 'F#' }, { value: 7, label: 'G' }, { value: 8, label: 'G#' },
+        { value: 9, label: 'A' }, { value: 10, label: 'A#' }, { value: 11, label: 'B' },
+      ];
+      if (rootNoteParam) {
+        this.controls.push(new Dropdown(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
+          dropdownY,
+          dropdownWidth,
+          COMPONENT.DROPDOWN_HEIGHT,
+          rootNoteParam,
+          noteOptions,
+          'Root'
+        ));
+      }
+
+      const scaleDropdownY = dropdownY + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const scaleOptions: DropdownOption[] = [
+        { value: 0, label: 'Major' },
+        { value: 1, label: 'Natural Minor' },
+        { value: 2, label: 'Harmonic Minor' },
+        { value: 3, label: 'Lydian' },
+        { value: 4, label: 'Mixolydian' },
+        { value: 5, label: 'Pentatonic Maj' },
+        { value: 6, label: 'Pentatonic Min' },
+        { value: 7, label: 'Chromatic' },
+      ];
+      if (scaleTypeParam) {
+        this.controls.push(new Dropdown(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
+          scaleDropdownY,
+          dropdownWidth,
+          COMPONENT.DROPDOWN_HEIGHT,
+          scaleTypeParam,
+          scaleOptions,
+          'Scale'
+        ));
+      }
+    }
   }
 
   /**
@@ -1545,6 +1601,27 @@ export class CanvasComponent {
         this.renderControls(ctx);
       } else if (!this.stepSequencerDisplay) {
         this.renderParameters(ctx);
+      }
+
+      // Render Quantizer note label
+      if (this.type === ComponentType.QUANTIZER && this.synthComponent) {
+        const quantizer = this.synthComponent as Quantizer;
+        const label = quantizer.getNoteLabel();
+        const labelX = this.position.x + this.width / 2;
+        // Position below the two dropdowns
+        const numInputPorts = this.synthComponent.inputs.size;
+        const numOutputPorts = this.synthComponent.outputs.size;
+        const maxPorts = Math.max(numInputPorts, numOutputPorts);
+        const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+        const labelY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP
+          + (COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL) * 2 + 18;
+        ctx.save();
+        ctx.font = 'bold 20px -apple-system, sans-serif';
+        ctx.fillStyle = '#4a9eff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, labelX, labelY);
+        ctx.restore();
       }
 
       // Render chord circle directly onto the main canvas (after controls,
@@ -1899,6 +1976,7 @@ export class CanvasComponent {
       [ComponentType.CHORD_FINDER]: 'Chord Finder',
       [ComponentType.LOOPER]: 'Looper',
       [ComponentType.FM_OSCILLATOR]: 'FM Oscillator',
+      [ComponentType.QUANTIZER]: 'Quantizer',
     };
     return names[this.type] || 'Component';
   }
@@ -1935,10 +2013,11 @@ export class CanvasComponent {
           return true;
         }
       } else if (control instanceof Dropdown) {
+        const param = control.getParameter();
+        const valueBefore = param.getValue();
         if (control.onMouseDown(x, y)) {
-          // Update audio parameter when dropdown changes
-          if (this.synthComponent) {
-            const param = control.getParameter();
+          // Only propagate to audio engine when the value actually changed
+          if (this.synthComponent && param.getValue() !== valueBefore) {
             this.synthComponent.setParameterValue(param.id, param.getValue());
             eventBus.emit(EventType.PARAMETER_CHANGED, {
               componentId: this.synthComponent.id,

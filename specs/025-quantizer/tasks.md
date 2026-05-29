@@ -9,9 +9,9 @@
 
 **Purpose**: Register the new component type and wire up the minimal scaffolding all later phases depend on.
 
-- [ ] T001 Add `QUANTIZER = 'quantizer'` to `ComponentType` enum in `src/core/types.ts`
-- [ ] T002 Add `QUANTIZER` entry to the `names` record in `CanvasComponent.ts` (line ~1877) in `src/canvas/CanvasComponent.ts`
-- [ ] T003 Add `QUANTIZER` dimensions case in `src/utils/componentLayout.ts`
+- [x] T001 Add `QUANTIZER = 'quantizer'` to `ComponentType` enum in `src/core/types.ts`
+- [x] T002 Add `QUANTIZER` entry to the `names` record in `CanvasComponent.ts` (line ~1877) in `src/canvas/CanvasComponent.ts`
+- [x] T003 Add `QUANTIZER` dimensions case in `src/utils/componentLayout.ts`
 
 **Checkpoint**: TypeScript compiles without errors — `ComponentType.QUANTIZER` is valid everywhere.
 
@@ -21,12 +21,12 @@
 
 **Purpose**: Pure-logic validation helpers and contracts that all user story phases depend on. No Web Audio API required — fully unit-testable.
 
-- [ ] T004 [P] Copy `specs/025-quantizer/contracts/types.ts` to confirm it compiles cleanly; run `vitest run` to verify no existing tests regress
-- [ ] T005 [P] Copy `specs/025-quantizer/contracts/validation.ts` to confirm it compiles cleanly
-- [ ] T006 Write unit tests for `buildPitchTable()` covering all 8 scale types and all 12 root notes in `tests/components/utilities/Quantizer.test.ts`
-- [ ] T007 Write unit tests for `quantizeCv()` — in-range CV, lower clamp (below C0), upper clamp (above C8), tie-breaking (higher pitch wins) in `tests/components/utilities/Quantizer.test.ts`
-- [ ] T008 Write unit tests for `midiToNoteLabel()`, `cvToMidi()`, `midiToCv()`, `serializeQuantizerConfig()`, `deserializeQuantizerConfig()` in `tests/components/utilities/Quantizer.test.ts`
-- [ ] T009 Run `vitest run tests/components/utilities/Quantizer.test.ts` and confirm all pure-function tests pass
+- [x] T004 [P] Copy `specs/025-quantizer/contracts/types.ts` to confirm it compiles cleanly; run `vitest run` to verify no existing tests regress
+- [x] T005 [P] Copy `specs/025-quantizer/contracts/validation.ts` to confirm it compiles cleanly
+- [x] T006 Write unit tests for `buildPitchTable()` covering all 8 scale types and all 12 root notes in `tests/components/utilities/Quantizer.test.ts`
+- [x] T007 Write unit tests for `quantizeCv()` — in-range CV, lower clamp (below C0), upper clamp (above C8), tie-breaking (higher pitch wins) in `tests/components/utilities/Quantizer.test.ts`
+- [x] T008 Write unit tests for `midiToNoteLabel()`, `cvToMidi()`, `midiToCv()`, `serializeQuantizerConfig()`, `deserializeQuantizerConfig()` in `tests/components/utilities/Quantizer.test.ts`
+- [x] T009 Run `vitest run tests/components/utilities/Quantizer.test.ts` and confirm all pure-function tests pass
 
 **Checkpoint**: All contract helper tests green. Foundation ready — user story implementation can begin.
 
@@ -40,17 +40,17 @@
 
 ### Implementation
 
-- [ ] T010 [US1] Create `src/components/utilities/Quantizer.ts` — class skeleton extending `SynthComponent`, constructor with default `QuantizerConfig` (C Major), port declarations (`cv-in` CV, `gate-in` Gate, `cv-out` CV)
-- [ ] T011 [US1] Implement `createAudioNodes()` in `src/components/utilities/Quantizer.ts` — create `ConstantSourceNode` for CV output and a second one for gate input polling; start both nodes
-- [ ] T012 [US1] Implement `destroyAudioNodes()` in `src/components/utilities/Quantizer.ts` — stop and disconnect both `ConstantSourceNode` instances, cancel visual scheduler subscription, reset `lastGateValue`
-- [ ] T013 [US1] Implement `getInputNode()` / `getOutputNode()` in `src/components/utilities/Quantizer.ts` — return correct nodes for `cv-in`, `gate-in`, `cv-out` port IDs
-- [ ] T014 [US1] Implement `rebuildPitchTable()` in `src/components/utilities/Quantizer.ts` — calls `buildPitchTable(rootNote, scaleType)` from contracts/validation.ts, stores result
-- [ ] T015 [US1] Implement control-rate `update()` method in `src/components/utilities/Quantizer.ts` — trigger-free path: read `cvInputNode.offset.value`, call `quantizeCv()`, write result to `cvOutputNode.offset`, update `currentNoteLabel` via `midiToNoteLabel()`
-- [ ] T016 [US1] Subscribe `update()` to `visualUpdateScheduler` in `createAudioNodes()` in `src/components/utilities/Quantizer.ts`
-- [ ] T017 [US1] Implement `updateParameter()` in `src/components/utilities/Quantizer.ts` — handle `rootNote` (0–11) and `scaleType` (0–7) parameter updates, call `rebuildPitchTable()` on change
-- [ ] T018 [US1] Import and register `Quantizer` in `src/components/registerComponents.ts` under `'Utilities'` group with `calculateComponentDimensions(ComponentType.QUANTIZER)`
-- [ ] T019 [US1] Add `if (this.type === ComponentType.QUANTIZER)` block in `createControls()` in `src/canvas/CanvasComponent.ts` — root note dropdown (0–11), scale type dropdown (0–7), read-only note label display
-- [ ] T020 [US1] Write component integration test: instantiate `Quantizer`, call `createAudioNodes()`, verify `cvOutputNode` exists and initial output equals `midiToCv(quantizeCv(0, buildPitchTable('C', 'major')))` in `tests/components/utilities/Quantizer.test.ts`
+- [x] T010 [US1] Create `src/components/utilities/Quantizer.ts` — class skeleton extending `SynthComponent`, constructor with default `QuantizerConfig` (C Major), port declarations (`cv-in` CV, `gate-in` Gate, `cv-out` CV)
+- [x] T011 [US1] Implement `createAudioNodes()` in `src/components/utilities/Quantizer.ts` — create `ConstantSourceNode` for CV output and a second one for gate input polling; start both nodes
+- [x] T012 [US1] Implement `destroyAudioNodes()` in `src/components/utilities/Quantizer.ts` — stop and disconnect both `ConstantSourceNode` instances, cancel visual scheduler subscription, reset `lastGateValue`
+- [x] T013 [US1] Implement `getInputNode()` / `getOutputNode()` in `src/components/utilities/Quantizer.ts` — return correct nodes for `cv-in`, `gate-in`, `cv-out` port IDs
+- [x] T014 [US1] Implement `rebuildPitchTable()` in `src/components/utilities/Quantizer.ts` — calls `buildPitchTable(rootNote, scaleType)` from contracts/validation.ts, stores result
+- [x] T015 [US1] Implement control-rate `update()` method in `src/components/utilities/Quantizer.ts` — trigger-free path: read `cvInputNode.offset.value`, call `quantizeCv()`, write result to `cvOutputNode.offset`, update `currentNoteLabel` via `midiToNoteLabel()`
+- [x] T016 [US1] Subscribe `update()` to `visualUpdateScheduler` in `createAudioNodes()` in `src/components/utilities/Quantizer.ts`
+- [x] T017 [US1] Implement `updateParameter()` in `src/components/utilities/Quantizer.ts` — handle `rootNote` (0–11) and `scaleType` (0–7) parameter updates, call `rebuildPitchTable()` on change
+- [x] T018 [US1] Import and register `Quantizer` in `src/components/registerComponents.ts` under `'Utilities'` group with `calculateComponentDimensions(ComponentType.QUANTIZER)`
+- [x] T019 [US1] Add `if (this.type === ComponentType.QUANTIZER)` block in `createControls()` in `src/canvas/CanvasComponent.ts` — root note dropdown (0–11), scale type dropdown (0–7), read-only note label display
+- [x] T020 [US1] Write component integration test: instantiate `Quantizer`, call `createAudioNodes()`, verify `cvOutputNode` exists and initial output equals `midiToCv(quantizeCv(0, buildPitchTable('C', 'major')))` in `tests/components/utilities/Quantizer.test.ts`
 
 **Checkpoint**: LFO → Quantizer → Oscillator patch plays in-scale pitches. Note label updates in real time. All US1 tests green.
 
@@ -64,9 +64,9 @@
 
 ### Implementation
 
-- [ ] T021 [US2] Implement trigger-mode path in `update()` in `src/components/utilities/Quantizer.ts` — detect rising edge (`lastGateValue < 0.5 && currentGate >= 0.5`), update `heldCv` only on rising edge, always write `heldCv` to output
-- [ ] T022 [US2] Implement `triggerConnected` state tracking in `src/components/utilities/Quantizer.ts` — set to `true` when `gate-in` port receives a connection (override `onPortConnected` / `onPortDisconnected` or equivalent hook used by other components)
-- [ ] T023 [US2] Write unit tests for trigger-mode: assert output does NOT change mid-cycle, assert output DOES change on rising edge, assert no spurious updates between edges, assert output holds last quantized value when CV input is disconnected (input reads 0.0) while trigger is active in `tests/components/utilities/Quantizer.test.ts`
+- [x] T021 [US2] Implement trigger-mode path in `update()` in `src/components/utilities/Quantizer.ts` — detect rising edge (`lastGateValue < 0.5 && currentGate >= 0.5`), update `heldCv` only on rising edge, always write `heldCv` to output
+- [x] T022 [US2] Implement `triggerConnected` state tracking in `src/components/utilities/Quantizer.ts` — set to `true` when `gate-in` port receives a connection (override `onPortConnected` / `onPortDisconnected` or equivalent hook used by other components)
+- [x] T023 [US2] Write unit tests for trigger-mode: assert output does NOT change mid-cycle, assert output DOES change on rising edge, assert no spurious updates between edges, assert output holds last quantized value when CV input is disconnected (input reads 0.0) while trigger is active in `tests/components/utilities/Quantizer.test.ts`
 
 **Checkpoint**: With trigger wired, pitch only steps on rising gate edge. US2 tests green. US1 still passes.
 
@@ -80,9 +80,9 @@
 
 ### Implementation
 
-- [ ] T024 [US3] Verify `rebuildPitchTable()` is called synchronously inside `updateParameter()` before the next `update()` tick in `src/components/utilities/Quantizer.ts` (already implicit from T017 — add explicit test coverage)
-- [ ] T025 [US3] Write unit tests for real-time config change: set root=C/scale=Major, quantize a CV, change root to F, quantize same CV, verify new output is in F Major in `tests/components/utilities/Quantizer.test.ts`
-- [ ] T026 [US3] Verify dropdown controls in `CanvasComponent.ts` call `updateParameter()` immediately on user interaction — check against existing dropdown pattern (no extra work needed if standard pattern followed; add note if discrepancy found) in `src/canvas/CanvasComponent.ts`
+- [x] T024 [US3] Verify `rebuildPitchTable()` is called synchronously inside `updateParameter()` before the next `update()` tick in `src/components/utilities/Quantizer.ts` (already implicit from T017 — add explicit test coverage)
+- [x] T025 [US3] Write unit tests for real-time config change: set root=C/scale=Major, quantize a CV, change root to F, quantize same CV, verify new output is in F Major in `tests/components/utilities/Quantizer.test.ts`
+- [x] T026 [US3] Verify dropdown controls in `CanvasComponent.ts` call `updateParameter()` immediately on user interaction — check against existing dropdown pattern (no extra work needed if standard pattern followed; add note if discrepancy found) in `src/canvas/CanvasComponent.ts`
 
 **Checkpoint**: Live root/scale changes heard immediately without clicks. US3 tests green. US1 + US2 still pass.
 

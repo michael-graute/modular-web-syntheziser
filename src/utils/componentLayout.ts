@@ -153,6 +153,12 @@ function getControlLayout(type: ComponentType): ControlLayout {
         displayHeight: 300, // doughnut ring canvas (240w × 300h)
       };
 
+    case ComponentType.QUANTIZER:
+      return {
+        hasDropdown: true, // root note + scale type dropdowns
+        numKnobs: 0,
+      };
+
     case ComponentType.KEYBOARD_INPUT:
     case ComponentType.FILTER_ENVELOPE:
     default:
@@ -231,6 +237,9 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
     case ComponentType.LOOPER:
       return { inputs: 1, outputs: 1 }; // audio in / audio out
 
+    case ComponentType.QUANTIZER:
+      return { inputs: 2, outputs: 1 }; // cv-in, gate-in / cv-out
+
     default:
       return { inputs: 1, outputs: 1 };
   }
@@ -242,6 +251,17 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
 export function calculateComponentHeight(type: ComponentType): number {
   const portCounts = getPortCounts(type);
   const controlLayout = getControlLayout(type);
+
+  // Special case for Quantizer: root dropdown + scale dropdown + note label
+  if (type === ComponentType.QUANTIZER) {
+    const maxPorts = Math.max(portCounts.inputs, portCounts.outputs);
+    const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+    const dropdownY = COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+    const scaleDropdownY = dropdownY + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
+    const noteLabelY = scaleDropdownY + COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL;
+    return noteLabelY + 28 + 12; // 28px label height + 12px bottom padding
+  }
 
   // Special case for ChordFinder: root dropdown + scale dropdown + octave dropdown + generate button + display
   // Must match the actual layout computation in CanvasComponent.ts exactly:

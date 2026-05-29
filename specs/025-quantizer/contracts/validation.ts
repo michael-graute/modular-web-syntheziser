@@ -75,9 +75,11 @@ export function buildPitchTable(rootNote: QuantizerNote, scaleType: QuantizerSca
   const rootSemitone = NOTE_TO_SEMITONE[rootNote];
   const table: number[] = [];
 
+  // Octave -1 corresponds to C-1 (MIDI 0); C4 = octave 4 = MIDI 60.
+  // Scan wide enough that all notes in MIDI_MIN..MIDI_MAX are reachable.
   for (let octave = -1; octave <= 9; octave++) {
     for (const interval of intervals) {
-      const midi = (octave + 5) * 12 + rootSemitone + interval; // octave offset so C4=60
+      const midi = octave * 12 + rootSemitone + interval;
       if (midi >= MIDI_MIN && midi <= MIDI_MAX) {
         table.push(midi);
       }
@@ -105,8 +107,8 @@ export function quantizeCv(cv: number, pitchTable: readonly number[]): number {
 
   for (const midi of pitchTable) {
     const dist = Math.abs(inputMidi - midi);
-    // Strictly less-than: ties keep higher pitch (later entry in ascending table wins)
-    if (dist < minDist) {
+    // <= so that on equal distance the later (higher) entry in the ascending table wins
+    if (dist <= minDist) {
       minDist = dist;
       nearest = midi;
     }
