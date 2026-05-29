@@ -27,7 +27,7 @@
 
 ### Modulation & Control
 
-- **Quantizer** *(spec in progress: `specs/025-quantizer`)* — snaps free-running CV to musical scales. Unlocks in-tune generative melodies from LFO, Collider, and any CV source.
+- ~~**Quantizer**~~ ✅ *Implemented in `src/components/utilities/Quantizer.ts` (branch `025-quantizer`)* — snaps free-running CV to musical scales; supports 8 scale types, 12 root notes, optional gate/trigger input for rhythmically locked pitch steps, and full patch persistence.
 - **Envelope Follower** — converts incoming audio amplitude to a CV signal. Essential for sidechain-style patching and making one signal control another dynamically.
 - **S&H (Sample & Hold) — standalone** — already exists as an LFO waveform mode, but a dedicated module would allow any CV source (not just LFO) to be sampled on a trigger. Common utility for stepped random CV.
 - **Slew Limiter / Portamento** — smooths abrupt CV jumps; produces glide between pitches. The Keyboard has no detached portamento module, so CV glide can't be applied to sequencer or Collider output.
@@ -56,7 +56,7 @@
 
 | Feature | Impact | Effort | Priority |
 |---------|--------|--------|----------|
-| Quantizer | High | Low | **P1** *(spec exists)* |
+| ~~Quantizer~~ | High | Low | ✅ **Implemented** |
 | CV Attenuverter / Offset | High | Very Low | **P1** |
 | Clock Divider / Multiplier | High | Low | **P1** |
 | Envelope Follower | High | Low | **P1** |

@@ -27,7 +27,6 @@ import {
   quantizeCv,
   midiToNoteLabel,
   midiToCv,
-  cvToMidi,
   serializeQuantizerConfig,
   deserializeQuantizerConfig,
 } from '../../../specs/025-quantizer/contracts/validation';
@@ -246,7 +245,18 @@ export class Quantizer extends SynthComponent {
     this.heldCv = midiToCv(quantizedMidi);
     this.heldHz = MusicalScale.midiToHz(quantizedMidi);
     this.currentNoteLabel = midiToNoteLabel(quantizedMidi);
-    this.setCvOutput(this.heldHz);
+    if (this.cvOutputNode) {
+      const ctx = audioEngine.getContext();
+      if (ctx) {
+        // Short ramp on user-triggered config changes to avoid a click
+        const now = ctx.currentTime;
+        this.cvOutputNode.offset.cancelScheduledValues(now);
+        this.cvOutputNode.offset.setValueAtTime(this.cvOutputNode.offset.value, now);
+        this.cvOutputNode.offset.linearRampToValueAtTime(this.heldHz, now + 0.01);
+      } else {
+        this.cvOutputNode.offset.value = this.heldHz;
+      }
+    }
   }
 
   private readCvInput(): number {
@@ -259,19 +269,6 @@ export class Quantizer extends SynthComponent {
     if (!this.gateAnalyserNode || !this.gateSampleBuffer) return 0;
     this.gateAnalyserNode.getFloatTimeDomainData(this.gateSampleBuffer);
     return this.gateSampleBuffer[this.gateSampleBuffer.length - 1] ?? 0;
-  }
-
-  private setCvOutput(hz: number): void {
-    if (!this.cvOutputNode) return;
-    const ctx = audioEngine.getContext();
-    if (ctx) {
-      const now = ctx.currentTime;
-      this.cvOutputNode.offset.cancelScheduledValues(now);
-      this.cvOutputNode.offset.setValueAtTime(this.cvOutputNode.offset.value, now);
-      this.cvOutputNode.offset.linearRampToValueAtTime(hz, now + 0.01);
-    } else {
-      this.cvOutputNode.offset.value = hz;
-    }
   }
 
   private update(): void {
@@ -289,7 +286,7 @@ export class Quantizer extends SynthComponent {
         this.heldCv = midiToCv(quantizedMidi);
         this.heldHz = newHz;
         this.currentNoteLabel = midiToNoteLabel(quantizedMidi);
-        this.setCvOutput(this.heldHz);
+        this.cvOutputNode.offset.value = this.heldHz;
       }
     }
 

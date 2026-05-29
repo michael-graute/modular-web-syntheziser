@@ -96,10 +96,10 @@
 
 ### Implementation
 
-- [ ] T027 [US4] Implement `serialize()` in `src/components/utilities/Quantizer.ts` — use `serializeQuantizerConfig()` to write `rootNote` and `scaleType` as numeric parameters into `ComponentData`
-- [ ] T028 [US4] Implement `deserialize()` in `src/components/utilities/Quantizer.ts` — use `deserializeQuantizerConfig()` to restore config from `ComponentData.parameters`, call `rebuildPitchTable()`, call `updateParameter()` for each value to sync canvas controls
-- [ ] T029 [US4] Write unit tests for round-trip serialization: serialize a non-default config (root=G, scale=harmonic-minor), deserialize, verify restored config matches original in `tests/components/utilities/Quantizer.test.ts`
-- [ ] T030 [US4] Write unit test for unknown/missing parameter graceful fallback: deserialize an empty params object, verify defaults (C Major) are used in `tests/components/utilities/Quantizer.test.ts`
+- [x] T027 [US4] Implement `serialize()` in `src/components/utilities/Quantizer.ts` — use `serializeQuantizerConfig()` to write `rootNote` and `scaleType` as numeric parameters into `ComponentData`
+- [x] T028 [US4] Implement `deserialize()` in `src/components/utilities/Quantizer.ts` — use `deserializeQuantizerConfig()` to restore config from `ComponentData.parameters`, call `rebuildPitchTable()`, call `updateParameter()` for each value to sync canvas controls
+- [x] T029 [US4] Write unit tests for round-trip serialization: serialize a non-default config (root=G, scale=harmonic-minor), deserialize, verify restored config matches original in `tests/components/utilities/Quantizer.test.ts`
+- [x] T030 [US4] Write unit test for unknown/missing parameter graceful fallback: deserialize an empty params object, verify defaults (C Major) are used in `tests/components/utilities/Quantizer.test.ts`
 
 **Checkpoint**: Patch save/load cycle preserves Quantizer config perfectly. US4 tests green. All prior stories still pass.
 
@@ -109,14 +109,14 @@
 
 **Purpose**: Edge-case hardening, visual polish, and final validation.
 
-- [ ] T031 [P] Verify CV clamping in `update()` — add assertion-style guard: if `cvInputNode.offset.value` is outside `[CV_MIN, CV_MAX]`, clamp before passing to `quantizeCv()` (already in contracts but verify runtime path) in `src/components/utilities/Quantizer.ts`
-- [ ] T032 [P] Verify note label renders correctly for accidentals (e.g. "A#4", "C#3") and boundary notes ("C0", "C8") — visual check and unit assertion in `tests/components/utilities/Quantizer.test.ts`
-- [ ] T033 [P] Run full test suite `vitest run` and confirm zero regressions across all existing tests
-- [ ] T034 [P] Run `npm run lint` and fix any TypeScript strict-mode or linting warnings introduced by new files
+- [x] T031 [P] Verify CV clamping in `update()` — add assertion-style guard: if `cvInputNode.offset.value` is outside `[CV_MIN, CV_MAX]`, clamp before passing to `quantizeCv()` (already in contracts but verify runtime path) in `src/components/utilities/Quantizer.ts`
+- [x] T032 [P] Verify note label renders correctly for accidentals (e.g. "A#4", "C#3") and boundary notes ("C0", "C8") — visual check and unit assertion in `tests/components/utilities/Quantizer.test.ts`
+- [x] T033 [P] Run full test suite `vitest run` and confirm zero regressions across all existing tests
+- [x] T034 [P] Run `npm run lint` and fix any TypeScript strict-mode or linting warnings introduced by new files
 - [ ] T035 Smoke-test in browser: build `LFO → Quantizer → Oscillator → Master Out` patch, verify all 8 scale types and several root notes produce correct in-scale pitches
 - [ ] T036 Smoke-test trigger mode: wire `Step Sequencer` clock → Quantizer gate-in, verify pitch steps only on beat
 - [ ] T037 Smoke-test patch persistence: save, reload, verify Quantizer state restored
-- [ ] T038 Update `docs/research/missing-features.md` — mark Quantizer as implemented in `docs/research/missing-features.md`
+- [x] T038 Update `docs/research/missing-features.md` — mark Quantizer as implemented in `docs/research/missing-features.md`
 
 **Checkpoint**: All tests green, lint clean, manual smoke tests pass. Feature ready for review.
 

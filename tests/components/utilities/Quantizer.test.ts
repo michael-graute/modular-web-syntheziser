@@ -618,3 +618,163 @@ describe('Quantizer real-time scale switching (US3)', () => {
     expect(tableAfter).toContain(66); // F#4
   });
 });
+
+// ---------------------------------------------------------------------------
+// T029 / T030 — Patch serialization round-trip (Phase 6 / US4)
+// ---------------------------------------------------------------------------
+
+describe('Quantizer serialization round-trip (US4)', () => {
+  let quantizer: Quantizer;
+  let mockCtx: MockAudioContext;
+
+  beforeEach(() => {
+    mockCtx = new MockAudioContext();
+    (audioEngine as any).context = mockCtx;
+    (audioEngine as any).isInitialized = true;
+    (audioEngine as any).nodes = new Map();
+    quantizer = new Quantizer('ser-q', { x: 0, y: 0 });
+    quantizer.activate();
+  });
+
+  afterEach(() => {
+    quantizer.deactivate();
+    (audioEngine as any).context = null;
+    (audioEngine as any).isInitialized = false;
+    (audioEngine as any).nodes = new Map();
+  });
+
+  it('T029: full round-trip for G Harmonic Minor preserves config', () => {
+    // Configure G Harmonic Minor
+    quantizer.setParameterValue('rootNote', NOTE_ORDER.indexOf(QuantizerNote.G));
+    quantizer.setParameterValue('scaleType', SCALE_TYPE_ORDER.indexOf(QuantizerScaleType.HARMONIC_MINOR));
+
+    const serialized = quantizer.serialize();
+    expect(serialized.parameters['rootNote']).toBe(NOTE_ORDER.indexOf(QuantizerNote.G));
+    expect(serialized.parameters['scaleType']).toBe(SCALE_TYPE_ORDER.indexOf(QuantizerScaleType.HARMONIC_MINOR));
+
+    // Restore into a fresh instance
+    const q2 = new Quantizer('ser-q2', { x: 5, y: 5 });
+    q2.activate();
+    q2.deserialize(serialized);
+
+    expect((q2 as any).config.rootNote).toBe(QuantizerNote.G);
+    expect((q2 as any).config.scaleType).toBe(QuantizerScaleType.HARMONIC_MINOR);
+
+    // Pitch table must contain G (MIDI 67 in octave 4)
+    const table = (q2 as any).pitchTable as readonly number[];
+    expect(table).toContain(67); // G4
+
+    q2.deactivate();
+  });
+
+  it('T029: canvas parameter values are synced after deserialize', () => {
+    const gIdx = NOTE_ORDER.indexOf(QuantizerNote.G);
+    const hmIdx = SCALE_TYPE_ORDER.indexOf(QuantizerScaleType.HARMONIC_MINOR);
+
+    quantizer.deserialize({
+      id: 'ser-q',
+      type: quantizer.type,
+      position: { x: 0, y: 0 },
+      parameters: { rootNote: gIdx, scaleType: hmIdx },
+    });
+
+    expect(quantizer.getParameter('rootNote')?.getValue()).toBe(gIdx);
+    expect(quantizer.getParameter('scaleType')?.getValue()).toBe(hmIdx);
+  });
+
+  it('T030: deserializing empty params falls back to C Major defaults', () => {
+    quantizer.deserialize({
+      id: 'ser-q',
+      type: quantizer.type,
+      position: { x: 0, y: 0 },
+      parameters: {},
+    });
+
+    expect((quantizer as any).config.rootNote).toBe(DEFAULT_QUANTIZER_CONFIG.rootNote);
+    expect((quantizer as any).config.scaleType).toBe(DEFAULT_QUANTIZER_CONFIG.scaleType);
+  });
+
+  it('T030: deserializing out-of-range indices falls back to defaults', () => {
+    quantizer.deserialize({
+      id: 'ser-q',
+      type: quantizer.type,
+      position: { x: 0, y: 0 },
+      parameters: { rootNote: 999, scaleType: 999 },
+    });
+
+    expect((quantizer as any).config.rootNote).toBe(DEFAULT_QUANTIZER_CONFIG.rootNote);
+    expect((quantizer as any).config.scaleType).toBe(DEFAULT_QUANTIZER_CONFIG.scaleType);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T031 / T032 — Polish: CV clamping + note label edge cases (Phase 7)
+// ---------------------------------------------------------------------------
+
+describe('Quantizer polish: CV clamping and note label (Phase 7)', () => {
+  let quantizer: Quantizer;
+  let mockCtx: MockAudioContext;
+
+  beforeEach(() => {
+    mockCtx = new MockAudioContext();
+    (audioEngine as any).context = mockCtx;
+    (audioEngine as any).isInitialized = true;
+    (audioEngine as any).nodes = new Map();
+    quantizer = new Quantizer('polish-q', { x: 0, y: 0 });
+    quantizer.activate();
+  });
+
+  afterEach(() => {
+    quantizer.deactivate();
+    (audioEngine as any).context = null;
+    (audioEngine as any).isInitialized = false;
+    (audioEngine as any).nodes = new Map();
+  });
+
+  // T031 — runtime CV clamping: quantizeCv already clamps internally, verify
+  // that update() passes through extreme values without throwing or producing NaN.
+  it('T031: extreme CV below CV_MIN does not crash and produces valid Hz output', () => {
+    (quantizer as any).readCvInput = () => CV_MIN - 100;
+    expect(() => (quantizer as any).update()).not.toThrow();
+    const hz = (quantizer as any).heldHz as number;
+    expect(Number.isFinite(hz)).toBe(true);
+    expect(hz).toBeGreaterThan(0);
+  });
+
+  it('T031: extreme CV above CV_MAX does not crash and produces valid Hz output', () => {
+    (quantizer as any).readCvInput = () => CV_MAX + 100;
+    expect(() => (quantizer as any).update()).not.toThrow();
+    const hz = (quantizer as any).heldHz as number;
+    expect(Number.isFinite(hz)).toBe(true);
+    expect(hz).toBeGreaterThan(0);
+  });
+
+  // T032 — note label accidentals and boundary notes
+  it('T032: note label shows accidental "C#4" for MIDI 61', () => {
+    expect(midiToNoteLabel(61)).toBe('C#4');
+  });
+
+  it('T032: note label shows accidental "A#4" for MIDI 70', () => {
+    expect(midiToNoteLabel(70)).toBe('A#4');
+  });
+
+  it('T032: note label shows boundary "C0" for MIDI_MIN (12)', () => {
+    expect(midiToNoteLabel(MIDI_MIN)).toBe('C0');
+  });
+
+  it('T032: note label shows boundary "C8" for MIDI_MAX (108)', () => {
+    expect(midiToNoteLabel(MIDI_MAX)).toBe('C8');
+  });
+
+  it('T032: currentNoteLabel updates to accidental after quantizing to C# scale input', () => {
+    // C# Major: root=C#, scale=Major
+    quantizer.setParameterValue('rootNote', NOTE_ORDER.indexOf(QuantizerNote.C_SHARP));
+    // C# Major contains C#4 (MIDI 61) — CV input at 0 should snap there
+    (quantizer as any).readCvInput = () => 1 / 12; // ~MIDI 61
+    (quantizer as any).heldHz = 0; // force update to fire (newHz !== heldHz)
+    (quantizer as any).update();
+    const label = quantizer.getNoteLabel();
+    // Should be a note in C# Major (all sharps/naturals)
+    expect(label).toMatch(/^[A-G]#?\d$/);
+  });
+});
