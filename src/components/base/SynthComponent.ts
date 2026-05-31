@@ -157,6 +157,7 @@ export abstract class SynthComponent {
       ComponentType.FLANGER,
       ComponentType.PHASER,
       ComponentType.TREMOLO,
+      ComponentType.PARAMETRIC_EQ,
     ];
     return bypassableTypes.includes(this.type);
   }

@@ -17,6 +17,7 @@ import { Mixer } from './utilities/Mixer';
 import { Collider } from './utilities/Collider';
 import { ChordFinder } from './utilities/ChordFinder';
 import { Quantizer } from './utilities/Quantizer';
+import { ParametricEQ } from './processors/ParametricEQ';
 import { Looper } from './utilities/Looper';
 import { Delay } from './effects/Delay';
 import { Reverb } from './effects/Reverb';
@@ -97,6 +98,15 @@ export function registerAllComponents(): void {
     'Processors',
     (id, position) => new ADSREnvelope(id, position),
     calculateComponentDimensions(ComponentType.ADSR_ENVELOPE)
+  );
+
+  componentRegistry.register(
+    ComponentType.PARAMETRIC_EQ,
+    'Parametric EQ',
+    '3-band parametric equalizer with CV gain modulation',
+    'Processors',
+    (id, position) => new ParametricEQ(id, position),
+    calculateComponentDimensions(ComponentType.PARAMETRIC_EQ)
   );
 
   // Utilities

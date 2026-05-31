@@ -40,15 +40,15 @@
 
 ### Implementation
 
-- [ ] T010 [US1] Create `src/components/processors/ParametricEQ.ts` — class skeleton extending `SynthComponent`, constructor with 7 parameters using defaults from `DEFAULT_EQ_CONFIG`, port declarations (`audio-in` Audio, `low-gain-cv` CV, `mid-gain-cv` CV, `high-gain-cv` CV, `audio-out` Audio)
-- [ ] T011 [US1] Implement `createAudioNodes()` in `src/components/processors/ParametricEQ.ts` — create `inputGain` (GainNode), `lowShelf` (BiquadFilterNode type=`'lowshelf'`), `midPeak` (BiquadFilterNode type=`'peaking'`), `highShelf` (BiquadFilterNode type=`'highshelf'`), `outputGain` (GainNode); wire series chain `inputGain → lowShelf → midPeak → highShelf → outputGain`; set initial parameter values on all filter nodes
-- [ ] T012 [US1] Implement `destroyAudioNodes()` in `src/components/processors/ParametricEQ.ts` — disconnect and null all five nodes in reverse order
-- [ ] T013 [US1] Implement `getInputNode()` / `getOutputNode()` in `src/components/processors/ParametricEQ.ts` — return `inputGain` for `audio-in`, `outputGain` for `audio-out`
-- [ ] T014 [US1] Implement `updateAudioParameter()` in `src/components/processors/ParametricEQ.ts` — handle all 7 parameter IDs (`lowGain`, `lowFreq`, `midGain`, `midFreq`, `midQ`, `highGain`, `highFreq`), using `setValueAtTime(value, ctx.currentTime)` on the appropriate BiquadFilterNode AudioParam
-- [ ] T015 [US1] Implement bypass support in `src/components/processors/ParametricEQ.ts` — override `isBypassable()` returning `true`; `enableBypass()` disconnects `inputGain` and the filter chain then connects `inputGain` directly to `outputGain`; `disableBypass()` disconnects `inputGain` then restores the series chain `inputGain → lowShelf → midPeak → highShelf → outputGain` (same pattern as `Filter.ts`; filter node parameter values are preserved during bypass)
-- [ ] T016 [US1] Import and register `ParametricEQ` in `src/components/registerComponents.ts` under `'Processors'` group with `calculateComponentDimensions(ComponentType.PARAMETRIC_EQ)`
-- [ ] T017 [US1] Add `if (this.type === ComponentType.PARAMETRIC_EQ)` block in `createControls()` in `src/canvas/CanvasComponent.ts` — create 7 `Knob` instances for all parameters, positioned in two rows (Low row: lowGain, lowFreq; Mid row: midGain, midFreq, midQ; High row: highGain, highFreq)
-- [ ] T018 [US1] Write component integration test: instantiate `ParametricEQ`, call `activate()`, verify `lowShelf.type === 'lowshelf'`, `midPeak.type === 'peaking'`, `highShelf.type === 'highshelf'`; verify initial gain values are 0 dB; verify bypass connects `inputGain` directly to `outputGain` (filter chain disconnected) and disabling bypass restores the series chain in `tests/components/processors/ParametricEQ.test.ts`
+- [X] T010 [US1] Create `src/components/processors/ParametricEQ.ts` — class skeleton extending `SynthComponent`, constructor with 7 parameters using defaults from `DEFAULT_EQ_CONFIG`, port declarations (`audio-in` Audio, `low-gain-cv` CV, `mid-gain-cv` CV, `high-gain-cv` CV, `audio-out` Audio)
+- [X] T011 [US1] Implement `createAudioNodes()` in `src/components/processors/ParametricEQ.ts` — create `inputGain` (GainNode), `lowShelf` (BiquadFilterNode type=`'lowshelf'`), `midPeak` (BiquadFilterNode type=`'peaking'`), `highShelf` (BiquadFilterNode type=`'highshelf'`), `outputGain` (GainNode); wire series chain `inputGain → lowShelf → midPeak → highShelf → outputGain`; set initial parameter values on all filter nodes
+- [X] T012 [US1] Implement `destroyAudioNodes()` in `src/components/processors/ParametricEQ.ts` — disconnect and null all five nodes in reverse order
+- [X] T013 [US1] Implement `getInputNode()` / `getOutputNode()` in `src/components/processors/ParametricEQ.ts` — return `inputGain` for `audio-in`, `outputGain` for `audio-out`
+- [X] T014 [US1] Implement `updateAudioParameter()` in `src/components/processors/ParametricEQ.ts` — handle all 7 parameter IDs (`lowGain`, `lowFreq`, `midGain`, `midFreq`, `midQ`, `highGain`, `highFreq`), using `setValueAtTime(value, ctx.currentTime)` on the appropriate BiquadFilterNode AudioParam
+- [X] T015 [US1] Implement bypass support in `src/components/processors/ParametricEQ.ts` — override `isBypassable()` returning `true`; `enableBypass()` disconnects `inputGain` and the filter chain then connects `inputGain` directly to `outputGain`; `disableBypass()` disconnects `inputGain` then restores the series chain `inputGain → lowShelf → midPeak → highShelf → outputGain` (same pattern as `Filter.ts`; filter node parameter values are preserved during bypass)
+- [X] T016 [US1] Import and register `ParametricEQ` in `src/components/registerComponents.ts` under `'Processors'` group with `calculateComponentDimensions(ComponentType.PARAMETRIC_EQ)`
+- [X] T017 [US1] Add `if (this.type === ComponentType.PARAMETRIC_EQ)` block in `createControls()` in `src/canvas/CanvasComponent.ts` — create 7 `Knob` instances for all parameters, positioned in two rows (Low row: lowGain, lowFreq; Mid row: midGain, midFreq, midQ; High row: highGain, highFreq)
+- [X] T018 [US1] Write component integration test: instantiate `ParametricEQ`, call `activate()`, verify `lowShelf.type === 'lowshelf'`, `midPeak.type === 'peaking'`, `highShelf.type === 'highshelf'`; verify initial gain values are 0 dB; verify bypass connects `inputGain` directly to `outputGain` (filter chain disconnected) and disabling bypass restores the series chain in `tests/components/processors/ParametricEQ.test.ts`
 
 **Checkpoint**: Oscillator → ParametricEQ → Master Out patch audibly responds to all three band gain knobs. Flat response passes audio unchanged. All US1 tests green.
 
@@ -62,8 +62,8 @@
 
 ### Implementation
 
-- [ ] T019 [US2] Verify `updateAudioParameter('midFreq', value)` correctly calls `midPeak.frequency.setValueAtTime(value, now)` and `updateAudioParameter('midQ', value)` calls `midPeak.Q.setValueAtTime(value, now)` in `src/components/processors/ParametricEQ.ts` (already implicit from T014 — add explicit test coverage)
-- [ ] T020 [US2] Write unit tests for mid peak frequency and Q: instantiate with mock context, call `setParameterValue('midFreq', 500)`, verify `midPeak.frequency` receives the value; call `setParameterValue('midQ', 5.0)`, verify `midPeak.Q` receives the value in `tests/components/processors/ParametricEQ.test.ts`
+- [X] T019 [US2] Verify `updateAudioParameter('midFreq', value)` correctly calls `midPeak.frequency.setValueAtTime(value, now)` and `updateAudioParameter('midQ', value)` calls `midPeak.Q.setValueAtTime(value, now)` in `src/components/processors/ParametricEQ.ts` (already implicit from T014 — add explicit test coverage)
+- [X] T020 [US2] Write unit tests for mid peak frequency and Q: instantiate with mock context, call `setParameterValue('midFreq', 500)`, verify `midPeak.frequency` receives the value; call `setParameterValue('midQ', 5.0)`, verify `midPeak.Q` receives the value in `tests/components/processors/ParametricEQ.test.ts`
 
 **Checkpoint**: Mid peak frequency and Q knobs affect the correct BiquadFilterNode AudioParams. US2 tests green. US1 still passes.
 
@@ -77,8 +77,8 @@
 
 ### Implementation
 
-- [ ] T021 [US3] Verify `updateAudioParameter('lowFreq', value)` calls `lowShelf.frequency.setValueAtTime(value, now)` and `updateAudioParameter('highFreq', value)` calls `highShelf.frequency.setValueAtTime(value, now)` in `src/components/processors/ParametricEQ.ts` (already implicit from T014 — add explicit test coverage)
-- [ ] T022 [US3] Write unit tests for shelf corner frequencies: set `lowFreq` to 200, verify `lowShelf.frequency` value; set `highFreq` to 12000, verify `highShelf.frequency` value in `tests/components/processors/ParametricEQ.test.ts`
+- [X] T021 [US3] Verify `updateAudioParameter('lowFreq', value)` calls `lowShelf.frequency.setValueAtTime(value, now)` and `updateAudioParameter('highFreq', value)` calls `highShelf.frequency.setValueAtTime(value, now)` in `src/components/processors/ParametricEQ.ts` (already implicit from T014 — add explicit test coverage)
+- [X] T022 [US3] Write unit tests for shelf corner frequencies: set `lowFreq` to 200, verify `lowShelf.frequency` value; set `highFreq` to 12000, verify `highShelf.frequency` value in `tests/components/processors/ParametricEQ.test.ts`
 
 **Checkpoint**: Shelf corner frequency knobs route to correct BiquadFilterNode AudioParams. US3 tests green. US1 + US2 still pass.
 
@@ -92,10 +92,10 @@
 
 ### Implementation
 
-- [ ] T023 [US4] Implement `getAudioParamForInput()` in `src/components/processors/ParametricEQ.ts` — return `lowShelf.gain` for `'low-gain-cv'`, `midPeak.gain` for `'mid-gain-cv'`, `highShelf.gain` for `'high-gain-cv'`, `null` otherwise
-- [ ] T024 [US4] Implement `getParameterRangeForInput()` in `src/components/processors/ParametricEQ.ts` — return `{ min: -18, max: 18 }` for all three CV gain ports so the LFO's per-connection scaler implements 1V = 1 dB correctly
-- [ ] T025 [US4] Write unit tests for CV routing: verify `getAudioParamForInput('low-gain-cv')` returns the `lowShelf.gain` AudioParam; same for mid and high; verify `getParameterRangeForInput('low-gain-cv')` returns `{ min: -18, max: 18 }`; verify that when the CV input is disconnected (no LFO connected), the effective gain on each BiquadFilterNode equals the band's knob value (FR-015: CV disconnect reverts to knob value) in `tests/components/processors/ParametricEQ.test.ts`
-- [ ] T026 [US4] Write unit test for CV gain clamping: confirm `clampGain()` clamps ±18 dB at boundaries; confirm values beyond range (e.g. ±100) are clamped without error in `tests/components/processors/ParametricEQ.test.ts`
+- [X] T023 [US4] Implement `getAudioParamForInput()` in `src/components/processors/ParametricEQ.ts` — return `lowShelf.gain` for `'low-gain-cv'`, `midPeak.gain` for `'mid-gain-cv'`, `highShelf.gain` for `'high-gain-cv'`, `null` otherwise
+- [X] T024 [US4] Implement `getParameterRangeForInput()` in `src/components/processors/ParametricEQ.ts` — return `{ min: -18, max: 18 }` for all three CV gain ports so the LFO's per-connection scaler implements 1V = 1 dB correctly
+- [X] T025 [US4] Write unit tests for CV routing: verify `getAudioParamForInput('low-gain-cv')` returns the `lowShelf.gain` AudioParam; same for mid and high; verify `getParameterRangeForInput('low-gain-cv')` returns `{ min: -18, max: 18 }`; verify that when the CV input is disconnected (no LFO connected), the effective gain on each BiquadFilterNode equals the band's knob value (FR-015: CV disconnect reverts to knob value) in `tests/components/processors/ParametricEQ.test.ts`
+- [X] T026 [US4] Write unit test for CV gain clamping: confirm `clampGain()` clamps ±18 dB at boundaries; confirm values beyond range (e.g. ±100) are clamped without error in `tests/components/processors/ParametricEQ.test.ts`
 
 **Checkpoint**: LFO connects to each gain CV port and modulates the correct BiquadFilterNode.gain AudioParam via the existing per-connection scaler. US4 tests green. All prior stories still pass.
 
@@ -109,10 +109,10 @@
 
 ### Implementation
 
-- [ ] T027 [US5] Implement `serialize()` in `src/components/processors/ParametricEQ.ts` — use `serializeEQConfig()` to write all 7 parameters into `ComponentData.parameters`
-- [ ] T028 [US5] Implement `deserialize()` in `src/components/processors/ParametricEQ.ts` — use `deserializeEQConfig()` to restore config from `ComponentData.parameters`, call `updateAudioParameter()` for each value to sync filter nodes and canvas controls; apply documented defaults for missing keys
-- [ ] T029 [US5] Write unit tests for round-trip serialization: configure non-default values, serialize, deserialize into a fresh instance, verify all 7 parameters match originals in `tests/components/processors/ParametricEQ.test.ts`
-- [ ] T030 [US5] Write unit test for graceful fallback: deserialize with empty `parameters: {}`, verify all 7 parameters revert to `DEFAULT_EQ_CONFIG` values in `tests/components/processors/ParametricEQ.test.ts`
+- [X] T027 [US5] Implement `serialize()` in `src/components/processors/ParametricEQ.ts` — use `serializeEQConfig()` to write all 7 parameters into `ComponentData.parameters`
+- [X] T028 [US5] Implement `deserialize()` in `src/components/processors/ParametricEQ.ts` — use `deserializeEQConfig()` to restore config from `ComponentData.parameters`, call `updateAudioParameter()` for each value to sync filter nodes and canvas controls; apply documented defaults for missing keys
+- [X] T029 [US5] Write unit tests for round-trip serialization: configure non-default values, serialize, deserialize into a fresh instance, verify all 7 parameters match originals in `tests/components/processors/ParametricEQ.test.ts`
+- [X] T030 [US5] Write unit test for graceful fallback: deserialize with empty `parameters: {}`, verify all 7 parameters revert to `DEFAULT_EQ_CONFIG` values in `tests/components/processors/ParametricEQ.test.ts`
 
 **Checkpoint**: Patch save/load preserves all EQ settings. US5 tests green. All prior stories still pass.
 

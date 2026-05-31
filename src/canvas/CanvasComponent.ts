@@ -1410,6 +1410,65 @@ export class CanvasComponent {
       }
     }
 
+    // ParametricEQ controls: 3 rows of knobs (Low: 2, Mid: 3, High: 2)
+    if (this.type === ComponentType.PARAMETRIC_EQ && this.synthComponent) {
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const usableWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const rowY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const rowStride = knobSize + 12 + 12 + COMPONENT.CONTROL_SPACING_VERTICAL; // knob + label + value + gap
+
+      // Low row: 2 knobs (lowGain, lowFreq) — evenly spaced across width
+      const lowSpacing = (usableWidth - knobSize * 2) / 3;
+      const lowParams: Array<string> = ['lowGain', 'lowFreq'];
+      lowParams.forEach((id, i) => {
+        const param = this.synthComponent!.getParameter(id);
+        if (param) {
+          this.controls.push(new Knob(
+            this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + lowSpacing * (i + 1) + knobSize * i,
+            rowY,
+            knobSize,
+            param
+          ));
+        }
+      });
+
+      // Mid row: 3 knobs (midGain, midFreq, midQ)
+      const midSpacing = (usableWidth - knobSize * 3) / 4;
+      const midParams: Array<string> = ['midGain', 'midFreq', 'midQ'];
+      const midRowY = rowY + rowStride;
+      midParams.forEach((id, i) => {
+        const param = this.synthComponent!.getParameter(id);
+        if (param) {
+          this.controls.push(new Knob(
+            this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + midSpacing * (i + 1) + knobSize * i,
+            midRowY,
+            knobSize,
+            param
+          ));
+        }
+      });
+
+      // High row: 2 knobs (highGain, highFreq)
+      const highRowY = midRowY + rowStride;
+      const highParams: Array<string> = ['highGain', 'highFreq'];
+      highParams.forEach((id, i) => {
+        const param = this.synthComponent!.getParameter(id);
+        if (param) {
+          this.controls.push(new Knob(
+            this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + lowSpacing * (i + 1) + knobSize * i,
+            highRowY,
+            knobSize,
+            param
+          ));
+        }
+      });
+    }
+
     // Quantizer controls: root note dropdown, scale type dropdown
     if (this.type === ComponentType.QUANTIZER && this.synthComponent) {
       const numInputPorts = this.synthComponent.inputs.size;
