@@ -120,7 +120,7 @@ A user saves a patch containing a configured Parametric EQ (e.g., low shelf +4 d
 - **FR-006**: The EQ MUST accept a mono audio signal as input and produce a processed mono audio signal as output.
 - **FR-007**: With all band gains set to 0 dB, the output MUST be perceptually identical to the input (flat response).
 - **FR-008**: Each band's parameters MUST be adjustable in real time without audio dropout or interruption.
-- **FR-009**: The EQ MUST support bypass (on/off) to allow direct A/B comparison.
+- **FR-009**: The EQ MUST support bypass (on/off) to allow direct A/B comparison. Bypass is toggled via the standard bypass button rendered by `CanvasComponent` (the same mechanism used by Filter, LFO, and other bypassable components — `isBypassable()` returns `true`). When bypassed, audio passes through unmodified; EQ parameter values are preserved.
 - **FR-010**: All band parameters (gain, frequency, Q) MUST be saved and restored as part of patch persistence.
 - **FR-011**: The component MUST degrade gracefully when loaded from a patch with missing parameters, applying documented defaults.
 - **FR-012**: The EQ MUST provide three CV input ports — one per band gain (Low Gain CV, Mid Gain CV, High Gain CV) — accepting modulation signals from LFOs or other CV sources.

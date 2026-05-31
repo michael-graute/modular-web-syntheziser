@@ -49,7 +49,11 @@ LFO/CV ─► [LFO per-connection scaler] ─► highShelfNode.gain (AudioParam)
 
 ### Bypass behaviour
 
-When bypassed: `inputGain.gain → 0`, `outputGain` disconnects — or use the same connect/disconnect pattern as `Filter.ts`. Audio signal is muted without altering filter node state.
+Uses the same connect/disconnect pattern as `Filter.ts`:
+- `enableBypass()`: disconnect `inputGain` and the filter chain; connect `inputGain` directly to `outputGain`.
+- `disableBypass()`: disconnect `inputGain`; reconnect the series chain `inputGain → lowShelf → midPeak → highShelf → outputGain`.
+
+Filter node state (gain, frequency, Q values) is preserved during bypass so settings are intact when bypass is removed.
 
 ### Serialization format (`ComponentData.parameters`)
 
