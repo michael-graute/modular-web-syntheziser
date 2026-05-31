@@ -11,7 +11,7 @@
 |----------|-----------|
 | Generators | Oscillator, FM Oscillator, LFO, Noise |
 | Processors | Filter, VCA, ADSR Envelope, Parametric EQ |
-| Effects | Delay, Reverb, Distortion, Chorus, Bitcrusher, Flanger, Phaser, Tremolo |
+| Effects | Delay, Reverb, Distortion, Chorus, Bitcrusher, Flanger, Phaser, Tremolo, Ring Modulator |
 | Utilities | Keyboard, Master Out, Mixer, Step Sequencer, Chord Finder, Collider, Looper |
 | Analyzers | Oscilloscope, VU Meter |
 
@@ -23,7 +23,7 @@
 
 - **Sample Player / Wavetable Oscillator** — no way to load audio files or user-defined waveforms; most modular systems have this. Would open up sampling, one-shot drums, and wavetable synthesis workflows.
 - **Karplus-Strong / Physical Modeling** — algorithmic plucked string synthesis. Would complement the physics-themed Collider well and introduce a new synthesis paradigm distinct from the existing oscillator-based approach.
-- **Ring Modulator** — classic AM synthesis, absent despite an otherwise complete effects chain. Simple to implement; produces metallic, bell-like timbres by multiplying two audio signals.
+- ~~**Ring Modulator**~~ ✅ *Implemented in `src/components/effects/RingModulator.ts` (branch `028-ring-modulator`)* — classic AM synthesis, absent despite an otherwise complete effects chain. Simple to implement; produces metallic, bell-like timbres by multiplying two audio signals.
 
 ### Modulation & Control
 
@@ -63,7 +63,7 @@
 | Slew Limiter / Portamento | Medium | Low | **P2** |
 | S&H (standalone) | Medium | Low | **P2** |
 | Sample Player / Wavetable | High | High | **P2** |
-| Ring Modulator | Medium | Low | **P2** |
+| ~~Ring Modulator~~ | Medium | Low | ✅ **Implemented** |
 | Wavefolder | Medium | Medium | **P3** |
 | ~~EQ / Parametric Filter~~ | Medium | Medium | ✅ **Implemented** |
 | ~~VU Meter~~ | Low | Low | ✅ **Implemented** |
