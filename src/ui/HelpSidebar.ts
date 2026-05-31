@@ -652,6 +652,31 @@ export class HelpSidebar {
         <li><strong>Output:</strong> CV envelope signal</li>
       </ul>
 
+      <h4 style="color: var(--text-primary, #ffffff);">Parametric EQ</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Shapes the tone of audio signals with three independent frequency bands:
+        a low shelf, a parametric mid peak, and a high shelf.
+        All three gain inputs accept CV modulation for animated, LFO-driven timbres.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>Low Gain:</strong> Boost or cut below the low shelf corner (−18 to +18 dB)</li>
+        <li><strong>Low Freq:</strong> Low shelf corner frequency (20–800 Hz, default 80 Hz)</li>
+        <li><strong>Mid Gain:</strong> Boost or cut around the mid peak center (−18 to +18 dB)</li>
+        <li><strong>Mid Freq:</strong> Mid peak center frequency (200–8000 Hz, default 1000 Hz)</li>
+        <li><strong>Mid Q:</strong> Mid peak bandwidth — higher Q = narrower band (0.1–10)</li>
+        <li><strong>High Gain:</strong> Boost or cut above the high shelf corner (−18 to +18 dB)</li>
+        <li><strong>High Freq:</strong> High shelf corner frequency (1000–20000 Hz, default 8000 Hz)</li>
+        <li><strong>Inputs:</strong> Audio In, Low Gain CV, Mid Gain CV, High Gain CV</li>
+        <li><strong>Output:</strong> Processed audio signal</li>
+        <li><strong>CV scaling:</strong> 1V = 1 dB — additive with the knob value, clamped to ±18 dB</li>
+      </ul>
+      <p style="color: var(--text-secondary, #cccccc);">
+        <strong style="color: var(--text-primary, #ffffff);">Typical patch:</strong>
+        Oscillator → Parametric EQ → Master Out. Boost the low shelf for warmth,
+        cut the mid peak to remove harshness, roll off the high shelf to soften brightness.
+        Connect an LFO to Low Gain CV for a rhythmic bass-pump effect.
+      </p>
+
       <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Effects</h3>
 
       <h4 style="color: var(--text-primary, #ffffff);">Delay</h4>
