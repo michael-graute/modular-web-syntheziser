@@ -9,9 +9,9 @@
 
 **Purpose**: Register the new component type and wire up the minimal scaffolding all later phases depend on.
 
-- [ ] T001 Add `PARAMETRIC_EQ = 'parametric-eq'` to `ComponentType` enum in `src/core/types.ts`
-- [ ] T002 Add `PARAMETRIC_EQ` dimensions case in `src/utils/componentLayout.ts` — 4 input ports, 1 output port, 7 knobs, no dropdown
-- [ ] T003 Add `PARAMETRIC_EQ` entry to the `names` record in `CanvasComponent.ts` and add icon `'♩'` in `src/ui/Sidebar.ts`
+- [X] T001 Add `PARAMETRIC_EQ = 'parametric-eq'` to `ComponentType` enum in `src/core/types.ts`
+- [X] T002 Add `PARAMETRIC_EQ` dimensions case in `src/utils/componentLayout.ts` — 4 input ports, 1 output port, 7 knobs, no dropdown
+- [X] T003 Add `PARAMETRIC_EQ` entry to the `names` record in `CanvasComponent.ts` and add icon `'♩'` in `src/ui/Sidebar.ts`
 
 **Checkpoint**: TypeScript compiles without errors — `ComponentType.PARAMETRIC_EQ` is valid everywhere.
 
@@ -21,12 +21,12 @@
 
 **Purpose**: Pure-logic contracts that all user story phases depend on. No Web Audio API required — fully unit-testable.
 
-- [ ] T004 [P] Verify `specs/026-parametric-eq/contracts/types.ts` compiles cleanly; run `vitest run` to confirm no existing tests regress
-- [ ] T005 [P] Verify `specs/026-parametric-eq/contracts/validation.ts` compiles cleanly against types.ts
-- [ ] T006 Write unit tests for `clampGain()`, `clampLowFreq()`, `clampMidFreq()`, `clampMidQ()`, `clampHighFreq()` — boundary values, within-range passthrough, out-of-range clamping in `tests/components/processors/ParametricEQ.test.ts`
-- [ ] T007 Write unit tests for `validateEQConfig()` — valid config, invalid types, out-of-range values in `tests/components/processors/ParametricEQ.test.ts`
-- [ ] T008 Write unit tests for `serializeEQConfig()` and `deserializeEQConfig()` — default config round-trip, non-default round-trip, missing keys fall back to defaults, out-of-range values are clamped on deserialize in `tests/components/processors/ParametricEQ.test.ts`
-- [ ] T009 Run `vitest run tests/components/processors/ParametricEQ.test.ts` and confirm all pure-function tests pass
+- [X] T004 [P] Verify `specs/026-parametric-eq/contracts/types.ts` compiles cleanly; run `vitest run` to confirm no existing tests regress
+- [X] T005 [P] Verify `specs/026-parametric-eq/contracts/validation.ts` compiles cleanly against types.ts
+- [X] T006 Write unit tests for `clampGain()`, `clampLowFreq()`, `clampMidFreq()`, `clampMidQ()`, `clampHighFreq()` — boundary values, within-range passthrough, out-of-range clamping in `tests/components/processors/ParametricEQ.test.ts`
+- [X] T007 Write unit tests for `validateEQConfig()` — valid config, invalid types, out-of-range values in `tests/components/processors/ParametricEQ.test.ts`
+- [X] T008 Write unit tests for `serializeEQConfig()` and `deserializeEQConfig()` — default config round-trip, non-default round-trip, missing keys fall back to defaults, out-of-range values are clamped on deserialize in `tests/components/processors/ParametricEQ.test.ts`
+- [X] T009 Run `vitest run tests/components/processors/ParametricEQ.test.ts` and confirm all pure-function tests pass
 
 **Checkpoint**: All contract helper tests green. Foundation ready for component implementation.
 

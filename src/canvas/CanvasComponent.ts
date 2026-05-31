@@ -1977,6 +1977,7 @@ export class CanvasComponent {
       [ComponentType.LOOPER]: 'Looper',
       [ComponentType.FM_OSCILLATOR]: 'FM Oscillator',
       [ComponentType.QUANTIZER]: 'Quantizer',
+      [ComponentType.PARAMETRIC_EQ]: 'Parametric EQ',
     };
     return names[this.type] || 'Component';
   }
