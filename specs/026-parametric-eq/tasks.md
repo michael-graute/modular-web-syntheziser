@@ -122,14 +122,14 @@
 
 **Purpose**: Edge-case hardening, final validation, and documentation.
 
-- [ ] T031 [P] Verify all 7 parameter `setValueAtTime` calls use `ctx.currentTime` (not deferred) in `src/components/processors/ParametricEQ.ts` — ensures SC-002 (immediate effect, no dropout)
-- [ ] T032 [P] Run full test suite `vitest run` and confirm zero regressions across all existing tests
-- [ ] T033 [P] Run `npx tsc --noEmit` and confirm no TypeScript strict-mode errors
-- [ ] T034 Smoke-test in browser: Oscillator → ParametricEQ → Master Out; adjust all 7 knobs and verify audible response per SC-001
-- [ ] T035 Smoke-test bypass: toggle EQ bypass, verify A/B reveals no difference with all bands at 0 dB per SC-003
-- [ ] T036 Smoke-test LFO modulation: LFO → Low Gain CV In at 0.5 Hz; verify smooth timbral sweep with no zipper noise per SC-006
-- [ ] T037 Smoke-test patch persistence: save non-default config, reload, verify all values restored per SC-004
-- [ ] T038 Update `docs/research/missing-features.md` — mark Parametric EQ as implemented
+- [X] T031 [P] Verify all 7 parameter `setValueAtTime` calls use `ctx.currentTime` (not deferred) in `src/components/processors/ParametricEQ.ts` — ensures SC-002 (immediate effect, no dropout)
+- [X] T032 [P] Run full test suite `vitest run` and confirm zero regressions across all existing tests
+- [X] T033 [P] Run `npx tsc --noEmit` and confirm no TypeScript strict-mode errors
+- [X] T034 Smoke-test in browser: Oscillator → ParametricEQ → Master Out; adjust all 7 knobs and verify audible response per SC-001
+- [X] T035 Smoke-test bypass: toggle EQ bypass, verify A/B reveals no difference with all bands at 0 dB per SC-003
+- [X] T036 Smoke-test LFO modulation: LFO → Low Gain CV In at 0.5 Hz; verify smooth timbral sweep with no zipper noise per SC-006
+- [X] T037 Smoke-test patch persistence: save non-default config, reload, verify all values restored per SC-004
+- [X] T038 Update `docs/research/missing-features.md` — mark Parametric EQ as implemented
 
 **Checkpoint**: All tests green, TypeScript clean, all smoke tests pass. Feature ready for review.
 

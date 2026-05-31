@@ -10,7 +10,7 @@
 | Category | Components |
 |----------|-----------|
 | Generators | Oscillator, FM Oscillator, LFO, Noise |
-| Processors | Filter, VCA, ADSR Envelope |
+| Processors | Filter, VCA, ADSR Envelope, Parametric EQ |
 | Effects | Delay, Reverb, Distortion, Chorus, Bitcrusher, Flanger, Phaser, Tremolo |
 | Utilities | Keyboard, Master Out, Mixer, Step Sequencer, Chord Finder, Collider, Looper |
 | Analyzers | Oscilloscope |
@@ -35,7 +35,7 @@
 ### Signal Processing
 
 - **Wavefolder** — distinctive west-coast synthesis texture; folds the waveform back on itself when it exceeds a threshold. Complements Distortion and Bitcrusher with a different character.
-- **EQ / Parametric Filter** — the Filter is a single biquad stage; a 3-band EQ (low shelf, mid peak, high shelf) would open up mixing and tone-shaping scenarios.
+- ~~**EQ / Parametric Filter**~~ ✅ *Implemented in `src/components/processors/ParametricEQ.ts` (branch `026-parametric-eq`)* — 3-band parametric EQ (low shelf, mid peak, high shelf) with per-band gain CV inputs for LFO modulation (1V = 1 dB), bypass support, and full patch persistence.
 - **Vocoder / Spectral** — more advanced; natural next step once all basics are covered. Would require a significant canvas display investment.
 
 ### Utilities & Routing
@@ -65,7 +65,7 @@
 | Sample Player / Wavetable | High | High | **P2** |
 | Ring Modulator | Medium | Low | **P2** |
 | Wavefolder | Medium | Medium | **P3** |
-| EQ / Parametric Filter | Medium | Medium | **P3** |
+| ~~EQ / Parametric Filter~~ | Medium | Medium | ✅ **Implemented** |
 | VU Meter | Low | Low | **P3** |
 | Tuner | Low | Medium | **P3** |
 | Arpeggiator (standalone) | Medium | Medium | **P3** |

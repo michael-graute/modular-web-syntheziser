@@ -219,6 +219,16 @@ export class ModulationVisualizer implements IModulationVisualizer {
       tracking = this.trackedParameters.get(parameterId);
     }
 
+    // If still not found, ask the target component for the parameter name for this port
+    if (!tracking && data.targetComponent &&
+        typeof (data.targetComponent as any).getCvParameterIdForPort === 'function') {
+      const mappedParamName = (data.targetComponent as any).getCvParameterIdForPort(portId);
+      if (mappedParamName) {
+        parameterId = `${connection.targetComponentId}:${mappedParamName}`;
+        tracking = this.trackedParameters.get(parameterId);
+      }
+    }
+
     if (!tracking) {
       console.warn(`[ModViz] Parameter "${parameterId}" not tracked! Cannot visualize.`);
       console.warn(`[ModViz] Tried: ${connection.targetComponentId}:${connection.targetPortId}`);

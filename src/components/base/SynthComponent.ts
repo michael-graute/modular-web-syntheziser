@@ -357,6 +357,16 @@ export abstract class SynthComponent {
   }
 
   /**
+   * Map a CV input port ID to the simple parameter name it modulates.
+   * Used by ModulationVisualizer to resolve port IDs that don't follow
+   * the _cv-suffix convention (e.g. 'low-gain-cv' → 'lowGain').
+   * Returns null when the default convention is sufficient.
+   */
+  getCvParameterIdForPort(_portId: string): string | null {
+    return null;
+  }
+
+  /**
    * Get the min/max range for a named parameter (simple ID).
    * Used by MidiEngine to scale CC values into the parameter's native range.
    * Returns { min: 0, max: 1 } as a safe fallback for unknown parameters.

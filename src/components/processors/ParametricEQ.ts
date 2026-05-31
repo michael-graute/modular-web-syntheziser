@@ -90,6 +90,15 @@ export class ParametricEQ extends SynthComponent {
     this.midPeak.connect(this.highShelf);
     this.highShelf.connect(this.outputGain);
 
+    // Link AudioParams to Parameters so knobs reflect live values during LFO modulation
+    this.getParameter('lowGain')?.linkAudioParam(this.lowShelf.gain);
+    this.getParameter('lowFreq')?.linkAudioParam(this.lowShelf.frequency);
+    this.getParameter('midGain')?.linkAudioParam(this.midPeak.gain);
+    this.getParameter('midFreq')?.linkAudioParam(this.midPeak.frequency);
+    this.getParameter('midQ')?.linkAudioParam(this.midPeak.Q);
+    this.getParameter('highGain')?.linkAudioParam(this.highShelf.gain);
+    this.getParameter('highFreq')?.linkAudioParam(this.highShelf.frequency);
+
     this.registerAudioNode('inputGain', this.inputGain);
     this.registerAudioNode('lowShelf', this.lowShelf);
     this.registerAudioNode('midPeak', this.midPeak);
@@ -194,6 +203,15 @@ export class ParametricEQ extends SynthComponent {
       case 'low-gain-cv':  return this.lowShelf?.gain ?? null;
       case 'mid-gain-cv':  return this.midPeak?.gain ?? null;
       case 'high-gain-cv': return this.highShelf?.gain ?? null;
+      default:             return null;
+    }
+  }
+
+  override getCvParameterIdForPort(portId: string): string | null {
+    switch (portId) {
+      case 'low-gain-cv':  return 'lowGain';
+      case 'mid-gain-cv':  return 'midGain';
+      case 'high-gain-cv': return 'highGain';
       default:             return null;
     }
   }
