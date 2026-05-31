@@ -2072,6 +2072,7 @@ export class CanvasComponent {
       [ComponentType.QUANTIZER]: 'Quantizer',
       [ComponentType.PARAMETRIC_EQ]: 'Parametric EQ',
       [ComponentType.VU_METER]: 'VU Meter',
+      [ComponentType.RING_MODULATOR]: 'Ring Mod',
     };
     return names[this.type] || 'Component';
   }

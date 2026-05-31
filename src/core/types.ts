@@ -43,6 +43,7 @@ export enum ComponentType {
   QUANTIZER = 'quantizer',
   PARAMETRIC_EQ = 'parametric-eq',
   VU_METER = 'vu-meter',
+  RING_MODULATOR = 'ring-modulator',
 }
 
 /**

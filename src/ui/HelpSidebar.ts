@@ -519,7 +519,7 @@ export class HelpSidebar {
       <ul style="color: var(--text-secondary, #cccccc);">
         <li><strong style="color: var(--text-primary, #ffffff);">Generators:</strong> Oscillator, FM Oscillator, LFO, Noise</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Processors:</strong> Filters, VCA, Envelopes</li>
-        <li><strong style="color: var(--text-primary, #ffffff);">Effects:</strong> Delay, Reverb, Distortion, Chorus, Bitcrusher, Flanger, Phaser, Tremolo</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">Effects:</strong> Delay, Reverb, Distortion, Chorus, Bitcrusher, Flanger, Phaser, Tremolo, Ring Modulator</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Utilities:</strong> Keyboard, Mixer, Sequencer</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Analyzers:</strong> Oscilloscope, VU Meter</li>
       </ul>
@@ -760,6 +760,17 @@ export class HelpSidebar {
         <li><strong>Rate:</strong> Modulation speed (0.1–20 Hz)</li>
         <li><strong>Depth:</strong> Volume swing amount</li>
         <li><strong>Mix:</strong> Dry/wet balance</li>
+      </ul>
+
+      <h4 style="color: var(--text-primary, #ffffff);">Ring Modulator</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Multiplies two audio signals to produce sum and difference frequencies — classic metallic, bell-like, and robotic timbres.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>Audio In:</strong> Carrier signal input</li>
+        <li><strong>Modulator In:</strong> Modulator signal input (another oscillator or LFO)</li>
+        <li><strong>Output:</strong> Ring-modulated result; silent when modulator is disconnected</li>
+        <li><strong>Bypass:</strong> Routes carrier directly to output, bypassing multiplication</li>
       </ul>
 
       <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Utilities</h3>
