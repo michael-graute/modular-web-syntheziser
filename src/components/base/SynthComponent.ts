@@ -157,6 +157,7 @@ export abstract class SynthComponent {
       ComponentType.FLANGER,
       ComponentType.PHASER,
       ComponentType.TREMOLO,
+      ComponentType.PARAMETRIC_EQ,
     ];
     return bypassableTypes.includes(this.type);
   }
@@ -352,6 +353,16 @@ export abstract class SynthComponent {
    * Subclasses override this for each CV input port they expose.
    */
   getParameterRangeForInput(_portId: string): { min: number; max: number } | null {
+    return null;
+  }
+
+  /**
+   * Map a CV input port ID to the simple parameter name it modulates.
+   * Used by ModulationVisualizer to resolve port IDs that don't follow
+   * the _cv-suffix convention (e.g. 'low-gain-cv' → 'lowGain').
+   * Returns null when the default convention is sufficient.
+   */
+  getCvParameterIdForPort(_portId: string): string | null {
     return null;
   }
 

@@ -41,6 +41,7 @@ export enum ComponentType {
   TREMOLO = 'tremolo',
   FM_OSCILLATOR = 'fm-oscillator',
   QUANTIZER = 'quantizer',
+  PARAMETRIC_EQ = 'parametric-eq',
 }
 
 /**

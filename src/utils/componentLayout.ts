@@ -159,6 +159,11 @@ function getControlLayout(type: ComponentType): ControlLayout {
         numKnobs: 0,
       };
 
+    case ComponentType.PARAMETRIC_EQ:
+      return {
+        numKnobs: 7, // lowGain, lowFreq, midGain, midFreq, midQ, highGain, highFreq
+      };
+
     case ComponentType.KEYBOARD_INPUT:
     case ComponentType.FILTER_ENVELOPE:
     default:
@@ -240,6 +245,9 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
     case ComponentType.QUANTIZER:
       return { inputs: 2, outputs: 1 }; // cv-in, gate-in / cv-out
 
+    case ComponentType.PARAMETRIC_EQ:
+      return { inputs: 4, outputs: 1 }; // audio-in, low-gain-cv, mid-gain-cv, high-gain-cv / audio-out
+
     default:
       return { inputs: 1, outputs: 1 };
   }
@@ -305,6 +313,15 @@ export function calculateComponentHeight(type: ComponentType): number {
     height += 10; // Spacing after display
 
     return height;
+  }
+
+  // Special case for ParametricEQ: 7 knobs across 3 rows (Low: 2, Mid: 3, High: 2)
+  if (type === ComponentType.PARAMETRIC_EQ) {
+    const maxPorts = Math.max(portCounts.inputs, portCounts.outputs);
+    const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+    const rowHeight = 12 + 40 + 12; // label + knob + value
+    const rowSpacing = COMPONENT.CONTROL_SPACING_VERTICAL;
+    return COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP + rowHeight * 3 + rowSpacing * 2 + 10;
   }
 
   // Start with header height
@@ -415,6 +432,11 @@ export function calculateComponentWidth(type: ComponentType): number {
   // Looper: 240px canvas + 10px margin each side
   if (type === ComponentType.LOOPER) {
     width = 260;
+  }
+
+  // ParametricEQ: 3 knobs in widest row (Mid), needs same width as 3-column Collider layout
+  if (type === ComponentType.PARAMETRIC_EQ) {
+    width = 200;
   }
 
   return width;
