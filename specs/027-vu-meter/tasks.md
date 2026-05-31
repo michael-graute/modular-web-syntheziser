@@ -19,10 +19,10 @@
 
 **Purpose**: Wire the new component type into the type system and component registry — all user stories depend on these.
 
-- [ ] T001 [P] Add `VU_METER = 'vu-meter'` to the `ComponentType` enum in `src/core/types.ts`
-- [ ] T002 [P] Add VU_METER case to `getPortCounts()` in `src/utils/componentLayout.ts` returning `{ inputs: 1, outputs: 0 }`
-- [ ] T003 [P] Add VU_METER case to `getControlLayout()` in `src/utils/componentLayout.ts` returning `{ hasDisplayArea: true, displayHeight: 200 }`
-- [ ] T004 [P] Add VU_METER width override in `calculateComponentWidth()` in `src/utils/componentLayout.ts` returning `160`
+- [X] T001 [P] Add `VU_METER = 'vu-meter'` to the `ComponentType` enum in `src/core/types.ts`
+- [X] T002 [P] Add VU_METER case to `getPortCounts()` in `src/utils/componentLayout.ts` returning `{ inputs: 1, outputs: 0 }`
+- [X] T003 [P] Add VU_METER case to `getControlLayout()` in `src/utils/componentLayout.ts` returning `{ hasDisplayArea: true, displayHeight: 200 }`
+- [X] T004 [P] Add VU_METER width override in `calculateComponentWidth()` in `src/utils/componentLayout.ts` returning `160`
 
 **Checkpoint**: `ComponentType.VU_METER` is available and `calculateComponentDimensions(ComponentType.VU_METER)` returns correct dimensions.
 
@@ -34,14 +34,14 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T005 Create `src/components/analyzers/VuMeter.ts` — `VuMeter` class extending `SynthComponent` with `ComponentType.VU_METER`, one `'input'` port (`SignalType.AUDIO`), no outputs, no parameters
-- [ ] T006 Implement `createAudioNodes()` in `src/components/analyzers/VuMeter.ts` — create `inputGain` (GainNode, gain=1.0) and `analyser` (AnalyserNode, fftSize=256, smoothingTimeConstant=0); wire `inputGain → analyser`; register both nodes; allocate `dataArray` (Float32Array of length 256)
-- [ ] T007 Implement `destroyAudioNodes()` in `src/components/analyzers/VuMeter.ts` — disconnect and null `inputGain`, `analyser`, `dataArray`
-- [ ] T008 Implement `getInputNode()` returning `inputGain`, `getOutputNode()` returning `null`, `updateAudioParameter()` as no-op in `src/components/analyzers/VuMeter.ts`
-- [ ] T009 Implement `getPeakLevel()` in `src/components/analyzers/VuMeter.ts` — call `analyser.getFloatTimeDomainData(dataArray)`, iterate buffer to find `max(|sample|)`, return value clamped to `[0, 1]`; return 0 when analyser is null
-- [ ] T010 [P] Create `src/canvas/displays/VuMeterDisplay.ts` — class with constructor `(x, y, width, height, vuMeter: VuMeter)`, fields: `peakHoldLevel: number`, `peakHoldTimestamp: number`, `isFrozen: boolean`; define constants `SEGMENT_COUNT=20`, `GREEN_SEGMENTS=12`, `YELLOW_SEGMENTS=5`, `RED_SEGMENTS=3`, `PEAK_HOLD_DURATION_MS=1500`, `PEAK_DECAY_RATE=0.02`
-- [ ] T011 Implement `render(ctx: CanvasRenderingContext2D)` in `src/canvas/displays/VuMeterDisplay.ts` — draw background, compute `currentLevel` from `vuMeter.getPeakLevel()`, update `peakHoldLevel`/`peakHoldTimestamp`, decay after hold expires, draw 20 segments (green/yellow/red) bottom-up, draw white peak hold marker stripe
-- [ ] T012 [P] Implement `updatePosition(x, y)`, `updateSize(width, height)`, `setFrozen(frozen)`, `destroy()` in `src/canvas/displays/VuMeterDisplay.ts`
+- [X] T005 Create `src/components/analyzers/VuMeter.ts` — `VuMeter` class extending `SynthComponent` with `ComponentType.VU_METER`, one `'input'` port (`SignalType.AUDIO`), no outputs, no parameters
+- [X] T006 Implement `createAudioNodes()` in `src/components/analyzers/VuMeter.ts` — create `inputGain` (GainNode, gain=1.0) and `analyser` (AnalyserNode, fftSize=256, smoothingTimeConstant=0); wire `inputGain → analyser`; register both nodes; allocate `dataArray` (Float32Array of length 256)
+- [X] T007 Implement `destroyAudioNodes()` in `src/components/analyzers/VuMeter.ts` — disconnect and null `inputGain`, `analyser`, `dataArray`
+- [X] T008 Implement `getInputNode()` returning `inputGain`, `getOutputNode()` returning `null`, `updateAudioParameter()` as no-op in `src/components/analyzers/VuMeter.ts`
+- [X] T009 Implement `getPeakLevel()` in `src/components/analyzers/VuMeter.ts` — call `analyser.getFloatTimeDomainData(dataArray)`, iterate buffer to find `max(|sample|)`, return value clamped to `[0, 1]`; return 0 when analyser is null
+- [X] T010 [P] Create `src/canvas/displays/VuMeterDisplay.ts` — class with constructor `(x, y, width, height, vuMeter: VuMeter)`, fields: `peakHoldLevel: number`, `peakHoldTimestamp: number`, `isFrozen: boolean`; define constants `SEGMENT_COUNT=20`, `GREEN_SEGMENTS=12`, `YELLOW_SEGMENTS=5`, `RED_SEGMENTS=3`, `PEAK_HOLD_DURATION_MS=1500`, `PEAK_DECAY_RATE=0.02`
+- [X] T011 Implement `render(ctx: CanvasRenderingContext2D)` in `src/canvas/displays/VuMeterDisplay.ts` — draw background, compute `currentLevel` from `vuMeter.getPeakLevel()`, update `peakHoldLevel`/`peakHoldTimestamp`, decay after hold expires, draw 20 segments (green/yellow/red) bottom-up, draw white peak hold marker stripe
+- [X] T012 [P] Implement `updatePosition(x, y)`, `updateSize(width, height)`, `setFrozen(frozen)`, `destroy()` in `src/canvas/displays/VuMeterDisplay.ts`
 
 **Checkpoint**: `VuMeter` and `VuMeterDisplay` compile without errors under `tsc --noEmit`.
 

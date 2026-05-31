@@ -2037,6 +2037,7 @@ export class CanvasComponent {
       [ComponentType.FM_OSCILLATOR]: 'FM Oscillator',
       [ComponentType.QUANTIZER]: 'Quantizer',
       [ComponentType.PARAMETRIC_EQ]: 'Parametric EQ',
+      [ComponentType.VU_METER]: 'VU Meter',
     };
     return names[this.type] || 'Component';
   }
