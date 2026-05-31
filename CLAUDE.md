@@ -17,6 +17,8 @@ Auto-generated from all feature plans. Last updated: 2025-10-29
 - TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero new runtime dependencies (013-global-bpm)
 - TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero runtime dependencies (014-chordfinder-keyboard-sync)
 - `localStorage` via existing `PatchSerializer` / `PatchStorage` pattern; `ComponentData.audioBlob?: string` added for Base64 PCM (015-bpm-looper)
+- TypeScript 5.6+, ES2020 target, strict mode + Web Audio API (AnalyserNode, GainNode), DOM — zero runtime dependencies (027-vu-meter)
+- `localStorage` via existing `PatchSerializer` / `PatchStorage` pattern (no new fields needed) (027-vu-meter)
 
 - TypeScript 5.6+, ES2020 target (001-effect-bypass)
 
@@ -36,11 +38,9 @@ npm test && npm run lint
 TypeScript 5.6+, ES2020 target: Follow standard conventions
 
 ## Recent Changes
+- 027-vu-meter: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API (AnalyserNode, GainNode), DOM — zero runtime dependencies
 - 021-guided-lessons: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero new runtime dependencies
 - 020-fm-oscillator: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero new runtime dependencies
-- 015-bpm-looper: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero runtime dependencies
-- 014-chordfinder-keyboard-sync: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero runtime dependencies
-- 013-global-bpm: Added TypeScript 5.6+, ES2020 target, strict mode + Web Audio API, DOM — zero new runtime dependencies
 
 
 ## Completed Features
@@ -79,5 +79,5 @@ TypeScript 5.6+, ES2020 target: Follow standard conventions
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/026-parametric-eq/plan.md
+at specs/027-vu-meter/plan.md
 <!-- SPECKIT END -->

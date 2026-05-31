@@ -521,7 +521,7 @@ export class HelpSidebar {
         <li><strong style="color: var(--text-primary, #ffffff);">Processors:</strong> Filters, VCA, Envelopes</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Effects:</strong> Delay, Reverb, Distortion, Chorus, Bitcrusher, Flanger, Phaser, Tremolo</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Utilities:</strong> Keyboard, Mixer, Sequencer</li>
-        <li><strong style="color: var(--text-primary, #ffffff);">Analyzers:</strong> Oscilloscope</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">Analyzers:</strong> Oscilloscope, VU Meter</li>
       </ul>
 
       <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Canvas Area</h3>
@@ -832,6 +832,40 @@ export class HelpSidebar {
         <li><strong>Volume:</strong> Master level</li>
         <li><strong>Limiter:</strong> Prevents clipping</li>
       </ul>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Analyzers</h3>
+
+      <h4 style="color: var(--text-primary, #ffffff);">Oscilloscope</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Visualises the audio signal in real time — waveform, spectrum, or both.
+        Pass-through output lets it sit anywhere in the signal chain without interrupting audio flow.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>Display:</strong> Waveform, Spectrum, or split Both view</li>
+        <li><strong>Time Scale:</strong> Horizontal zoom of the waveform</li>
+        <li><strong>Gain:</strong> Vertical zoom of the waveform</li>
+        <li><strong>Input:</strong> Audio In</li>
+        <li><strong>Output:</strong> Audio Out (pass-through)</li>
+      </ul>
+
+      <h4 style="color: var(--text-primary, #ffffff);">VU Meter</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Passive peak-level monitor. Displays the instantaneous peak amplitude of any audio or CV signal
+        as a 20-segment colour-coded column updated every render frame (~60 FPS).
+        No audio output — connects in parallel, not in series.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>Input:</strong> Audio In (connects to any Audio-typed source)</li>
+        <li><strong>Green zone</strong> (segments 1–12): safe operating level</li>
+        <li><strong>Yellow zone</strong> (segments 13–17): nominal headroom warning</li>
+        <li><strong>Red zone</strong> (segments 18–20): clip danger — signal near or above 0 dBFS</li>
+        <li><strong>Peak hold:</strong> White marker stripe holds the highest recent peak for 1.5 seconds, then decays — useful for spotting transients</li>
+      </ul>
+      <p style="color: var(--text-secondary, #cccccc);">
+        <strong style="color: var(--text-primary, #ffffff);">Typical patch:</strong>
+        Tap an output from any component (Oscillator, Mixer, LFO) into the VU Meter Audio In
+        alongside its normal destination. The meter reads the level without affecting the signal.
+      </p>
     `;
   }
 

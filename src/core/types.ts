@@ -42,6 +42,7 @@ export enum ComponentType {
   FM_OSCILLATOR = 'fm-oscillator',
   QUANTIZER = 'quantizer',
   PARAMETRIC_EQ = 'parametric-eq',
+  VU_METER = 'vu-meter',
 }
 
 /**

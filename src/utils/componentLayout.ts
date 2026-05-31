@@ -164,6 +164,12 @@ function getControlLayout(type: ComponentType): ControlLayout {
         numKnobs: 7, // lowGain, lowFreq, midGain, midFreq, midQ, highGain, highFreq
       };
 
+    case ComponentType.VU_METER:
+      return {
+        hasDisplayArea: true,
+        displayHeight: 200,
+      };
+
     case ComponentType.KEYBOARD_INPUT:
     case ComponentType.FILTER_ENVELOPE:
     default:
@@ -247,6 +253,9 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
 
     case ComponentType.PARAMETRIC_EQ:
       return { inputs: 4, outputs: 1 }; // audio-in, low-gain-cv, mid-gain-cv, high-gain-cv / audio-out
+
+    case ComponentType.VU_METER:
+      return { inputs: 1, outputs: 0 };
 
     default:
       return { inputs: 1, outputs: 1 };
@@ -437,6 +446,11 @@ export function calculateComponentWidth(type: ComponentType): number {
   // ParametricEQ: 3 knobs in widest row (Mid), needs same width as 3-column Collider layout
   if (type === ComponentType.PARAMETRIC_EQ) {
     width = 200;
+  }
+
+  // VU Meter: narrow single-column display — override the generic hasDisplayArea width
+  if (type === ComponentType.VU_METER) {
+    width = 80;
   }
 
   return width;
