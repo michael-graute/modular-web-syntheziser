@@ -170,6 +170,9 @@ function getControlLayout(type: ComponentType): ControlLayout {
         displayHeight: 200,
       };
 
+    case ComponentType.RING_MODULATOR:
+      return {}; // No user-adjustable parameters; bypass button rendered automatically
+
     case ComponentType.KEYBOARD_INPUT:
     case ComponentType.FILTER_ENVELOPE:
     default:
@@ -256,6 +259,9 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
 
     case ComponentType.VU_METER:
       return { inputs: 1, outputs: 0 };
+
+    case ComponentType.RING_MODULATOR:
+      return { inputs: 2, outputs: 1 }; // audio-in, modulator / audio-out
 
     default:
       return { inputs: 1, outputs: 1 };

@@ -13,7 +13,7 @@
 | Processors | Filter, VCA, ADSR Envelope, Parametric EQ |
 | Effects | Delay, Reverb, Distortion, Chorus, Bitcrusher, Flanger, Phaser, Tremolo |
 | Utilities | Keyboard, Master Out, Mixer, Step Sequencer, Chord Finder, Collider, Looper |
-| Analyzers | Oscilloscope |
+| Analyzers | Oscilloscope, VU Meter |
 
 ---
 
@@ -47,7 +47,7 @@
 
 ### Output & Monitoring
 
-- **VU Meter / Level Meter** — visual feedback for signal levels independent of the Oscilloscope. Useful for monitoring mixer channels or checking CV ranges without interrupting the audio path.
+- ~~**VU Meter / Level Meter**~~ ✅ *Implemented in `src/components/analyzers/VuMeter.ts` (branch `027-vu-meter`)* — passive 20-segment peak-level monitor with green/yellow/red zones, 1.5s peak hold marker, and 80px narrow canvas display. Accepts any Audio-typed source without interrupting the signal path.
 - **Tuner** — detects the fundamental pitch of an incoming audio signal. Handy for calibrating oscillators against each other and verifying CV-to-pitch accuracy.
 
 ---
@@ -66,7 +66,7 @@
 | Ring Modulator | Medium | Low | **P2** |
 | Wavefolder | Medium | Medium | **P3** |
 | ~~EQ / Parametric Filter~~ | Medium | Medium | ✅ **Implemented** |
-| VU Meter | Low | Low | **P3** |
+| ~~VU Meter~~ | Low | Low | ✅ **Implemented** |
 | Tuner | Low | Medium | **P3** |
 | Arpeggiator (standalone) | Medium | Medium | **P3** |
 | Logic Gate | Low | Low | **P3** |

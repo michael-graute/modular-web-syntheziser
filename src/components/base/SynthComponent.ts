@@ -158,6 +158,7 @@ export abstract class SynthComponent {
       ComponentType.PHASER,
       ComponentType.TREMOLO,
       ComponentType.PARAMETRIC_EQ,
+      ComponentType.RING_MODULATOR,
     ];
     return bypassableTypes.includes(this.type);
   }

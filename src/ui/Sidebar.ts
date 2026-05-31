@@ -159,6 +159,7 @@ export class Sidebar {
       [ComponentType.QUANTIZER]: '♯',
       [ComponentType.PARAMETRIC_EQ]: '♩',
       [ComponentType.VU_METER]: '▌',
+      [ComponentType.RING_MODULATOR]: '⊗',
     };
     return icons[type] || '□';
   }

@@ -27,6 +27,7 @@ import { Bitcrusher } from './effects/Bitcrusher';
 import { Flanger } from './effects/Flanger';
 import { Phaser } from './effects/Phaser';
 import { Tremolo } from './effects/Tremolo';
+import { RingModulator } from './effects/RingModulator';
 import { Oscilloscope } from './analyzers/Oscilloscope';
 import { VuMeter } from './analyzers/VuMeter';
 import { StepSequencer } from './utilities/StepSequencer';
@@ -254,6 +255,15 @@ export function registerAllComponents(): void {
     'Effects',
     (id, position) => new Tremolo(id, position),
     calculateComponentDimensions(ComponentType.TREMOLO)
+  );
+
+  componentRegistry.register(
+    ComponentType.RING_MODULATOR,
+    'Ring Modulator',
+    'Analog-style signal multiplier for AM synthesis',
+    'Effects',
+    (id, position) => new RingModulator(id, position),
+    calculateComponentDimensions(ComponentType.RING_MODULATOR)
   );
 
   // Analyzers

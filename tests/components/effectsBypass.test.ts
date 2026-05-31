@@ -41,15 +41,17 @@ import { Bitcrusher } from '../../src/components/effects/Bitcrusher';
 import { Flanger } from '../../src/components/effects/Flanger';
 import { Phaser } from '../../src/components/effects/Phaser';
 import { Tremolo } from '../../src/components/effects/Tremolo';
+import { RingModulator } from '../../src/components/effects/RingModulator';
 import { SynthComponent } from '../../src/components/base/SynthComponent';
 
 type EffectFactory = () => SynthComponent;
 
 const effects: Array<{ name: string; factory: EffectFactory }> = [
-  { name: 'Bitcrusher', factory: () => new Bitcrusher('bc-bypass', { x: 0, y: 0 }) },
-  { name: 'Flanger',    factory: () => new Flanger('fl-bypass',   { x: 0, y: 0 }) },
-  { name: 'Phaser',     factory: () => new Phaser('ph-bypass',    { x: 0, y: 0 }) },
-  { name: 'Tremolo',    factory: () => new Tremolo('tr-bypass',   { x: 0, y: 0 }) },
+  { name: 'Bitcrusher',    factory: () => new Bitcrusher('bc-bypass',  { x: 0, y: 0 }) },
+  { name: 'Flanger',       factory: () => new Flanger('fl-bypass',     { x: 0, y: 0 }) },
+  { name: 'Phaser',        factory: () => new Phaser('ph-bypass',      { x: 0, y: 0 }) },
+  { name: 'Tremolo',       factory: () => new Tremolo('tr-bypass',     { x: 0, y: 0 }) },
+  { name: 'RingModulator', factory: () => new RingModulator('rm-bypass', { x: 0, y: 0 }) },
 ];
 
 beforeEach(() => {
