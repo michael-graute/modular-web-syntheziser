@@ -173,6 +173,11 @@ function getControlLayout(type: ComponentType): ControlLayout {
     case ComponentType.RING_MODULATOR:
       return {}; // No user-adjustable parameters; bypass button rendered automatically
 
+    case ComponentType.ARPEGGIATOR:
+      return {
+        hasDropdown: true, // 4 dropdowns: direction, octaves, rate, gate length
+      };
+
     case ComponentType.KEYBOARD_INPUT:
     case ComponentType.FILTER_ENVELOPE:
     default:
@@ -263,6 +268,9 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
     case ComponentType.RING_MODULATOR:
       return { inputs: 2, outputs: 1 }; // audio-in, modulator / audio-out
 
+    case ComponentType.ARPEGGIATOR:
+      return { inputs: 2, outputs: 2 }; // cv-in, gate-in / cv-out, gate-out
+
     default:
       return { inputs: 1, outputs: 1 };
   }
@@ -328,6 +336,15 @@ export function calculateComponentHeight(type: ComponentType): number {
     height += 10; // Spacing after display
 
     return height;
+  }
+
+  // Special case for Arpeggiator: 4 dropdowns stacked vertically
+  if (type === ComponentType.ARPEGGIATOR) {
+    const maxPorts = Math.max(portCounts.inputs, portCounts.outputs);
+    const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+    // Each dropdown: 5 spacing + 12 label + 24 height + 8 gap = 49px; last one has no trailing gap
+    const dropdownRowHeight = COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL + 12;
+    return COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP + dropdownRowHeight * 4 + 10;
   }
 
   // Special case for ParametricEQ: 7 knobs across 3 rows (Low: 2, Mid: 3, High: 2)

@@ -783,6 +783,83 @@ export class CanvasComponent {
       });
     }
 
+    // Arpeggiator-specific controls — 4 stacked dropdowns
+    if (this.type === ComponentType.ARPEGGIATOR) {
+      const directionParam = this.synthComponent.getParameter('direction');
+      const octavesParam = this.synthComponent.getParameter('octaves');
+      const subdivisionParam = this.synthComponent.getParameter('subdivision');
+      const gateLengthParam = this.synthComponent.getParameter('gateLength');
+
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      const dropdownX = this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL;
+      const dropdownW = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const rowH = COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL + 12;
+      const baseY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+
+      if (directionParam) {
+        this.controls.push(new Dropdown(
+          dropdownX, baseY,
+          dropdownW, COMPONENT.DROPDOWN_HEIGHT,
+          directionParam,
+          [
+            { value: 0, label: 'Up' },
+            { value: 1, label: 'Down' },
+            { value: 2, label: 'Up-Down' },
+            { value: 3, label: 'Random' },
+          ],
+          'Direction'
+        ));
+      }
+
+      if (octavesParam) {
+        this.controls.push(new Dropdown(
+          dropdownX, baseY + rowH,
+          dropdownW, COMPONENT.DROPDOWN_HEIGHT,
+          octavesParam,
+          [
+            { value: 1, label: '1 octave' },
+            { value: 2, label: '2 octaves' },
+            { value: 3, label: '3 octaves' },
+            { value: 4, label: '4 octaves' },
+          ],
+          'Octaves'
+        ));
+      }
+
+      if (subdivisionParam) {
+        this.controls.push(new Dropdown(
+          dropdownX, baseY + rowH * 2,
+          dropdownW, COMPONENT.DROPDOWN_HEIGHT,
+          subdivisionParam,
+          [
+            { value: 0, label: '1/4 note' },
+            { value: 1, label: '1/8 note' },
+            { value: 2, label: '1/16 note' },
+            { value: 3, label: '1/32 note' },
+          ],
+          'Rate'
+        ));
+      }
+
+      if (gateLengthParam) {
+        this.controls.push(new Dropdown(
+          dropdownX, baseY + rowH * 3,
+          dropdownW, COMPONENT.DROPDOWN_HEIGHT,
+          gateLengthParam,
+          [
+            { value: 0, label: 'Short (25%)' },
+            { value: 1, label: 'Medium (50%)' },
+            { value: 2, label: 'Long (75%)' },
+          ],
+          'Gate Length'
+        ));
+      }
+    }
+
     // Phaser-specific controls
     if (this.type === ComponentType.PHASER) {
       const rateParam = this.synthComponent.getParameter('rate');
@@ -2073,6 +2150,7 @@ export class CanvasComponent {
       [ComponentType.PARAMETRIC_EQ]: 'Parametric EQ',
       [ComponentType.VU_METER]: 'VU Meter',
       [ComponentType.RING_MODULATOR]: 'Ring Mod',
+      [ComponentType.ARPEGGIATOR]: 'Arpeggiator',
     };
     return names[this.type] || 'Component';
   }

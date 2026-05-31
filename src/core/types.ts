@@ -44,6 +44,7 @@ export enum ComponentType {
   PARAMETRIC_EQ = 'parametric-eq',
   VU_METER = 'vu-meter',
   RING_MODULATOR = 'ring-modulator',
+  ARPEGGIATOR = 'arpeggiator',
 }
 
 /**
