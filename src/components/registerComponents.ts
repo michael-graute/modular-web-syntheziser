@@ -28,6 +28,7 @@ import { Flanger } from './effects/Flanger';
 import { Phaser } from './effects/Phaser';
 import { Tremolo } from './effects/Tremolo';
 import { RingModulator } from './effects/RingModulator';
+import { Arpeggiator } from './utilities/Arpeggiator';
 import { Oscilloscope } from './analyzers/Oscilloscope';
 import { VuMeter } from './analyzers/VuMeter';
 import { StepSequencer } from './utilities/StepSequencer';
@@ -264,6 +265,15 @@ export function registerAllComponents(): void {
     'Effects',
     (id, position) => new RingModulator(id, position),
     calculateComponentDimensions(ComponentType.RING_MODULATOR)
+  );
+
+  componentRegistry.register(
+    ComponentType.ARPEGGIATOR,
+    'Arpeggiator',
+    'Steps through held notes at a BPM-synced rate',
+    'Utilities',
+    (id, position) => new Arpeggiator(id, position),
+    calculateComponentDimensions(ComponentType.ARPEGGIATOR)
   );
 
   // Analyzers

@@ -16,8 +16,8 @@
 
 **Purpose**: Register the new `ComponentType` and wire it into the shared infrastructure that all phases depend on.
 
-- [ ] T001 Add `ARPEGGIATOR = 'arpeggiator'` to the `ComponentType` enum in `src/core/types.ts`
-- [ ] T002 Add port counts for `ARPEGGIATOR` (inputs: 2, outputs: 2) to `getPortCounts()` and a 4-knob control layout to `getControlLayout()` in `src/utils/componentLayout.ts` — both edits in one file, do together:
+- [x] T001 Add `ARPEGGIATOR = 'arpeggiator'` to the `ComponentType` enum in `src/core/types.ts`
+- [x] T002 Add port counts for `ARPEGGIATOR` (inputs: 2, outputs: 2) to `getPortCounts()` and a 4-knob control layout to `getControlLayout()` in `src/utils/componentLayout.ts` — both edits in one file, do together:
   - `getPortCounts`: return `{ inputs: 2, outputs: 2 }`
   - `getControlLayout`: return layout for 4 stepped knobs (direction, octaves, subdivision, gateLength) with no canvas display area
 
@@ -31,14 +31,14 @@
 
 **⚠️ CRITICAL**: All user story phases depend on this component existing and producing correct CV/Gate output.
 
-- [ ] T003 Create `src/components/utilities/Arpeggiator.ts` with the `Arpeggiator` class extending `SynthComponent`:
+- [x] T003 Create `src/components/utilities/Arpeggiator.ts` with the `Arpeggiator` class extending `SynthComponent`:
   - Constructor: `super(id, ComponentType.ARPEGGIATOR, 'Arpeggiator', position)`
   - Add inputs: `addInput('cv-in', 'CV In', SignalType.CV)` and `addInput('gate-in', 'Gate In', SignalType.GATE)`
   - Add outputs: `addOutput('cv-out', 'CV Out', SignalType.CV)` and `addOutput('gate-out', 'Gate Out', SignalType.GATE)`
   - Add parameters: `direction` (default 0, min 0, max 3), `octaves` (default 1, min 1, max 4), `subdivision` (default 2 = 1/16, min 0, max 3), `gateLength` (default 1 = medium, min 0, max 2)
   - Private fields: `noteSequence: number[]`, `_stepCycle: number[]`, `stepIndex: number`, `_prevGateHigh: boolean`, `_stepTimer: number | null`, `currentBpm: number`, `_cvGetter: (() => number) | null`, `_gateGetter: (() => number) | null`, `_globalBpmUnsubscribe: (() => void) | null`
   - Private audio node fields: `cvOutputNode: ConstantSourceNode | null`, `gateOutputNode: ConstantSourceNode | null`, `cvInputNode: GainNode | null`, `gateInputNode: GainNode | null`
-- [ ] T004 Implement `createAudioNodes()` in `src/components/utilities/Arpeggiator.ts`:
+- [x] T004 Implement `createAudioNodes()` in `src/components/utilities/Arpeggiator.ts`:
   - Create `cvInputNode` (GainNode, gain=1.0) — CV pitch input passthrough
   - Create `gateInputNode` (GainNode, gain=1.0) — Gate input passthrough
   - Create `cvOutputNode` (ConstantSourceNode, offset=0.0) — start it
@@ -47,50 +47,50 @@
   - Read initial BPM: `this.currentBpm = globalBpmController.getBpm()`
   - Subscribe to BPM changes: store unsubscribe in `_globalBpmUnsubscribe`; on event update `currentBpm` and restart clock
   - Start step clock via `startClock()`
-- [ ] T005 Implement `destroyAudioNodes()` in `src/components/utilities/Arpeggiator.ts`:
+- [x] T005 Implement `destroyAudioNodes()` in `src/components/utilities/Arpeggiator.ts`:
   - Call `stopClock()`
   - Call `_globalBpmUnsubscribe?.()` and null it
   - Stop and disconnect all four nodes in reverse order; null each
   - Reset `noteSequence = []`, `stepIndex = 0`
-- [ ] T006 Implement `updateAudioParameter(parameterId, value)` in `src/components/utilities/Arpeggiator.ts`:
+- [x] T006 Implement `updateAudioParameter(parameterId, value)` in `src/components/utilities/Arpeggiator.ts`:
   - On `direction` or `octaves` change: call `rebuildStepCycle()` (clamps `stepIndex` to new cycle length)
   - On `subdivision` change: call `rebuildStepCycle()` AND then call `startClock()` — the `setInterval` interval must be restarted with the new step duration; `rebuildStepCycle` alone does not update the running timer
   - On `gateLength` change: no rebuild needed (applied on next tick)
-- [ ] T007 Implement private `stepIntervalMs(): number` in `src/components/utilities/Arpeggiator.ts`:
+- [x] T007 Implement private `stepIntervalMs(): number` in `src/components/utilities/Arpeggiator.ts`:
   - Map `subdivision` parameter value (0–3) to fraction (1.0 / 0.5 / 0.25 / 0.125) using `SUBDIVISION_FRACTIONS` constant from contracts
   - Return `timingCalculator.calculateGateDuration(this.currentBpm, fraction)`
-- [ ] T008 Implement private `buildStepCycle(): number[]` in `src/components/utilities/Arpeggiator.ts`:
+- [x] T008 Implement private `buildStepCycle(): number[]` in `src/components/utilities/Arpeggiator.ts`:
   - Sort `noteSequence` ascending → `baseNotes`
   - Expand across octaves: for each octave 0..(octaves-1), append each base note + `octave * CV_OCTAVE`
   - Apply direction: Up = as-is; Down = reversed; Up-Down = ascending + inner reversed (no top/bottom repeat: `[...expanded, ...expanded.slice(1, -1).reverse()]`); Random = shuffle copy with `Math.random()`
   - Return resulting array
-- [ ] T009 Implement private `rebuildStepCycle()` in `src/components/utilities/Arpeggiator.ts`:
+- [x] T009 Implement private `rebuildStepCycle()` in `src/components/utilities/Arpeggiator.ts`:
   - Recompute `_stepCycle = buildStepCycle()`
   - Clamp `stepIndex` to `Math.min(stepIndex, Math.max(0, _stepCycle.length - 1))`
-- [ ] T010 Implement private `tick()` in `src/components/utilities/Arpeggiator.ts`:
+- [x] T010 Implement private `tick()` in `src/components/utilities/Arpeggiator.ts`:
   - If `_gateGetter` is set: read gate value; if gate-high (≥ 0.5) and was previously low, latch `_cvGetter?.() ?? 0` into `noteSequence` (max 8, evict oldest); rebuild cycle; else if gate-low and was previously high, remove that pitch from `noteSequence`; rebuild cycle
   - If `_stepCycle` empty: ensure `gateOutputNode.offset.value = 0`; return
   - Advance `stepIndex = (stepIndex + 1) % _stepCycle.length`
   - Schedule CV: `cvOutputNode.offset.setValueAtTime(_stepCycle[stepIndex], ctx.currentTime)`
   - Schedule gate high: `gateOutputNode.offset.setValueAtTime(1, ctx.currentTime)`
   - Schedule gate low after gate duty: `gateOutputNode.offset.setValueAtTime(0, ctx.currentTime + gateDurationS)` where `gateDurationS = stepIntervalMs() * GATE_LENGTH_FRACTIONS[gateLength] / 1000`
-- [ ] T011 Implement private `startClock()` and `stopClock()` in `src/components/utilities/Arpeggiator.ts`:
+- [x] T011 Implement private `startClock()` and `stopClock()` in `src/components/utilities/Arpeggiator.ts`:
   - `startClock`: `stopClock()` first; `_stepTimer = window.setInterval(() => this.tick(), this.stepIntervalMs())`
   - `stopClock`: `clearInterval(_stepTimer); _stepTimer = null`
-- [ ] T012 Implement `getInputNode(portId?)` and `getInputNodeByPort(portId)` in `src/components/utilities/Arpeggiator.ts`:
+- [x] T012 Implement `getInputNode(portId?)` and `getInputNodeByPort(portId)` in `src/components/utilities/Arpeggiator.ts`:
   - `'gate-in'` → return `gateInputNode`
   - default / `'cv-in'` → return `cvInputNode`
-- [ ] T013 Implement `getOutputNode()` and `getOutputNodeByPort(portId)` in `src/components/utilities/Arpeggiator.ts`:
+- [x] T013 Implement `getOutputNode()` and `getOutputNodeByPort(portId)` in `src/components/utilities/Arpeggiator.ts`:
   - `'gate-out'` → return `gateOutputNode`
   - default / `'cv-out'` → return `cvOutputNode`
-- [ ] T014 Implement getter registration and port lifecycle methods in `src/components/utilities/Arpeggiator.ts`:
+- [x] T014 Implement getter registration and port lifecycle methods in `src/components/utilities/Arpeggiator.ts`:
   - `setCvGetter(fn: () => number): void` — store in `_cvGetter`
   - `setGateGetter(fn: () => number): void` — store in `_gateGetter`; reset `_prevGateHigh = false`
   - `clearCvGetter(portId?: string): void` — null `_cvGetter`
   - `clearGateGetter(portId?: string): void` — null `_gateGetter`; reset `_prevGateHigh = false`
   - `onInputDisconnected(portId: string): void` — if `portId === 'cv-in'`: call `clearCvGetter()`; if `portId === 'gate-in'`: call `clearGateGetter()`, set `gateOutputNode?.offset.setValueAtTime(0, ctx.currentTime)` to stop any in-progress gate pulse, and clear `noteSequence` + rebuild step cycle so the Arpeggiator silences immediately (covers the edge case: "CV input disconnected mid-arpeggio → Gate output stops")
   - `onInputConnected(portId: string): void` — no-op (getters are registered by ConnectionManager after this call); override required to satisfy abstract contract
-- [ ] T015 [P] Create `tests/components/Arpeggiator.test.ts` with full unit test suite:
+- [x] T015 [P] Create `tests/components/Arpeggiator.test.ts` with full unit test suite:
   - Mock setup: `createGain`, `createConstantSource`, `eventBus.on`, `globalBpmController.getBpm`
   - Constructor tests: 2 inputs (cv-in, gate-in), 2 outputs (cv-out, gate-out), 4 parameters with correct defaults, `isBypassable()` returns false
   - `createAudioNodes` tests: 4 nodes registered; `cvOutputNode` and `gateOutputNode` started; BPM subscribed
@@ -110,7 +110,7 @@
 
 **Independent Test** (from spec.md): Connect Keyboard → Arpeggiator CV In + Gate In; connect Arpeggiator CV Out → Oscillator; connect Arpeggiator Gate Out → ADSR → VCA → Master Out. Hold multiple keys — arpeggio must step through them in the selected direction.
 
-- [ ] T016 [US1] Import `Arpeggiator` and register it in `registerAllComponents()` in `src/components/registerComponents.ts`:
+- [x] T016 [US1] Import `Arpeggiator` and register it in `registerAllComponents()` in `src/components/registerComponents.ts`:
   ```ts
   componentRegistry.register(
     ComponentType.ARPEGGIATOR,
@@ -121,14 +121,14 @@
     calculateComponentDimensions(ComponentType.ARPEGGIATOR)
   );
   ```
-- [ ] T017 [P] [US1] Add icon `[ComponentType.ARPEGGIATOR]: '⬆'` to the icon map in `src/ui/Sidebar.ts`
-- [ ] T018 [P] [US1] Add `[ComponentType.ARPEGGIATOR]: 'Arpeggiator'` to `getDisplayName()` in `src/canvas/CanvasComponent.ts`
-- [ ] T019 [US1] Add `case ComponentType.ARPEGGIATOR:` to `createControls()` in `src/canvas/CanvasComponent.ts` with 4 stepped knobs:
+- [x] T017 [P] [US1] Add icon `[ComponentType.ARPEGGIATOR]: '⬆'` to the icon map in `src/ui/Sidebar.ts`
+- [x] T018 [P] [US1] Add `[ComponentType.ARPEGGIATOR]: 'Arpeggiator'` to `getDisplayName()` in `src/canvas/CanvasComponent.ts`
+- [x] T019 [US1] Add `case ComponentType.ARPEGGIATOR:` to `createControls()` in `src/canvas/CanvasComponent.ts` with 4 stepped knobs:
   - `direction` knob: labels `['Up', 'Dn', 'U-D', 'Rnd']`
   - `octaves` knob: labels `['1', '2', '3', '4']`
   - `subdivision` knob: labels `['1/4', '1/8', '1/16', '1/32']`
   - `gateLength` knob: labels `['Sht', 'Med', 'Lng']`
-- [ ] T020 [US1] Register CV and Gate getter functions in `src/canvas/ConnectionManager.ts` when connecting any CV/Gate source to the Arpeggiator's `cv-in` / `gate-in` ports — add a block analogous to the existing StepSequencer arp block (lines ~144–152):
+- [x] T020 [US1] Register CV and Gate getter functions in `src/canvas/ConnectionManager.ts` when connecting any CV/Gate source to the Arpeggiator's `cv-in` / `gate-in` ports — add a block analogous to the existing StepSequencer arp block (lines ~144–152):
   ```ts
   if (targetComponent.synthComponent instanceof Arpeggiator) {
     const arp = targetComponent.synthComponent;
@@ -150,8 +150,8 @@
 
 **Independent Test** (from spec.md): Hold a 3-note chord with octaves=2 and direction=Up. The step cycle must play all 3 notes in the source octave then all 3 notes one octave higher before repeating.
 
-- [ ] T021 [US2] Verify `buildStepCycle()` in `src/components/utilities/Arpeggiator.ts` correctly transposes by octave: each note in octave N gets `+ N * CV_OCTAVE` added to its CV value. This is already implemented in T008 — confirm the test in T015 covers the octave-2 case. If test is missing, add it to `tests/components/Arpeggiator.test.ts`.
-- [ ] T022 [US2] Manual verification: set octaves=2, hold a chord, confirm two octaves of notes play before cycling. No code changes expected.
+- [x] T021 [US2] Verify `buildStepCycle()` in `src/components/utilities/Arpeggiator.ts` correctly transposes by octave: each note in octave N gets `+ N * CV_OCTAVE` added to its CV value. This is already implemented in T008 — confirm the test in T015 covers the octave-2 case. If test is missing, add it to `tests/components/Arpeggiator.test.ts`.
+- [x] T022 [US2] Manual verification: set octaves=2, hold a chord, confirm two octaves of notes play before cycling. No code changes expected.
 
 **Checkpoint**: Octave range parameter produces audibly correct multi-octave arpeggios.
 
@@ -163,8 +163,8 @@
 
 **Independent Test** (from spec.md): Set BPM=120, rate=1/8. Count gate pulses over 4 beats — must be exactly 8 (240 per minute).
 
-- [ ] T023 [US3] Verify `stepIntervalMs()` in `src/components/utilities/Arpeggiator.ts` returns correct values for all 4 subdivision options at BPM=120: 500ms (1/4), 250ms (1/8), 125ms (1/16), 62.5ms (1/32). Add timing unit tests to `tests/components/Arpeggiator.test.ts` if not already present from T015.
-- [ ] T024 [US3] Manual verification: set BPM=120, rate=1/8, count gate pulses for 4 beats. Change BPM to 60 while playing — confirm rate halves immediately. No code changes expected.
+- [x] T023 [US3] Verify `stepIntervalMs()` in `src/components/utilities/Arpeggiator.ts` returns correct values for all 4 subdivision options at BPM=120: 500ms (1/4), 250ms (1/8), 125ms (1/16), 62.5ms (1/32). Add timing unit tests to `tests/components/Arpeggiator.test.ts` if not already present from T015.
+- [x] T024 [US3] Manual verification: set BPM=120, rate=1/8, count gate pulses for 4 beats. Change BPM to 60 while playing — confirm rate halves immediately. No code changes expected.
 
 **Checkpoint**: Step rate matches BPM subdivision precisely. BPM changes apply within one step.
 
@@ -176,8 +176,8 @@
 
 **Independent Test** (from spec.md): Build a patch, set all 4 parameters to non-default values, save, reload page. Confirm parameters and connections are restored identically.
 
-- [ ] T025 [US4] Run full test suite `vitest run` — no code changes expected; confirm `ComponentData` with `type: 'arpeggiator'` and all 4 parameters serialises and deserialises without error via `PatchSerializer`.
-- [ ] T026 [US4] Manual test: create patch, set direction=Down, octaves=3, rate=1/4, gateLength=Long, connect and save. Reload — confirm all values and connections restored. Fix any deserialization errors found.
+- [x] T025 [US4] Run full test suite `vitest run` — no code changes expected; confirm `ComponentData` with `type: 'arpeggiator'` and all 4 parameters serialises and deserialises without error via `PatchSerializer`.
+- [x] T026 [US4] Manual test: create patch, set direction=Down, octaves=3, rate=1/4, gateLength=Long, connect and save. Reload — confirm all values and connections restored. Fix any deserialization errors found.
 
 **Checkpoint**: Arpeggiator survives a full save/reload cycle.
 
@@ -187,9 +187,9 @@
 
 **Purpose**: Lint pass, test suite validation, and final verification.
 
-- [ ] T027 [P] Run `npx tsc --noEmit` and fix any TypeScript errors introduced by the new files
-- [ ] T028 Run full test suite `vitest run` and confirm all tests pass (including pre-existing tests)
-- [ ] T029 Update `src/ui/HelpSidebar.ts` with two changes in the same edit: (1) add 'Arpeggiator' to the Utilities list in the component overview section; (2) add a full Arpeggiator entry under the Utilities section with port descriptions (CV In, Gate In, CV Out, Gate Out) and parameter descriptions (Direction: Up/Down/Up-Down/Random, Octaves: 1–4, Rate: 1/4 / 1/8 / 1/16 / 1/32, Gate Length: Short/Medium/Long)
+- [x] T027 [P] Run `npx tsc --noEmit` and fix any TypeScript errors introduced by the new files
+- [x] T028 Run full test suite `vitest run` and confirm all tests pass (including pre-existing tests)
+- [x] T029 Update `src/ui/HelpSidebar.ts` with two changes in the same edit: (1) add 'Arpeggiator' to the Utilities list in the component overview section; (2) add a full Arpeggiator entry under the Utilities section with port descriptions (CV In, Gate In, CV Out, Gate Out) and parameter descriptions (Direction: Up/Down/Up-Down/Random, Octaves: 1–4, Rate: 1/4 / 1/8 / 1/16 / 1/32, Gate Length: Short/Medium/Long)
 
 ---
 

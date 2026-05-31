@@ -9,6 +9,7 @@ import { eventBus } from '../core/EventBus';
 import { EventType, SignalType } from '../core/types';
 import { StepSequencer } from '../components/utilities/StepSequencer';
 import { KeyboardInput } from '../components/utilities/KeyboardInput';
+import { Arpeggiator } from '../components/utilities/Arpeggiator';
 
 /**
  * Manages all connections in the patch
@@ -151,6 +152,19 @@ export class ConnectionManager {
       if (targetPortId === 'arpFrequency') seq.setArpFreqGetter(() => kbd.getCurrentFrequency());
     }
 
+    // For connections to an Arpeggiator's cv-in / gate-in, register JS-level getters
+    // so the Arpeggiator can read live pitch and gate values from the source component.
+    if (targetComponent.synthComponent instanceof Arpeggiator) {
+      const arp = targetComponent.synthComponent;
+      const src = sourceComponent.synthComponent as any;
+      if (targetPortId === 'cv-in') {
+        arp.setCvGetter(() => src.getCurrentFrequency?.() ?? 0);
+      }
+      if (targetPortId === 'gate-in') {
+        arp.setGateGetter(() => src.getGateValue?.() ?? 0);
+      }
+    }
+
     console.log(
       `✅ Connected ${sourceComponent.type}:${sourcePort.name} -> ${targetComponent.type}:${targetPort.name}`
     );
@@ -196,6 +210,13 @@ export class ConnectionManager {
       // Clear arp source node cache when an arp port is disconnected
       if (targetComponent.synthComponent instanceof StepSequencer) {
         targetComponent.synthComponent.clearArpSources(connection.targetPortId);
+      }
+
+      // Clear Arpeggiator getters when its input ports are disconnected
+      if (targetComponent.synthComponent instanceof Arpeggiator) {
+        const arp = targetComponent.synthComponent;
+        if (connection.targetPortId === 'cv-in') arp.clearCvGetter();
+        if (connection.targetPortId === 'gate-in') arp.clearGateGetter();
       }
     }
 

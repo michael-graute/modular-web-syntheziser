@@ -520,7 +520,7 @@ export class HelpSidebar {
         <li><strong style="color: var(--text-primary, #ffffff);">Generators:</strong> Oscillator, FM Oscillator, LFO, Noise</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Processors:</strong> Filters, VCA, Envelopes</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Effects:</strong> Delay, Reverb, Distortion, Chorus, Bitcrusher, Flanger, Phaser, Tremolo, Ring Modulator</li>
-        <li><strong style="color: var(--text-primary, #ffffff);">Utilities:</strong> Keyboard, Mixer, Sequencer</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">Utilities:</strong> Keyboard, Mixer, Sequencer, Arpeggiator</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Analyzers:</strong> Oscilloscope, VU Meter</li>
       </ul>
 
@@ -833,6 +833,26 @@ export class HelpSidebar {
         <strong style="color: var(--text-primary, #ffffff);">Typical patch:</strong>
         LFO → Quantizer CV In → Oscillator Frequency CV → Filter → Master Out.
         For trigger-locked stepping: Step Sequencer Gate → Quantizer Trig.
+      </p>
+
+      <h4 style="color: var(--text-primary, #ffffff);">Arpeggiator</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Steps through held notes at a BPM-synced rate, emitting CV pitch and Gate pulses. Connect a Keyboard or Step Sequencer to its inputs, then wire CV Out to an Oscillator and Gate Out to an ADSR.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>CV In:</strong> Pitch input — accepts any CV or Frequency source (e.g. Keyboard Frequency output)</li>
+        <li><strong>Gate In:</strong> Gate input — each gate-high latches the current pitch into the arpeggio sequence; gate-low releases it</li>
+        <li><strong>CV Out:</strong> Stepped pitch output — connect to Oscillator Frequency CV</li>
+        <li><strong>Gate Out:</strong> Gate pulse per step — connect to ADSR Gate In to trigger envelopes</li>
+        <li><strong>Direction:</strong> Step order — Up (low→high), Down (high→low), Up-Down (bounce), Random</li>
+        <li><strong>Octaves:</strong> Span 1–4 octaves above the held notes before cycling</li>
+        <li><strong>Rate:</strong> Step speed as BPM subdivision — 1/4, 1/8, 1/16, 1/32 note</li>
+        <li><strong>Gate Length:</strong> Gate pulse width — Short (25%), Medium (50%), Long (75%) of the step interval</li>
+      </ul>
+      <p style="color: var(--text-secondary, #cccccc);">
+        <strong style="color: var(--text-primary, #ffffff);">Typical patch:</strong>
+        Keyboard (Frequency → CV In, Gate → Gate In) → Arpeggiator → Oscillator (CV Out → Frequency CV) + ADSR (Gate Out → Gate In) → VCA → Master Out.
+        Hold multiple keys to build up the arpeggio sequence; release all keys to stop.
       </p>
 
       <h4 style="color: var(--text-primary, #ffffff);">Master Output</h4>
