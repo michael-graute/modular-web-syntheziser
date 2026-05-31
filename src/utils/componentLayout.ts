@@ -450,7 +450,7 @@ export function calculateComponentWidth(type: ComponentType): number {
 
   // VU Meter: narrow single-column display — override the generic hasDisplayArea width
   if (type === ComponentType.VU_METER) {
-    width = 160;
+    width = 80;
   }
 
   return width;

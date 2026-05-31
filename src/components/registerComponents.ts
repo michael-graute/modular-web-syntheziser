@@ -28,6 +28,7 @@ import { Flanger } from './effects/Flanger';
 import { Phaser } from './effects/Phaser';
 import { Tremolo } from './effects/Tremolo';
 import { Oscilloscope } from './analyzers/Oscilloscope';
+import { VuMeter } from './analyzers/VuMeter';
 import { StepSequencer } from './utilities/StepSequencer';
 import { calculateComponentDimensions } from '../utils/componentLayout';
 
@@ -263,6 +264,15 @@ export function registerAllComponents(): void {
     'Analyzers',
     (id, position) => new Oscilloscope(id, position),
     calculateComponentDimensions(ComponentType.OSCILLOSCOPE)
+  );
+
+  componentRegistry.register(
+    ComponentType.VU_METER,
+    'VU Meter',
+    'Real-time peak level meter for audio and CV signals',
+    'Analyzers',
+    (id, position) => new VuMeter(id, position),
+    calculateComponentDimensions(ComponentType.VU_METER)
   );
 
   console.log(`✅ Registered ${componentRegistry.getCount()} components`);

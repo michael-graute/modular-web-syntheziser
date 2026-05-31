@@ -10,6 +10,7 @@ import { Dropdown, DropdownOption } from './controls/Dropdown';
 import { Slider } from './controls/Slider';
 import { Button } from './controls/Button';
 import { OscilloscopeDisplay } from './displays/OscilloscopeDisplay';
+import { VuMeterDisplay } from './displays/VuMeterDisplay';
 import { StepSequencerDisplay, SEQUENCER_DISPLAY_HEIGHT } from './displays/StepSequencerDisplay';
 import { ColliderDisplay } from './displays/ColliderDisplay';
 import { ChordFinderDisplay } from './displays/ChordFinderDisplay';
@@ -45,6 +46,7 @@ export class CanvasComponent {
   private colliderDisplay: ColliderDisplay | null = null;
   private chordFinderDisplay: ChordFinderDisplay | null = null;
   private looperDisplay: LooperDisplay | null = null;
+  private vuMeterDisplay: VuMeterDisplay | null = null;
   private _looperRafId: number | null = null;
 
   constructor(
@@ -1523,6 +1525,29 @@ export class CanvasComponent {
         ));
       }
     }
+
+    // VU Meter — no knobs or dropdowns; display area only
+    if (this.type === ComponentType.VU_METER && this.synthComponent) {
+      const numInputPorts = this.synthComponent.inputs.size;
+      const portAreaHeight = numInputPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      const displayX = this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL;
+      const displayY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const displayWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const displayHeight = 200;
+
+      if (!this.vuMeterDisplay) {
+        this.vuMeterDisplay = new VuMeterDisplay(
+          displayX,
+          displayY,
+          displayWidth,
+          displayHeight,
+          this.synthComponent as import('../components/analyzers/VuMeter').VuMeter
+        );
+      } else {
+        this.vuMeterDisplay.updatePosition(displayX, displayY);
+      }
+    }
   }
 
   /**
@@ -1694,6 +1719,11 @@ export class CanvasComponent {
       // before dropdown menus which are drawn in a separate pass on top)
       if (this.oscilloscopeDisplay) {
         this.oscilloscopeDisplay.render(ctx);
+      }
+
+      // Render VU Meter display onto the main canvas
+      if (this.vuMeterDisplay) {
+        this.vuMeterDisplay.render(ctx);
       }
 
       // Render step sequencer display onto the main canvas
@@ -1901,6 +1931,10 @@ export class CanvasComponent {
     if (this.looperDisplay) {
       this.looperDisplay.destroy();
       this.looperDisplay = null;
+    }
+    if (this.vuMeterDisplay) {
+      this.vuMeterDisplay.destroy();
+      this.vuMeterDisplay = null;
     }
   }
 

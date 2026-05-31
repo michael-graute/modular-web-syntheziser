@@ -55,21 +55,21 @@
 
 ### Tests for User Story 1
 
-- [ ] T013 [P] [US1] Create `tests/components/VuMeter.test.ts` — mock `audioEngine` with `MockGainNode` and `MockAnalyserNode`; test constructor: has input port `'input'` with `SignalType.AUDIO`, has zero output ports, has zero parameters
-- [ ] T014 [US1] Add test in `tests/components/VuMeter.test.ts` — `getPeakLevel()` returns `0` before `activate()` (analyser is null)
-- [ ] T015 [US1] Add test in `tests/components/VuMeter.test.ts` — `activate()` calls `createGain` and `createAnalyser` on the context; `getInputNode()` returns non-null; `getOutputNode()` returns null
-- [ ] T016 [US1] Add test in `tests/components/VuMeter.test.ts` — `getPeakLevel()` after `activate()` returns value in `[0, 1]` (mock returns zeros → expects 0.0)
-- [ ] T017 [US1] Add test in `tests/components/VuMeter.test.ts` — `destroyAudioNodes()` disconnects gain and analyser nodes; subsequent `getPeakLevel()` returns 0
+- [X] T013 [P] [US1] Create `tests/components/VuMeter.test.ts` — mock `audioEngine` with `MockGainNode` and `MockAnalyserNode`; test constructor: has input port `'input'` with `SignalType.AUDIO`, has zero output ports, has zero parameters
+- [X] T014 [US1] Add test in `tests/components/VuMeter.test.ts` — `getPeakLevel()` returns `0` before `activate()` (analyser is null)
+- [X] T015 [US1] Add test in `tests/components/VuMeter.test.ts` — `activate()` calls `createGain` and `createAnalyser` on the context; `getInputNode()` returns non-null; `getOutputNode()` returns null
+- [X] T016 [US1] Add test in `tests/components/VuMeter.test.ts` — `getPeakLevel()` after `activate()` returns value in `[0, 1]` (mock returns zeros → expects 0.0)
+- [X] T017 [US1] Add test in `tests/components/VuMeter.test.ts` — `destroyAudioNodes()` disconnects gain and analyser nodes; subsequent `getPeakLevel()` returns 0
 
 ### Implementation for User Story 1
 
-- [ ] T018 [US1] Add `private vuMeterDisplay: VuMeterDisplay | null = null` field and import to `src/canvas/CanvasComponent.ts`
-- [ ] T019 [US1] Add `ComponentType.VU_METER` case in `createControls()` in `src/canvas/CanvasComponent.ts` — compute `displayY` below the single port row, create `VuMeterDisplay` if null or update position, no knobs/dropdowns
-- [ ] T020 [US1] Add `this.vuMeterDisplay?.render(ctx)` call in the display rendering section of `render()` in `src/canvas/CanvasComponent.ts` (alongside the `oscilloscopeDisplay` render call)
-- [ ] T021 [US1] Add `[ComponentType.VU_METER]: 'VU Meter'` to the `getDisplayName()` names map in `src/canvas/CanvasComponent.ts`
-- [ ] T022 [US1] Add `vuMeterDisplay` cleanup in `cleanup()` in `src/canvas/CanvasComponent.ts` — call `destroy()` and null the field
-- [ ] T023 [US1] Register `VuMeter` in `src/components/registerComponents.ts` — import `VuMeter`, add `componentRegistry.register(ComponentType.VU_METER, 'VU Meter', 'Real-time peak level meter for audio and CV signals', 'Analyzers', (id, position) => new VuMeter(id, position), calculateComponentDimensions(ComponentType.VU_METER))`
-- [ ] T024 [US1] Run `vitest run tests/components/VuMeter.test.ts` and verify all tests pass; run `npm run lint` and fix any warnings
+- [X] T018 [US1] Add `private vuMeterDisplay: VuMeterDisplay | null = null` field and import to `src/canvas/CanvasComponent.ts`
+- [X] T019 [US1] Add `ComponentType.VU_METER` case in `createControls()` in `src/canvas/CanvasComponent.ts` — compute `displayY` below the single port row, create `VuMeterDisplay` if null or update position, no knobs/dropdowns
+- [X] T020 [US1] Add `this.vuMeterDisplay?.render(ctx)` call in the display rendering section of `render()` in `src/canvas/CanvasComponent.ts` (alongside the `oscilloscopeDisplay` render call)
+- [X] T021 [US1] Add `[ComponentType.VU_METER]: 'VU Meter'` to the `getDisplayName()` names map in `src/canvas/CanvasComponent.ts`
+- [X] T022 [US1] Add `vuMeterDisplay` cleanup in `cleanup()` in `src/canvas/CanvasComponent.ts` — call `destroy()` and null the field
+- [X] T023 [US1] Register `VuMeter` in `src/components/registerComponents.ts` — import `VuMeter`, add `componentRegistry.register(ComponentType.VU_METER, 'VU Meter', 'Real-time peak level meter for audio and CV signals', 'Analyzers', (id, position) => new VuMeter(id, position), calculateComponentDimensions(ComponentType.VU_METER))`
+- [X] T024 [US1] Run `vitest run tests/components/VuMeter.test.ts` and verify all tests pass; run `npm run lint` and fix any warnings
 
 **Checkpoint**: Add VU Meter from the component menu → it appears on canvas with a single Audio In port and an empty segmented display. Connect an Oscillator → meter reacts in real time. Disconnect → meter falls to silence. Peak hold marker is visible for ~1.5 seconds after a transient.
 
@@ -83,8 +83,8 @@
 
 ### Implementation for User Story 2
 
-- [ ] T025 [US2] Verify in `src/components/analyzers/VuMeter.ts` that `getInputNode()` returns the `inputGain` GainNode — this is what the connection manager routes any Audio-typed source into. No code changes should be needed; this task is a verification step. If the routing does not work (e.g. port type mismatch), fix the port declaration.
-- [ ] T026 [US2] Manual test: connect LFO output (Audio-typed port) → VU Meter input; confirm meter responds (no code change expected — US1 wiring covers this). Document result in a brief comment in `src/components/analyzers/VuMeter.ts` if any edge case is discovered.
+- [X] T025 [US2] Verify in `src/components/analyzers/VuMeter.ts` that `getInputNode()` returns the `inputGain` GainNode — this is what the connection manager routes any Audio-typed source into. No code changes should be needed; this task is a verification step. If the routing does not work (e.g. port type mismatch), fix the port declaration.
+- [X] T026 [US2] Manual test: connect LFO output (Audio-typed port) → VU Meter input; confirm meter responds (no code change expected — US1 wiring covers this). Document result in a brief comment in `src/components/analyzers/VuMeter.ts` if any edge case is discovered.
 
 **Checkpoint**: LFO sweeping at 0.5 Hz produces a smooth meter sweep. Low-amplitude signals show non-zero levels. No code changes expected beyond what US1 delivered — this phase is primarily a verification gate.
 
@@ -98,9 +98,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T027 [US3] Verify `VuMeter.serialize()` in `src/components/analyzers/VuMeter.ts` — the base class `SynthComponent.serialize()` is called and should return `{ id, type: 'vu-meter', position, parameters: {}, isBypassed: undefined }`. Write a quick manual check or extend the test file: add a test in `tests/components/VuMeter.test.ts` asserting `serialize()` returns `type === 'vu-meter'` and `parameters` is an empty object.
-- [ ] T028 [US3] Verify `PatchSerializer` handles `ComponentType.VU_METER` without error — since `VU_METER` is now in the enum and the serializer uses the `type` string directly, no code changes should be needed. Run the existing patch serializer tests (`vitest run tests/patch`) to confirm no regressions.
-- [ ] T029 [US3] Verify legacy patch loading — manually load a patch that does not contain a VU Meter and confirm no errors occur in the browser console. No code changes expected.
+- [X] T027 [US3] Verify `VuMeter.serialize()` in `src/components/analyzers/VuMeter.ts` — the base class `SynthComponent.serialize()` is called and should return `{ id, type: 'vu-meter', position, parameters: {}, isBypassed: undefined }`. Write a quick manual check or extend the test file: add a test in `tests/components/VuMeter.test.ts` asserting `serialize()` returns `type === 'vu-meter'` and `parameters` is an empty object.
+- [X] T028 [US3] Verify `PatchSerializer` handles `ComponentType.VU_METER` without error — since `VU_METER` is now in the enum and the serializer uses the `type` string directly, no code changes should be needed. Run the existing patch serializer tests (`vitest run tests/patch`) to confirm no regressions.
+- [X] T029 [US3] Verify legacy patch loading — manually load a patch that does not contain a VU Meter and confirm no errors occur in the browser console. No code changes expected.
 
 **Checkpoint**: Save a patch with a VU Meter → reload the page → meter appears at saved position with connection restored → monitoring begins automatically. Legacy patches load without error.
 
@@ -110,9 +110,9 @@
 
 **Purpose**: Final verification, help text, and edge case hardening.
 
-- [ ] T030 [P] Update `src/ui/HelpSidebar.ts` (or equivalent help content) to add a VU Meter entry in the user manual section, describing: one Audio In port, passive monitoring, green/yellow/red zones, peak hold behaviour
-- [ ] T031 Verify edge cases from spec.md manually in the browser: (a) digital silence (signal = 0) → display shows floor, not frozen mid-scale; (b) clipping signal (amplitude > 1.0) → `getPeakLevel()` clamps to 1.0 → all segments red + peak hold at top; (c) audio context suspended → meter shows silence, resumes when context resumes; (d) SC-004 timing — disconnect a live source, start a timer, confirm the display reaches silence within 2 seconds
-- [ ] T032 [P] Run full test suite `vitest run` and `npm run lint` — fix any regressions introduced by the `ComponentType` enum extension or `CanvasComponent` additions
+- [X] T030 [P] Update `src/ui/HelpSidebar.ts` (or equivalent help content) to add a VU Meter entry in the user manual section, describing: one Audio In port, passive monitoring, green/yellow/red zones, peak hold behaviour
+- [x] T031 Verify edge cases from spec.md manually in the browser: (a) digital silence (signal = 0) → display shows floor, not frozen mid-scale; (b) clipping signal (amplitude > 1.0) → `getPeakLevel()` clamps to 1.0 → all segments red + peak hold at top; (c) audio context suspended → meter shows silence, resumes when context resumes; (d) SC-004 timing — disconnect a live source, start a timer, confirm the display reaches silence within 2 seconds
+- [X] T032 [P] Run full test suite `vitest run` and `npm run lint` — fix any regressions introduced by the `ComponentType` enum extension or `CanvasComponent` additions
 
 ---
 
