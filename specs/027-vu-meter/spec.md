@@ -5,6 +5,14 @@
 **Status**: Draft  
 **Input**: User description: "VU Meter as mentioned in docs/research/missing-features.md — visual feedback for signal levels independent of the Oscilloscope. Useful for monitoring mixer channels or checking CV ranges without interrupting the audio path."
 
+## Clarifications
+
+### Session 2026-05-31
+
+- Q: Which amplitude measurement method should the meter use? → A: Peak (instantaneous maximum) — fast response, accurate for both CV monitoring and clip detection.
+- Q: What visual style should the level display use? → A: Segmented column — discrete blocks colour-coded by zone (green / yellow / red), clearly differentiating the three level zones at compact canvas sizes.
+- Q: What signal type should the single input port be? → A: Audio-typed — consistent with the app's typed port infrastructure; CV sources that support Audio connections can still connect.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 — Monitor a Mixer Channel Level (Priority: P1)
@@ -66,27 +74,27 @@ A user saves a patch that includes a VU Meter positioned between the Mixer and M
 
 ### Functional Requirements
 
-- **FR-001**: The VU Meter MUST accept one audio/CV input signal and display its level in real time.
-- **FR-002**: The meter display MUST update continuously while a signal is connected, reflecting the current amplitude with a visual bar or column.
-- **FR-003**: The meter MUST visually distinguish at least three level zones: low (safe), moderate (nominal), and high/clip (danger).
+- **FR-001**: The VU Meter MUST accept one Audio-typed input signal and display its peak level in real time.
+- **FR-002**: The meter display MUST update continuously while a signal is connected, reflecting the current peak amplitude as a segmented vertical column of discrete blocks.
+- **FR-003**: The meter MUST visually distinguish three level zones via block colour: green (low/safe), yellow (moderate/nominal), and red (high/clip danger).
 - **FR-004**: The meter MUST include a peak-hold indicator that briefly retains the highest recent level before falling, so transient peaks are visible to the user.
 - **FR-005**: The meter MUST display a silence/floor state (no movement) when no signal is connected or the signal is zero.
 - **FR-006**: The meter MUST NOT alter the audio signal in any way — it is a passive monitoring tap only. No audio output port is required.
 - **FR-007**: The meter component MUST be saveable and restorable as part of patch persistence with no required configuration parameters.
-- **FR-008**: The meter MUST work with both audio-rate signals (e.g., oscillator output) and CV-rate signals (e.g., LFO output) without requiring the user to switch modes.
+- **FR-008**: The meter MUST work with any signal connected to its Audio input — audio-rate signals (e.g., oscillator output) and CV sources that support Audio connections (e.g., LFO output) — without requiring the user to switch modes.
 
 ### Key Entities
 
-- **VU Meter**: A passive monitoring component with one signal input, no outputs, and a real-time level display embedded in the component canvas tile.
-- **Level Display**: A vertical bar or segmented column rendered inside the component that reflects the current signal amplitude. Divided into colour zones (low / mid / high-clip).
+- **VU Meter**: A passive monitoring component with one Audio-typed input port, no outputs, and a real-time peak-level display embedded in the component canvas tile.
+- **Level Display**: A segmented vertical column of discrete blocks rendered inside the component. Blocks illuminate from the bottom up as amplitude increases. Colour zones: green (low/safe), yellow (moderate/nominal), red (high/clip).
 - **Peak Hold Indicator**: A brief horizontal marker at the highest recently seen level, visible for a short hold time before falling back down.
 
 ### Assumptions
 
-- The meter measures signal amplitude (RMS or peak) sampled from the Web Audio API's analysis capabilities — no user-facing "measurement mode" toggle is needed.
+- The meter measures signal amplitude using **peak** (instantaneous maximum) — chosen for fast transient response and accurate CV signal tracking. No user-facing "measurement mode" toggle is needed.
 - Display update rate follows the canvas render loop (60 FPS target); no separate refresh rate knob is required.
 - The meter has no output port — it is purely for monitoring and does not pass the signal through.
-- A single input port accepts any signal type (Audio or CV); no type restriction needed since the display is amplitude-agnostic.
+- The input port is typed as Audio, consistent with the app's typed port infrastructure. CV sources that support Audio connections (e.g., LFO) can still connect.
 - Peak hold duration defaults to approximately 1.5 seconds — long enough to catch transients, short enough to stay responsive.
 - No numeric dBFS readout is required for the initial version; the visual bar alone is sufficient.
 

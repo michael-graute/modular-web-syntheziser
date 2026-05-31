@@ -31,4 +31,4 @@
 
 ## Notes
 
-All items pass. Spec covers real-time level monitoring (US1/P1), CV signal monitoring (US2/P2), and patch persistence (US3/P3). No clarifications required — scope is narrow and well-defined. Ready to proceed to `/speckit-plan`.
+All items pass. Spec covers real-time level monitoring (US1/P1), CV signal monitoring (US2/P2), and patch persistence (US3/P3). Three clarifications recorded (2026-05-31): measurement method = peak, display style = segmented column (green/yellow/red), input port type = Audio. Ready to proceed to `/speckit-plan`.
