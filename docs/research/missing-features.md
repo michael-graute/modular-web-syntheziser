@@ -43,7 +43,7 @@
 - **Clock Divider / Multiplier** — expands the BPM system; lets the Step Sequencer or Collider run at half/double/triple time relative to the global BPM. Very high value for rhythmic complexity.
 - **CV Attenuverter / Offset** — scales and offsets CV signals (including polarity inversion) without needing a full LFO. The smallest and most reusable utility missing; frequently needed to adapt CV ranges between modules.
 - **Logic Gate (AND / OR / XOR for Gates)** — combines gate signals. Enables rhythmic patterns that emerge from the interaction of two clock sources.
-- **Arpeggiator (standalone)** — the Step Sequencer has an arpeggiator mode, but a dedicated module with more flexible octave range, direction (up/down/random), and rate control is a common modular utility.
+- ~~**Arpeggiator (standalone)**~~ ✅ *Implemented in `src/components/utilities/Arpeggiator.ts` (branch `029-vu-meter`)*  — the Step Sequencer has an arpeggiator mode, but a dedicated module with more flexible octave range, direction (up/down/random), and rate control is a common modular utility.
 
 ### Output & Monitoring
 
@@ -68,7 +68,7 @@
 | ~~EQ / Parametric Filter~~ | Medium | Medium | ✅ **Implemented** |
 | ~~VU Meter~~ | Low | Low | ✅ **Implemented** |
 | Tuner | Low | Medium | **P3** |
-| Arpeggiator (standalone) | Medium | Medium | **P3** |
+| ~~Arpeggiator (standalone)~~ | Medium | Medium | ✅ **Implemented** |
 | Logic Gate | Low | Low | **P3** |
 | Vocoder / Spectral | High | Very High | **P4** |
 
