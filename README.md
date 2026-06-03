@@ -8,6 +8,8 @@ The first version of this project was built in October 2025 by an experienced ty
 
 It is currently in ongoing development. New features and optimizations are implemented once in a while.
 
+The code is pure vanilla Typescript, HTML and CSS. **NO** dependencies at all (except the dev-dependencies for typescript, the vite build system and the test suite). Everything runs standalone in the browser, no backend needed, nothing you do is send anywhere, everything just lives in the browser.
+
 ![screenshot full application](./screenshot-full.png)
 
 ## Features
