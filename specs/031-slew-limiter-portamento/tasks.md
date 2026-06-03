@@ -16,9 +16,9 @@
 
 **Purpose**: Register the new component type and lay the groundwork that all three user stories share.
 
-- [ ] T001 Add `SLEW_LIMITER = 'slew-limiter'` to the `ComponentType` enum in `src/core/types.ts`
-- [ ] T002 [P] Create `src/components/utilities/SlewLimiterValidation.ts` — export `SlewLimiterParams`, constants (`RISE_MIN/MAX`, `FALL_MIN/MAX`, `SLEW_DEFAULTS`), `validateRise`, `validateFall`, `validateSlewLimiterParams`, `clampCv`, `computeSlewCoeff`
-- [ ] T003 [P] Create `tests/components/utilities/SlewLimiterValidation.test.ts` — 100% coverage of all exported helpers: boundary values, out-of-range, non-finite inputs, `clampCv`, `computeSlewCoeff`
+- [x] T001 Add `SLEW_LIMITER = 'slew-limiter'` to the `ComponentType` enum in `src/core/types.ts`
+- [x] T002 [P] Create `src/components/utilities/SlewLimiterValidation.ts` — export `SlewLimiterParams`, constants (`RISE_MIN/MAX`, `FALL_MIN/MAX`, `SLEW_DEFAULTS`), `validateRise`, `validateFall`, `validateSlewLimiterParams`, `clampCv`, `computeSlewCoeff`
+- [x] T003 [P] Create `tests/components/utilities/SlewLimiterValidation.test.ts` — 100% coverage of all exported helpers: boundary values, out-of-range, non-finite inputs, `clampCv`, `computeSlewCoeff`
 
 **Checkpoint**: Types and validation helpers in place; tests pass with `vitest run`.
 
@@ -30,7 +30,7 @@
 
 **⚠️ CRITICAL**: No user story canvas or display work can begin until T004 is complete.
 
-- [ ] T004 Create `src/components/utilities/SlewLimiter.ts`:
+- [x] T004 Create `src/components/utilities/SlewLimiter.ts`:
   - `constructor(id, position)`: register `input` (CV In) + `cv` (CV Out) ports; `rise` param (0–5000 ms, default 50, step 1, unit ms); `fall` param (0–5000 ms, default 50, step 1, unit ms)
   - `createAudioNodes()`: `inputGain` (GainNode, gain=1), `analyser` (AnalyserNode, fftSize=256, smoothing=0), `inputGain→analyser`, `cvNode` (ConstantSourceNode, offset=0, started); register all three
   - `destroyAudioNodes()`: stop/disconnect all nodes, null fields, clear `audioNodes`
@@ -41,7 +41,7 @@
   - `enableBypass()` / `disableBypass()`: disconnect `inputGain→analyser`, wire `inputGain→cvNode` directly (and reverse)
   - `serialize()` → `ComponentData` with `parameters: { rise, fall }`
   - `deserialize(data)` → `validateSlewLimiterParams`, set parameter values and position
-- [ ] T005 Create `tests/components/utilities/SlewLimiter.test.ts` — ≥80% coverage:
+- [x] T005 Create `tests/components/utilities/SlewLimiter.test.ts` — ≥80% coverage:
   - Constructor: correct ports (`input` CV, `cv` CV) and parameters (`rise`, `fall`) registered
   - `tick()`: output rises toward target with rise coeff; falls with fall coeff; pass-through when both times = 0
   - `serialize()` / `deserialize()`: round-trip fidelity; missing keys use defaults (50 ms)
@@ -58,22 +58,22 @@
 
 **Independent Test**: Add Slew Limiter to canvas → patch Step Sequencer CV Out → Slew Limiter CV In → Oscillator Pitch CV → set Rise to ~200 ms → press Play → verify pitch transitions glide instead of step.
 
-- [ ] T006 [US1] Add `SLEW_LIMITER` layout case to `src/utils/componentLayout.ts`:
+- [x] T006 [US1] Add `SLEW_LIMITER` layout case to `src/utils/componentLayout.ts`:
   - `getControlLayout()`: `{ numKnobs: 2, hasDisplayArea: true, displayHeight: 80 }`
   - `getPortCounts()`: `{ inputs: 1, outputs: 1 }`
   - Width override block: `if (type === ComponentType.SLEW_LIMITER) { width = 140; }`
-- [ ] T007 [US1] Create `src/canvas/displays/SlewLimiterDisplay.ts` — mirrors `EnvelopeFollowerDisplay`:
+- [x] T007 [US1] Create `src/canvas/displays/SlewLimiterDisplay.ts` — mirrors `EnvelopeFollowerDisplay`:
   - Constructor `(x, y, width, height, slewLimiter: SlewLimiter)`
   - `render(ctx)`: compute `dtSec` from `performance.now()`; call `slewLimiter.tick(dtSec)`; draw dark background + green vertical bar proportional to `slewLimiter.getOutputValue()` in [0,1]
   - `updatePosition(x, y)`, `updateSize(w, h)`, `setFrozen(frozen)`, `destroy()`
-- [ ] T008 [US1] Wire `SlewLimiter` into `src/canvas/CanvasComponent.ts`:
+- [x] T008 [US1] Wire `SlewLimiter` into `src/canvas/CanvasComponent.ts`:
   - Add `import { SlewLimiterDisplay }` at top
   - Add `private slewLimiterDisplay: SlewLimiterDisplay | null = null` field
   - Add `SLEW_LIMITER` case in `createControls()`: two `Knob` controls for `rise` and `fall` (same row layout as Envelope Follower 3-knob pattern but 2 knobs); verify/set the `logarithmic: true` flag on both `Parameter` objects so the knobs use exponential taper as specified in FR-003/FR-004; then create/update `SlewLimiterDisplay` below the knobs
   - Add `this.slewLimiterDisplay?.render(ctx)` in the display render pass
   - Add `this.slewLimiterDisplay?.destroy()` in component destroy/cleanup
   - Add `[ComponentType.SLEW_LIMITER]: 'Slew Limiter'` to the display-name map
-- [ ] T009 [US1] Register `SlewLimiter` in `src/components/registerComponents.ts`:
+- [x] T009 [US1] Register `SlewLimiter` in `src/components/registerComponents.ts`:
   - Add `import { SlewLimiter } from './utilities/SlewLimiter'`
   - Add `componentRegistry.register(ComponentType.SLEW_LIMITER, 'Slew Limiter', 'Smooths CV transitions — portamento and glide', 'Utilities', (id, pos) => new SlewLimiter(id, pos), calculateComponentDimensions(ComponentType.SLEW_LIMITER))`
 

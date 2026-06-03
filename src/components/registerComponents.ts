@@ -32,6 +32,7 @@ import { Arpeggiator } from './utilities/Arpeggiator';
 import { Oscilloscope } from './analyzers/Oscilloscope';
 import { VuMeter } from './analyzers/VuMeter';
 import { EnvelopeFollower } from './analyzers/EnvelopeFollower';
+import { SlewLimiter } from './utilities/SlewLimiter';
 import { StepSequencer } from './utilities/StepSequencer';
 import { calculateComponentDimensions } from '../utils/componentLayout';
 
@@ -303,6 +304,15 @@ export function registerAllComponents(): void {
     'Analyzers',
     (id, position) => new EnvelopeFollower(id, position),
     calculateComponentDimensions(ComponentType.ENVELOPE_FOLLOWER)
+  );
+
+  componentRegistry.register(
+    ComponentType.SLEW_LIMITER,
+    'Slew Limiter',
+    'Smooths CV transitions — portamento and glide',
+    'Utilities',
+    (id, position) => new SlewLimiter(id, position),
+    calculateComponentDimensions(ComponentType.SLEW_LIMITER)
   );
 
   console.log(`✅ Registered ${componentRegistry.getCount()} components`);

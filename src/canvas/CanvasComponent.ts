@@ -12,6 +12,7 @@ import { Button } from './controls/Button';
 import { OscilloscopeDisplay } from './displays/OscilloscopeDisplay';
 import { VuMeterDisplay } from './displays/VuMeterDisplay';
 import { EnvelopeFollowerDisplay } from './displays/EnvelopeFollowerDisplay';
+import { SlewLimiterDisplay } from './displays/SlewLimiterDisplay';
 import { StepSequencerDisplay, SEQUENCER_DISPLAY_HEIGHT } from './displays/StepSequencerDisplay';
 import { ColliderDisplay } from './displays/ColliderDisplay';
 import { ChordFinderDisplay } from './displays/ChordFinderDisplay';
@@ -49,6 +50,7 @@ export class CanvasComponent {
   private looperDisplay: LooperDisplay | null = null;
   private vuMeterDisplay: VuMeterDisplay | null = null;
   private envelopeFollowerDisplay: EnvelopeFollowerDisplay | null = null;
+  private slewLimiterDisplay: SlewLimiterDisplay | null = null;
   private _looperRafId: number | null = null;
 
   constructor(
@@ -1689,6 +1691,58 @@ export class CanvasComponent {
         this.envelopeFollowerDisplay.updatePosition(displayX, displayY);
       }
     }
+
+    // Slew Limiter — two knobs (rise, fall) + vertical bar display
+    if (this.type === ComponentType.SLEW_LIMITER && this.synthComponent) {
+      const riseParam = this.synthComponent.getParameter('rise');
+      const fallParam = this.synthComponent.getParameter('fall');
+
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      // Two knobs in a single row
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const numKnobs = 2;
+      const totalSpacing = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const spacing = (totalSpacing - numKnobs * knobSize) / (numKnobs + 1);
+
+      if (riseParam) {
+        this.controls.push(new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing,
+          knobY,
+          knobSize,
+          riseParam
+        ));
+      }
+
+      if (fallParam) {
+        this.controls.push(new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 2 + knobSize,
+          knobY,
+          knobSize,
+          fallParam
+        ));
+      }
+
+      // Bar display below the knobs
+      const knobAreaHeight = 12 + knobSize + 12;
+      const displayX = this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL;
+      const displayY = knobY + knobAreaHeight + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const displayWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const displayHeight = 80;
+
+      const sl = this.synthComponent as import('../components/utilities/SlewLimiter').SlewLimiter;
+      if (!this.slewLimiterDisplay) {
+        this.slewLimiterDisplay = new SlewLimiterDisplay(
+          displayX, displayY, displayWidth, displayHeight, sl
+        );
+      } else {
+        this.slewLimiterDisplay.updatePosition(displayX, displayY);
+      }
+    }
   }
 
   /**
@@ -1870,6 +1924,11 @@ export class CanvasComponent {
       // Render Envelope Follower bar display onto the main canvas
       if (this.envelopeFollowerDisplay) {
         this.envelopeFollowerDisplay.render(ctx);
+      }
+
+      // Render Slew Limiter bar display onto the main canvas
+      if (this.slewLimiterDisplay) {
+        this.slewLimiterDisplay.render(ctx);
       }
 
       // Render step sequencer display onto the main canvas
@@ -2086,6 +2145,10 @@ export class CanvasComponent {
       this.envelopeFollowerDisplay.destroy();
       this.envelopeFollowerDisplay = null;
     }
+    if (this.slewLimiterDisplay) {
+      this.slewLimiterDisplay.destroy();
+      this.slewLimiterDisplay = null;
+    }
   }
 
   /**
@@ -2225,6 +2288,7 @@ export class CanvasComponent {
       [ComponentType.RING_MODULATOR]: 'Ring Mod',
       [ComponentType.ARPEGGIATOR]: 'Arpeggiator',
       [ComponentType.ENVELOPE_FOLLOWER]: 'Env Follower',
+      [ComponentType.SLEW_LIMITER]: 'Slew Limiter',
     };
     return names[this.type] || 'Component';
   }

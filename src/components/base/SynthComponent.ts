@@ -159,6 +159,7 @@ export abstract class SynthComponent {
       ComponentType.TREMOLO,
       ComponentType.PARAMETRIC_EQ,
       ComponentType.RING_MODULATOR,
+      ComponentType.SLEW_LIMITER,
     ];
     return bypassableTypes.includes(this.type);
   }

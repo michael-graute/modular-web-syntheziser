@@ -177,6 +177,13 @@ function getControlLayout(type: ComponentType): ControlLayout {
         displayHeight: 120,
       };
 
+    case ComponentType.SLEW_LIMITER:
+      return {
+        numKnobs: 2, // rise, fall
+        hasDisplayArea: true,
+        displayHeight: 80,
+      };
+
     case ComponentType.RING_MODULATOR:
       return {}; // No user-adjustable parameters; bypass button rendered automatically
 
@@ -274,6 +281,9 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
 
     case ComponentType.ENVELOPE_FOLLOWER:
       return { inputs: 1, outputs: 1 }; // audio in / CV out
+
+    case ComponentType.SLEW_LIMITER:
+      return { inputs: 1, outputs: 1 }; // CV in / CV out
 
     case ComponentType.RING_MODULATOR:
       return { inputs: 2, outputs: 1 }; // audio-in, modulator / audio-out
@@ -489,6 +499,11 @@ export function calculateComponentWidth(type: ComponentType): number {
   // Envelope Follower: narrow column with 3 knobs + bar display
   if (type === ComponentType.ENVELOPE_FOLLOWER) {
     width = 160;
+  }
+
+  // Slew Limiter: narrow column with 2 knobs + bar display
+  if (type === ComponentType.SLEW_LIMITER) {
+    width = 140;
   }
 
   return width;

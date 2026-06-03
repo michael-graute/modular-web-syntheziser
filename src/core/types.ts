@@ -46,6 +46,7 @@ export enum ComponentType {
   RING_MODULATOR = 'ring-modulator',
   ARPEGGIATOR = 'arpeggiator',
   ENVELOPE_FOLLOWER = 'envelope-follower',
+  SLEW_LIMITER = 'slew-limiter',
 }
 
 /**
