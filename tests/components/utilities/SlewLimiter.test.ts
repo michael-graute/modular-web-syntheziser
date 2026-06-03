@@ -212,13 +212,13 @@ describe('SlewLimiter tick', () => {
     expect(cvNode.offset.value).toBe(sl.getOutputValue());
   });
 
-  it('output stays in [0, 1] with extreme inputs', () => {
+  it('output tracks values above 1 (full signal range, no clamping)', () => {
     const sl = makeActiveSL();
+    sl.setParameterValue('rise', 0);
     const analyser = mockCtx.createAnalyser.mock.results[0]!.value as MockAnalyserNode;
-    vi.spyOn(analyser, 'getFloatTimeDomainData').mockImplementation((arr) => arr.fill(2.0));
-    for (let i = 0; i < 60; i++) sl.tick(1 / 60);
-    expect(sl.getOutputValue()).toBeLessThanOrEqual(1);
-    expect(sl.getOutputValue()).toBeGreaterThanOrEqual(0);
+    vi.spyOn(analyser, 'getFloatTimeDomainData').mockImplementation((arr) => arr.fill(440));
+    sl.tick(1 / 60);
+    expect(sl.getOutputValue()).toBeCloseTo(440, 0);
   });
 
   it('does not crash when called before activate', () => {

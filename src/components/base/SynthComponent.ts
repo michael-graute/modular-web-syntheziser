@@ -20,7 +20,7 @@ export abstract class SynthComponent {
   parameters: Map<string, Parameter>;
   audioNodes: Map<string, AudioNode>;
   isActive: boolean;
-  private _isBypassed: boolean = false;
+  protected _isBypassed: boolean = false;
   protected _bypassConnections: Array<{ from: AudioNode; to: AudioNode }> = [];
 
   constructor(id: string, type: ComponentType, name: string, position: Position) {

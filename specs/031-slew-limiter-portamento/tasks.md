@@ -87,9 +87,9 @@
 
 **Independent Test**: Set Rise = 0 ms, Fall = 2000 ms → patch LFO square wave CV → Slew Limiter → any CV destination → verify output rises instantly but falls over ~2 seconds. Save patch, reload, confirm both knob values are restored exactly.
 
-- [ ] T010 [US2] Verify `tick()` direction logic in `SlewLimiter.ts`: confirm that when `target > outputValue` the Rise coefficient is used and when `target < outputValue` the Fall coefficient is used — add dedicated `tick()` asymmetry test to `tests/components/utilities/SlewLimiter.test.ts` if not already covered
-- [ ] T011 [US2] Verify `serialize()` / `deserialize()` round-trip for asymmetric values (rise ≠ fall) in `tests/components/utilities/SlewLimiter.test.ts`
-- [ ] T012 [US2] Confirm both knobs render and update independently in `CanvasComponent.ts` SLEW_LIMITER `createControls()` block — visually inspect that adjusting Rise does not affect Fall knob position and vice versa (manual verification step)
+- [x] T010 [US2] Verify `tick()` direction logic in `SlewLimiter.ts`: confirm that when `target > outputValue` the Rise coefficient is used and when `target < outputValue` the Fall coefficient is used — add dedicated `tick()` asymmetry test to `tests/components/utilities/SlewLimiter.test.ts` if not already covered
+- [x] T011 [US2] Verify `serialize()` / `deserialize()` round-trip for asymmetric values (rise ≠ fall) in `tests/components/utilities/SlewLimiter.test.ts`
+- [x] T012 [US2] Confirm both knobs render and update independently in `CanvasComponent.ts` SLEW_LIMITER `createControls()` block — visually inspect that adjusting Rise does not affect Fall knob position and vice versa (manual verification step)
 
 **Checkpoint**: User Story 2 complete. Rise and Fall are fully independent; patch persistence confirmed for both values.
 
@@ -101,9 +101,9 @@
 
 **Independent Test**: Patch LFO (square wave) → Slew Limiter CV In → Oscillator detune CV → with Rise+Fall > 0 verify the sharp LFO edges are softened into visible ramps on an Oscilloscope patched to the Oscillator output.
 
-- [ ] T013 [US3] Confirm `getInputNode()` returns `inputGain` (a standard `GainNode`) and verify that `SignalType.CV` connections from any CV source module connect to it without error — inspect `ConnectionManager` / patch wiring to confirm no `SLEW_LIMITER`-specific exclusions are needed
-- [ ] T014 [US3] Add acceptance scenario test to `tests/components/utilities/SlewLimiter.test.ts`: feed rapidly changing target values in quick succession → verify output continuously ramps toward the latest target without resetting mid-glide (edge case: rapid CV stream)
-- [ ] T015 [US3] Manual verification: patch Collider CV Out → Slew Limiter → Oscillator pitch; confirm no console errors and smooth glide behaviour
+- [x] T013 [US3] Confirm `getInputNode()` returns `inputGain` (a standard `GainNode`) and verify that `SignalType.CV` connections from any CV source module connect to it without error — inspect `ConnectionManager` / patch wiring to confirm no `SLEW_LIMITER`-specific exclusions are needed
+- [x] T014 [US3] Add acceptance scenario test to `tests/components/utilities/SlewLimiter.test.ts`: feed rapidly changing target values in quick succession → verify output continuously ramps toward the latest target without resetting mid-glide (edge case: rapid CV stream)
+- [x] T015 [US3] Manual verification: patch Collider CV Out → Slew Limiter → Oscillator pitch; confirm no console errors and smooth glide behaviour
 
 **Checkpoint**: User Story 3 complete. Any CV source can be routed through the Slew Limiter.
 
@@ -113,10 +113,10 @@
 
 **Purpose**: Final quality pass across all stories.
 
-- [ ] T016 [P] Run `npm run lint` and fix any TypeScript or lint errors introduced across all new/modified files
-- [ ] T017 [P] Run `vitest run` and confirm all tests pass (0 failures)
-- [ ] T018 Add `SLEW_LIMITER` help sidebar entry following the pattern of other components (if a help/sidebar registry exists in the project)
-- [ ] T019 [P] Update `docs/research/missing-features.md` — mark Slew Limiter / Portamento as implemented with branch reference `031-slew-limiter-portamento`
+- [x] T016 [P] Run `npm run lint` and fix any TypeScript or lint errors introduced across all new/modified files
+- [x] T017 [P] Run `vitest run` and confirm all tests pass (0 failures)
+- [x] T018 Add `SLEW_LIMITER` help sidebar entry following the pattern of other components (if a help/sidebar registry exists in the project)
+- [x] T019 [P] Update `docs/research/missing-features.md` — mark Slew Limiter / Portamento as implemented with branch reference `031-slew-limiter-portamento`
 - [ ] T020 Manual end-to-end validation per `specs/031-slew-limiter-portamento/quickstart.md`: primary patch (Sequencer → Slew → Oscillator), LFO edge softening, Collider glide, bypass A/B check
 
 **Checkpoint**: All user stories integrated, lint clean, tests green, feature documented.

@@ -30,7 +30,7 @@
 - ~~**Quantizer**~~ ✅ *Implemented in `src/components/utilities/Quantizer.ts` (branch `025-quantizer`)* — snaps free-running CV to musical scales; supports 8 scale types, 12 root notes, optional gate/trigger input for rhythmically locked pitch steps, and full patch persistence.
 - ~~**Envelope Follower**~~ ✅ *Implemented in `src/components/analyzers/EnvelopeFollower.ts` (branch `030-envelope-follower`)* — converts incoming audio amplitude to a 0–1 CV signal via periodic RMS analysis (AnalyserNode); independent Attack (1–500 ms) and Release (5–2000 ms) IIR smoothing; Gain/Sensitivity knob (0.1×–4×); live vertical bar-meter display; CV output patchable to any CV-accepting input; full patch persistence.
 - **S&H (Sample & Hold) — standalone** — already exists as an LFO waveform mode, but a dedicated module would allow any CV source (not just LFO) to be sampled on a trigger. Common utility for stepped random CV.
-- **Slew Limiter / Portamento** — smooths abrupt CV jumps; produces glide between pitches. The Keyboard has no detached portamento module, so CV glide can't be applied to sequencer or Collider output.
+- ~~**Slew Limiter / Portamento**~~ ✅ *Implemented in `src/components/utilities/SlewLimiter.ts` (branch `031-slew-limiter-portamento`)* — smooths abrupt CV jumps via frame-driven IIR lowpass; independent Rise and Fall time controls (0–5000 ms, exponential scale); live vertical bar-meter display; bypass support; CV output patchable to any CV-accepting input; full patch persistence.
 
 ### Signal Processing
 
@@ -60,7 +60,7 @@
 | CV Attenuverter / Offset | High | Very Low | **P1** |
 | Clock Divider / Multiplier | High | Low | **P1** |
 | ~~Envelope Follower~~ | High | Low | ✅ **Implemented** |
-| Slew Limiter / Portamento | Medium | Low | **P2** |
+| ~~Slew Limiter / Portamento~~ | Medium | Low | ✅ **Implemented** |
 | S&H (standalone) | Medium | Low | **P2** |
 | Sample Player / Wavetable | High | High | **P2** |
 | ~~Ring Modulator~~ | Medium | Low | ✅ **Implemented** |

@@ -520,7 +520,7 @@ export class HelpSidebar {
         <li><strong style="color: var(--text-primary, #ffffff);">Generators:</strong> Oscillator, FM Oscillator, LFO, Noise</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Processors:</strong> Filters, VCA, Envelopes</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Effects:</strong> Delay, Reverb, Distortion, Chorus, Bitcrusher, Flanger, Phaser, Tremolo, Ring Modulator</li>
-        <li><strong style="color: var(--text-primary, #ffffff);">Utilities:</strong> Keyboard, Mixer, Sequencer, Arpeggiator</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">Utilities:</strong> Keyboard, Mixer, Sequencer, Arpeggiator, Slew Limiter</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Analyzers:</strong> Oscilloscope, VU Meter, Env Follower</li>
       </ul>
 
@@ -853,6 +853,24 @@ export class HelpSidebar {
         <strong style="color: var(--text-primary, #ffffff);">Typical patch:</strong>
         Keyboard (Frequency → CV In, Gate → Gate In) → Arpeggiator → Oscillator (CV Out → Frequency CV) + ADSR (Gate Out → Gate In) → VCA → Master Out.
         Hold multiple keys to build up the arpeggio sequence; release all keys to stop.
+      </p>
+
+      <h4 style="color: var(--text-primary, #ffffff);">Slew Limiter</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Smooths abrupt CV jumps — produces portamento/glide between pitches.
+        Sits between any CV source and any CV destination.
+        Rise sets how long the output takes to reach a higher CV value; Fall sets how long it takes to reach a lower one.
+        Both controls use an exponential scale for fine resolution at short times.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>CV In:</strong> Any CV source (Sequencer, LFO, Collider, Keyboard, etc.)</li>
+        <li><strong>CV Out:</strong> Smoothed CV to any CV-accepting input</li>
+        <li><strong>Rise:</strong> 0–5000 ms upward slew time</li>
+        <li><strong>Fall:</strong> 0–5000 ms downward slew time</li>
+        <li><strong>Bypass:</strong> Passes CV through unmodified with no smoothing</li>
+      </ul>
+      <p style="color: var(--text-secondary, #cccccc);">
+        <em>Example patch:</em> Step Sequencer (CV Out) → Slew Limiter (CV In) → Oscillator (Frequency CV). Set Rise to ~200 ms for classic portamento.
       </p>
 
       <h4 style="color: var(--text-primary, #ffffff);">Master Output</h4>

@@ -16,6 +16,10 @@ const COLOR_BAR = '#22c55e';
 const COLOR_BACKGROUND = '#1a1a1a';
 const COLOR_BORDER = '#444444';
 
+// Dynamic range: track observed min/max and normalise the bar against them.
+// Resets slowly toward the observed signal to avoid permanent lock-out.
+const RANGE_DECAY = 0.002; // fraction per frame the range contracts toward signal
+
 export class SlewLimiterDisplay {
   private slewLimiter: SlewLimiter | null;
   private isFrozen: boolean;
@@ -25,6 +29,8 @@ export class SlewLimiterDisplay {
   private baseHeight: number;
 
   private lastFrameTime: number = 0;
+  private observedMin: number = 0;
+  private observedMax: number = 1;
 
   constructor(x: number, y: number, width: number, height: number, slewLimiter: SlewLimiter) {
     this.slewLimiter = slewLimiter;
@@ -60,7 +66,19 @@ export class SlewLimiterDisplay {
     const padding = 4;
     const innerW = w - padding * 2;
     const innerH = h - padding * 2;
-    const level = this.slewLimiter.getOutputValue();
+    const raw = this.slewLimiter.getOutputValue();
+
+    // Expand observed range to include new value
+    if (raw > this.observedMax) this.observedMax = raw;
+    if (raw < this.observedMin) this.observedMin = raw;
+
+    // Slowly contract range toward observed signal so the bar uses full height over time
+    this.observedMax -= (this.observedMax - raw) * RANGE_DECAY;
+    this.observedMin += (raw - this.observedMin) * RANGE_DECAY;
+
+    // Ensure minimum range to avoid division by zero
+    const span = Math.max(this.observedMax - this.observedMin, 1);
+    const level = Math.min(1, Math.max(0, (raw - this.observedMin) / span));
     const barH = Math.max(0, level * innerH);
 
     if (barH > 0) {
@@ -90,6 +108,8 @@ export class SlewLimiterDisplay {
     this.isFrozen = frozen;
     if (frozen) {
       this.lastFrameTime = 0;
+      this.observedMin = 0;
+      this.observedMax = 1;
     }
   }
 

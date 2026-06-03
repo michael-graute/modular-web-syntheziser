@@ -121,7 +121,7 @@ export class SlewLimiter extends SynthComponent {
     for (let i = 0; i < this.dataArray.length; i++) {
       sum += this.dataArray[i]!;
     }
-    const target = clampCv(sum / this.dataArray.length);
+    const target = sum / this.dataArray.length;
 
     const riseMs = this._isBypassed ? 0 : (this.getParameter('rise')?.getValue() ?? 50);
     const fallMs = this._isBypassed ? 0 : (this.getParameter('fall')?.getValue() ?? 50);
@@ -129,7 +129,7 @@ export class SlewLimiter extends SynthComponent {
       ? computeSlewCoeff(riseMs, safeDt)
       : computeSlewCoeff(fallMs, safeDt);
 
-    this.outputValue = clampCv(this.outputValue + coeff * (target - this.outputValue));
+    this.outputValue = this.outputValue + coeff * (target - this.outputValue);
     this.cvNode.offset.value = this.outputValue;
   }
 
