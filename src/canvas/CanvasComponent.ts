@@ -11,6 +11,7 @@ import { Slider } from './controls/Slider';
 import { Button } from './controls/Button';
 import { OscilloscopeDisplay } from './displays/OscilloscopeDisplay';
 import { VuMeterDisplay } from './displays/VuMeterDisplay';
+import { EnvelopeFollowerDisplay } from './displays/EnvelopeFollowerDisplay';
 import { StepSequencerDisplay, SEQUENCER_DISPLAY_HEIGHT } from './displays/StepSequencerDisplay';
 import { ColliderDisplay } from './displays/ColliderDisplay';
 import { ChordFinderDisplay } from './displays/ChordFinderDisplay';
@@ -47,6 +48,7 @@ export class CanvasComponent {
   private chordFinderDisplay: ChordFinderDisplay | null = null;
   private looperDisplay: LooperDisplay | null = null;
   private vuMeterDisplay: VuMeterDisplay | null = null;
+  private envelopeFollowerDisplay: EnvelopeFollowerDisplay | null = null;
   private _looperRafId: number | null = null;
 
   constructor(
@@ -1625,6 +1627,68 @@ export class CanvasComponent {
         this.vuMeterDisplay.updatePosition(displayX, displayY);
       }
     }
+
+    // Envelope Follower — three knobs (attack, release, gain) + vertical bar display
+    if (this.type === ComponentType.ENVELOPE_FOLLOWER && this.synthComponent) {
+      const attackParam = this.synthComponent.getParameter('attack');
+      const releaseParam = this.synthComponent.getParameter('release');
+      const gainParam = this.synthComponent.getParameter('gain');
+
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      // Three knobs in a single row
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const numKnobs = 3;
+      const totalSpacing = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const spacing = (totalSpacing - numKnobs * knobSize) / (numKnobs + 1);
+
+      if (attackParam) {
+        this.controls.push(new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing,
+          knobY,
+          knobSize,
+          attackParam
+        ));
+      }
+
+      if (releaseParam) {
+        this.controls.push(new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 2 + knobSize,
+          knobY,
+          knobSize,
+          releaseParam
+        ));
+      }
+
+      if (gainParam) {
+        this.controls.push(new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 3 + knobSize * 2,
+          knobY,
+          knobSize,
+          gainParam
+        ));
+      }
+
+      // Bar display below the knobs (label height 12 + knob 40 + value 12 + spacing 10)
+      const knobAreaHeight = 12 + knobSize + 12;
+      const displayX = this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL;
+      const displayY = knobY + knobAreaHeight + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const displayWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const displayHeight = 120;
+
+      const ef = this.synthComponent as import('../components/analyzers/EnvelopeFollower').EnvelopeFollower;
+      if (!this.envelopeFollowerDisplay) {
+        this.envelopeFollowerDisplay = new EnvelopeFollowerDisplay(
+          displayX, displayY, displayWidth, displayHeight, ef
+        );
+      } else {
+        this.envelopeFollowerDisplay.updatePosition(displayX, displayY);
+      }
+    }
   }
 
   /**
@@ -1801,6 +1865,11 @@ export class CanvasComponent {
       // Render VU Meter display onto the main canvas
       if (this.vuMeterDisplay) {
         this.vuMeterDisplay.render(ctx);
+      }
+
+      // Render Envelope Follower bar display onto the main canvas
+      if (this.envelopeFollowerDisplay) {
+        this.envelopeFollowerDisplay.render(ctx);
       }
 
       // Render step sequencer display onto the main canvas
@@ -2013,6 +2082,10 @@ export class CanvasComponent {
       this.vuMeterDisplay.destroy();
       this.vuMeterDisplay = null;
     }
+    if (this.envelopeFollowerDisplay) {
+      this.envelopeFollowerDisplay.destroy();
+      this.envelopeFollowerDisplay = null;
+    }
   }
 
   /**
@@ -2151,6 +2224,7 @@ export class CanvasComponent {
       [ComponentType.VU_METER]: 'VU Meter',
       [ComponentType.RING_MODULATOR]: 'Ring Mod',
       [ComponentType.ARPEGGIATOR]: 'Arpeggiator',
+      [ComponentType.ENVELOPE_FOLLOWER]: 'Env Follower',
     };
     return names[this.type] || 'Component';
   }

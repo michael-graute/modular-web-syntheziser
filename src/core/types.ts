@@ -45,6 +45,7 @@ export enum ComponentType {
   VU_METER = 'vu-meter',
   RING_MODULATOR = 'ring-modulator',
   ARPEGGIATOR = 'arpeggiator',
+  ENVELOPE_FOLLOWER = 'envelope-follower',
 }
 
 /**

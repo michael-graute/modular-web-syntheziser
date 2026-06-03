@@ -170,6 +170,13 @@ function getControlLayout(type: ComponentType): ControlLayout {
         displayHeight: 200,
       };
 
+    case ComponentType.ENVELOPE_FOLLOWER:
+      return {
+        numKnobs: 3, // attack, release, gain
+        hasDisplayArea: true,
+        displayHeight: 120,
+      };
+
     case ComponentType.RING_MODULATOR:
       return {}; // No user-adjustable parameters; bypass button rendered automatically
 
@@ -264,6 +271,9 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
 
     case ComponentType.VU_METER:
       return { inputs: 1, outputs: 0 };
+
+    case ComponentType.ENVELOPE_FOLLOWER:
+      return { inputs: 1, outputs: 1 }; // audio in / CV out
 
     case ComponentType.RING_MODULATOR:
       return { inputs: 2, outputs: 1 }; // audio-in, modulator / audio-out
@@ -474,6 +484,11 @@ export function calculateComponentWidth(type: ComponentType): number {
   // VU Meter: narrow single-column display — override the generic hasDisplayArea width
   if (type === ComponentType.VU_METER) {
     width = 80;
+  }
+
+  // Envelope Follower: narrow column with 3 knobs + bar display
+  if (type === ComponentType.ENVELOPE_FOLLOWER) {
+    width = 160;
   }
 
   return width;

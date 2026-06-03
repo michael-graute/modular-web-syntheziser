@@ -16,9 +16,9 @@
 
 **Purpose**: Register the new ComponentType and wire the component into the app's factory — everything else depends on this.
 
-- [ ] T001 Add `ENVELOPE_FOLLOWER = 'envelope-follower'` to `ComponentType` enum in `src/core/types.ts`
-- [ ] T002 Add `'Env Follower'` display-name entry to the `ComponentType` label map in `src/canvas/CanvasComponent.ts` (same location as `[ComponentType.VU_METER]: 'VU Meter'`)
-- [ ] T003 [P] Copy validation helpers from `specs/030-envelope-follower/contracts/validation.ts` into `src/components/analyzers/EnvelopeFollowerValidation.ts` and verify exports compile under strict mode
+- [x] T001 Add `ENVELOPE_FOLLOWER = 'envelope-follower'` to `ComponentType` enum in `src/core/types.ts`
+- [x] T002 Add `'Env Follower'` display-name entry to the `ComponentType` label map in `src/canvas/CanvasComponent.ts` (same location as `[ComponentType.VU_METER]: 'VU Meter'`)
+- [x] T003 [P] Copy validation helpers from `specs/030-envelope-follower/contracts/validation.ts` into `src/components/analyzers/EnvelopeFollowerValidation.ts` and verify exports compile under strict mode
 
 **Checkpoint**: `ComponentType.ENVELOPE_FOLLOWER` resolves in TypeScript; `npm run lint` passes.
 
@@ -28,11 +28,11 @@
 
 **Purpose**: Core component class — required before display, CanvasComponent wiring, registration, and tests can proceed.
 
-- [ ] T004 Create `src/components/analyzers/EnvelopeFollower.ts` — extend `SynthComponent`, add constructor with `addInput('input', 'Audio In', SignalType.AUDIO)`, `addOutput('cv', 'CV Out', SignalType.CV)`, and three parameters: `attack` (10 ms default, 1–500 ms), `release` (100 ms default, 5–2000 ms), `gain` (1.0 default, 0.1–4.0×)
-- [ ] T005 Implement `createAudioNodes()` in `EnvelopeFollower.ts`: create `inputGain` (GainNode, fixed gain 1.0), `analyser` (AnalyserNode, fftSize=256, smoothingTimeConstant=0), connect `inputGain → analyser`; create `cvNode` (ConstantSourceNode, offset=0), call `cvNode.start()`; allocate `dataArray = new Float32Array(128)`; register all nodes via `registerAudioNode()`
-- [ ] T006 Implement `getInputNode()` returning `inputGain` and `getOutputNode()` returning `cvNode` in `EnvelopeFollower.ts`
-- [ ] T007 Implement `tick(dt: number)` in `EnvelopeFollower.ts`: read `analyser.getFloatTimeDomainData(dataArray)`, compute RMS, apply gain, run IIR smoother with separate attack/release coefficients (`1 - Math.exp(-dt / (timeMs / 1000))`), clamp result to [0, 1], write to `cvNode.offset.value`; expose current value via `getEnvelopeValue(): number`
-- [ ] T008 Implement `serialize()` and `deserialize()` in `EnvelopeFollower.ts` using `validateEnvelopeFollowerParams()` from `EnvelopeFollowerValidation.ts`; missing params fall back to defaults
+- [x] T004 Create `src/components/analyzers/EnvelopeFollower.ts` — extend `SynthComponent`, add constructor with `addInput('input', 'Audio In', SignalType.AUDIO)`, `addOutput('cv', 'CV Out', SignalType.CV)`, and three parameters: `attack` (10 ms default, 1–500 ms), `release` (100 ms default, 5–2000 ms), `gain` (1.0 default, 0.1–4.0×)
+- [x] T005 Implement `createAudioNodes()` in `EnvelopeFollower.ts`: create `inputGain` (GainNode, fixed gain 1.0), `analyser` (AnalyserNode, fftSize=256, smoothingTimeConstant=0), connect `inputGain → analyser`; create `cvNode` (ConstantSourceNode, offset=0), call `cvNode.start()`; allocate `dataArray = new Float32Array(256)`; register all nodes via `registerAudioNode()`
+- [x] T006 Implement `getInputNode()` returning `inputGain` and `getOutputNode()` returning `cvNode` in `EnvelopeFollower.ts`
+- [x] T007 Implement `tick(dt: number)` in `EnvelopeFollower.ts`: read `analyser.getFloatTimeDomainData(dataArray)`, compute RMS, apply gain, run IIR smoother with separate attack/release coefficients (`1 - Math.exp(-dt / (timeMs / 1000))`), clamp result to [0, 1], write to `cvNode.offset.value`; expose current value via `getEnvelopeValue(): number`
+- [x] T008 Implement `serialize()` and `deserialize()` in `EnvelopeFollower.ts` using `validateEnvelopeFollowerParams()` from `EnvelopeFollowerValidation.ts`; missing params fall back to defaults
 
 **Checkpoint**: `EnvelopeFollower` compiles; `getInputNode()` and `getOutputNode()` return correctly typed nodes; `tick()` can be called without crashing in a mocked audio context.
 
@@ -46,12 +46,12 @@
 
 ### Tests for User Story 1
 
-- [ ] T009 [P] [US1] Create `tests/components/analyzers/EnvelopeFollower.test.ts` — test `tick()` with a simulated rising signal: `envelopeValue` must increase; with a silent signal: `envelopeValue` must converge to zero; `cvNode.offset.value` must equal `envelopeValue` after each tick
-- [ ] T010 [P] [US1] Add validation-helper tests in `tests/components/analyzers/EnvelopeFollower.test.ts` — 100% coverage of `validateAttack`, `validateRelease`, `validateGain`, `clampEnvelope`, `computeSmoothingCoeff` (boundary values: 0 ms, 1 ms, 5 ms, max ms, NaN, out-of-range floats); assert that coefficients at minimum time values (attack=1 ms, release=5 ms) produce finite, non-NaN IIR steps
+- [x] T009 [P] [US1] Create `tests/components/analyzers/EnvelopeFollower.test.ts` — test `tick()` with a simulated rising signal: `envelopeValue` must increase; with a silent signal: `envelopeValue` must converge to zero; `cvNode.offset.value` must equal `envelopeValue` after each tick
+- [x] T010 [P] [US1] Add validation-helper tests in `tests/components/analyzers/EnvelopeFollower.test.ts` — 100% coverage of `validateAttack`, `validateRelease`, `validateGain`, `clampEnvelope`, `computeSmoothingCoeff` (boundary values: 0 ms, 1 ms, 5 ms, max ms, NaN, out-of-range floats); assert that coefficients at minimum time values (attack=1 ms, release=5 ms) produce finite, non-NaN IIR steps
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Register `EnvelopeFollower` in `src/main.ts` component factory (import + add to the switch/map alongside `VuMeter`, `Oscilloscope`); verify the component can be instantiated and added to the canvas
+- [x] T011 [US1] Register `EnvelopeFollower` in `src/components/registerComponents.ts` and `src/utils/componentLayout.ts` (import + add to registry alongside `VuMeter`, `Oscilloscope`); verify the component can be instantiated and added to the canvas
 
 **Checkpoint**: `EnvelopeFollower` appears in the component menu; audio can be patched in; CV output port exists and is cabeable to a VCA. Tests T009–T010 pass.
 
@@ -65,10 +65,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T012 [P] [US2] Create `src/canvas/displays/EnvelopeFollowerDisplay.ts` — follow `VuMeterDisplay.ts` exactly: constructor `(x, y, width, height, envelopeFollower: EnvelopeFollower)`, `render(ctx)` calls `envelopeFollower.tick(dt)` (using `performance.now()` delta), draws dark background + border, then a single green `#22c55e` bar filling upward proportionally to `envelopeValue`; implement `updatePosition()`, `updateSize()`, `setFrozen()`, `destroy()`
-- [ ] T013 [US2] Add `private envelopeFollowerDisplay: EnvelopeFollowerDisplay | null = null` field to `CanvasComponent.ts` and import `EnvelopeFollowerDisplay` and `EnvelopeFollower`
-- [ ] T014 [US2] Add `ComponentType.ENVELOPE_FOLLOWER` block in `createControls()` in `CanvasComponent.ts` (after the VU Meter block, ~line 1628): calculate port area height (1 input + 1 output); create three `Knob` controls for `attack`, `release`, `gain` parameters in a single row; calculate display area below knobs (height: 120 px); create/update `EnvelopeFollowerDisplay`
-- [ ] T015 [US2] Wire `envelopeFollowerDisplay.render(ctx)` into the main `render()` method of `CanvasComponent.ts` (same pattern as `vuMeterDisplay?.render(ctx)`); propagate `setFrozen()` and `destroy()` calls to the display
+- [x] T012 [P] [US2] Create `src/canvas/displays/EnvelopeFollowerDisplay.ts` — follow `VuMeterDisplay.ts` exactly: constructor `(x, y, width, height, envelopeFollower: EnvelopeFollower)`, `render(ctx)` calls `envelopeFollower.tick(dt)` (using `performance.now()` delta), draws dark background + border, then a single green `#22c55e` bar filling upward proportionally to `envelopeValue`; implement `updatePosition()`, `updateSize()`, `setFrozen()`, `destroy()`
+- [x] T013 [US2] Add `private envelopeFollowerDisplay: EnvelopeFollowerDisplay | null = null` field to `CanvasComponent.ts` and import `EnvelopeFollowerDisplay` and `EnvelopeFollower`
+- [x] T014 [US2] Add `ComponentType.ENVELOPE_FOLLOWER` block in `createControls()` in `CanvasComponent.ts` (after the VU Meter block, ~line 1628): calculate port area height (1 input + 1 output); create three `Knob` controls for `attack`, `release`, `gain` parameters in a single row; calculate display area below knobs (height: 120 px); create/update `EnvelopeFollowerDisplay`
+- [x] T015 [US2] Wire `envelopeFollowerDisplay.render(ctx)` into the main `render()` method of `CanvasComponent.ts` (same pattern as `vuMeterDisplay?.render(ctx)`); propagate `setFrozen()` and `destroy()` calls to the display
 
 **Checkpoint**: Module appears on canvas with three knobs (Attack, Release, Gain) and a live green bar below them. Adjusting Release knob changes how quickly the bar falls after sound stops.
 
@@ -82,7 +82,7 @@
 
 ### Implementation for User Story 3
 
-- [ ] T016 [US3] Verify Gain knob created in T014 correctly uses the `gain` parameter already wired in `tick()` (T007) — confirm `rmsRaw * gain` scaling is applied before clamping; manually test with a low-amplitude source to confirm CV range expansion
+- [x] T016 [US3] Verify Gain knob created in T014 correctly uses the `gain` parameter already wired in `tick()` (T007) — confirm `rmsRaw * gain` scaling is applied before clamping; manually test with a low-amplitude source to confirm CV range expansion
 
 **Checkpoint**: Gain knob is functional. Low-amplitude source at gain=0.1× shows minimal CV; same source at gain=4× reaches near full-scale CV.
 
@@ -96,9 +96,9 @@
 
 ### Implementation for User Story 4
 
-- [ ] T017 [US4] Verify `EnvelopeFollowerDisplay.render()` from T012 correctly tracks `performance.now()` delta between frames; add a guard: if `dt > 0.1` (tab hidden / wakeup jank), clamp `dt` to `0.1` to prevent envelope jump on tab-switch return
-- [ ] T018 [US4] Validate display dimensions in `CanvasComponent.ts` createControls block (T014): confirm the 120 px display area does not overflow the component bounding box; adjust component height constants if needed so all three knobs + display fit without clipping
-- [ ] T018b [US4] Verify cable-disconnect edge case in `EnvelopeFollower.ts`: when the audio input cable is removed mid-playback the analyser receives silence, so `rmsNow` falls to 0 and `envelopeValue` decays naturally through the release curve rather than snapping to zero; confirm this is the automatic result of the IIR algorithm (no special handling needed) and document it in a test comment
+- [x] T017 [US4] Verify `EnvelopeFollowerDisplay.render()` from T012 correctly tracks `performance.now()` delta between frames; add a guard: if `dt > 0.1` (tab hidden / wakeup jank), clamp `dt` to `0.1` to prevent envelope jump on tab-switch return
+- [x] T018 [US4] Validate display dimensions in `CanvasComponent.ts` createControls block (T014): confirm the 120 px display area does not overflow the component bounding box; adjust component height constants if needed so all three knobs + display fit without clipping
+- [x] T018b [US4] Verify cable-disconnect edge case in `EnvelopeFollower.ts`: when the audio input cable is removed mid-playback the analyser receives silence, so `rmsNow` falls to 0 and `envelopeValue` decays naturally through the release curve rather than snapping to zero; confirm this is the automatic result of the IIR algorithm (no special handling needed) and document it in a test comment
 
 **Checkpoint**: Bar meter animates smoothly at 60 FPS. Release knob change is immediately reflected in bar decay speed. No overflow or clipping of display area.
 
@@ -112,11 +112,11 @@
 
 ### Tests for User Story 5
 
-- [ ] T019 [P] [US5] Add serialize/deserialize round-trip tests to `tests/components/analyzers/EnvelopeFollower.test.ts` — serialize with non-default values, deserialize into a fresh instance, assert all three param values match; also test that missing params in patch data fall back to defaults
+- [x] T019 [P] [US5] Add serialize/deserialize round-trip tests to `tests/components/EnvelopeFollower.test.ts` — serialize with non-default values, deserialize into a fresh instance, assert all three param values match; also test that missing params in patch data fall back to defaults
 
 ### Implementation for User Story 5
 
-- [ ] T020 [US5] Verify `serialize()` / `deserialize()` from T008 produce and consume the correct `ComponentData.parameters` shape `{ attack, release, gain }` — load an existing patch containing an `EnvelopeFollower` entry and confirm parameters restore without error (integration smoke test)
+- [x] T020 [US5] Verify `serialize()` / `deserialize()` from T008 produce and consume the correct `ComponentData.parameters` shape `{ attack, release, gain }` — load an existing patch containing an `EnvelopeFollower` entry and confirm parameters restore without error (integration smoke test)
 
 **Checkpoint**: Full round-trip persistence confirmed. Test T019 passes.
 

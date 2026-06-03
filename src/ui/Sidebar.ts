@@ -161,6 +161,7 @@ export class Sidebar {
       [ComponentType.VU_METER]: '▌',
       [ComponentType.RING_MODULATOR]: '⊗',
       [ComponentType.ARPEGGIATOR]: '⬆',
+      [ComponentType.ENVELOPE_FOLLOWER]: '〜',
     };
     return icons[type] || '□';
   }
