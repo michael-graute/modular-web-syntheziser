@@ -162,6 +162,7 @@ export class Sidebar {
       [ComponentType.RING_MODULATOR]: '⊗',
       [ComponentType.ARPEGGIATOR]: '⬆',
       [ComponentType.ENVELOPE_FOLLOWER]: '〜',
+      [ComponentType.SLEW_LIMITER]: '↗',
     };
     return icons[type] || '□';
   }

@@ -20,7 +20,7 @@ export abstract class SynthComponent {
   parameters: Map<string, Parameter>;
   audioNodes: Map<string, AudioNode>;
   isActive: boolean;
-  private _isBypassed: boolean = false;
+  protected _isBypassed: boolean = false;
   protected _bypassConnections: Array<{ from: AudioNode; to: AudioNode }> = [];
 
   constructor(id: string, type: ComponentType, name: string, position: Position) {
@@ -159,6 +159,7 @@ export abstract class SynthComponent {
       ComponentType.TREMOLO,
       ComponentType.PARAMETRIC_EQ,
       ComponentType.RING_MODULATOR,
+      ComponentType.SLEW_LIMITER,
     ];
     return bypassableTypes.includes(this.type);
   }
