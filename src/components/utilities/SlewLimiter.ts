@@ -15,7 +15,6 @@ import type { ComponentData } from '../../core/types';
 import { audioEngine } from '../../core/AudioEngine';
 import {
   validateSlewLimiterParams,
-  clampCv,
   computeSlewCoeff,
 } from './SlewLimiterValidation';
 
