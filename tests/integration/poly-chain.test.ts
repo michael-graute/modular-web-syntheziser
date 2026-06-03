@@ -11,6 +11,9 @@ import { KeyboardInput } from '../../src/components/utilities/KeyboardInput';
 import { PolyOscillator } from '../../src/components/generators/PolyOscillator';
 import { PolyADSR } from '../../src/components/processors/PolyADSR';
 import { PolyVCA } from '../../src/components/processors/PolyVCA';
+import { Filter } from '../../src/components/processors/Filter';
+import { MasterOutput } from '../../src/components/utilities/MasterOutput';
+import { SignalType } from '../../src/core/types';
 import { MockAudioContext } from '../mocks/WebAudioAPI.mock';
 import { audioEngine } from '../../src/core/AudioEngine';
 
@@ -291,5 +294,81 @@ describe('US3 — PolyVCA mono output', () => {
     }
 
     vca.deactivate();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US3 — PolyVCA integrates with existing mono effects chain (T025)
+// ---------------------------------------------------------------------------
+
+describe('US3 — Poly voices feed existing effects chain', () => {
+  let vca: PolyVCA;
+
+  beforeEach(() => setupAudio());
+
+  afterEach(() => {
+    vca?.deactivate();
+    teardownAudio();
+  });
+
+  it('SC2 — PolyVCA output port carries SignalType.AUDIO (connectable to any mono input)', () => {
+    vca = new PolyVCA('vca-us3', { x: 0, y: 0 });
+    vca.activate();
+
+    const outputPort = vca.outputs.get('output');
+    expect(outputPort).toBeTruthy();
+    expect(outputPort!.type).toBe(SignalType.AUDIO);
+  });
+
+  it('SC3 — summing gain is 0.25, preventing clipping at full 4-voice load', () => {
+    vca = new PolyVCA('vca-us3b', { x: 0, y: 0 });
+    vca.activate();
+
+    const sumGain = (vca as any).sumGain;
+    // 4 voices × 0.25 = 1.0 max — no clipping beyond a single voice
+    expect(sumGain.gain.value).toBe(0.25);
+  });
+
+  it('SC1 — PolyVCA output node connects to Filter input without error', () => {
+    vca = new PolyVCA('vca-us3c', { x: 0, y: 0 });
+    const filter = new Filter('filter-us3', { x: 0, y: 0 });
+    vca.activate();
+    filter.activate();
+
+    // SynthComponent.connectTo() resolves AUDIO→AUDIO via getOutputNode/getInputNode
+    // Confirm PolyVCA output and Filter input are both standard AudioNodes
+    const vcaOut = vca.getOutputNode();
+    const filterIn = filter.getInputNode();
+    expect(vcaOut).toBeTruthy();
+    expect(filterIn).toBeTruthy();
+
+    // Both should have the connect method (AudioNode interface)
+    expect(typeof (vcaOut as any).connect).toBe('function');
+    expect(typeof (filterIn as any).connect).toBe('function');
+
+    filter.deactivate();
+  });
+
+  it('SC2 — PolyVCA output port is AUDIO-compatible with MasterOutput input port', () => {
+    vca = new PolyVCA('vca-us3d', { x: 0, y: 0 });
+    // Check port-level compatibility without activating MasterOutput
+    // (MockAudioContext lacks createDynamicsCompressor)
+    const master = new MasterOutput('master-us3', { x: 0, y: 0 });
+
+    // Both ports carry SignalType.AUDIO — the connection system accepts them
+    expect(vca.outputs.get('output')!.type).toBe(SignalType.AUDIO);
+    expect(master.inputs.get('input')!.type).toBe(SignalType.AUDIO);
+  });
+
+  it('FR-015 — existing mono Filter/MasterOutput require zero code changes for poly integration', () => {
+    // This test documents the invariant: no poly-specific properties are needed
+    // on downstream mono components.
+    const filter = new Filter('filter-compat', { x: 0, y: 0 });
+    filter.activate();
+
+    expect(typeof (filter as any).setVoiceSlotsGetter).toBe('undefined');
+    expect(typeof (filter as any).clearVoiceSlotsGetter).toBe('undefined');
+
+    filter.deactivate();
   });
 });

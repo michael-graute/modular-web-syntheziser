@@ -198,6 +198,7 @@ export class HelpSidebar {
       { id: 'patches', label: 'Patches' },
       { id: 'shortcuts', label: 'Shortcuts' },
       { id: 'tips', label: 'Tips & Tricks' },
+      { id: 'polyphony', label: 'Polyphony' },
       { id: 'guided-lessons', label: 'Guided Lessons' },
     ];
 
@@ -392,6 +393,8 @@ export class HelpSidebar {
         return this.getShortcutsContent();
       case 'tips':
         return this.getTipsContent();
+      case 'polyphony':
+        return this.getPolyphonyContent();
       case 'guided-lessons':
         return this.getGuidedLessonsContent();
       default:
@@ -778,10 +781,16 @@ export class HelpSidebar {
       <h4 style="color: var(--text-primary, #ffffff);">Keyboard Input</h4>
       <p style="color: var(--text-secondary, #cccccc);">
         Receives note input from the on-screen or computer keyboard.
+        Supports both mono (single voice) and poly (4-voice chord) mode.
       </p>
       <ul style="color: var(--text-secondary, #cccccc);">
-        <li><strong>Outputs:</strong> Frequency CV, Gate, Velocity CV</li>
+        <li><strong>Mono outputs:</strong> Frequency CV, Gate, Velocity CV — active in mono mode</li>
+        <li><strong>Poly CV output:</strong> Bundled 4-voice data — active when Poly Mode is on (purple cable)</li>
+        <li><strong>Poly Mode button:</strong> Toggle between mono and poly mode directly on the component</li>
       </ul>
+      <p style="color: var(--text-secondary, #cccccc);">
+        See the <strong>Polyphony</strong> section for a full wiring guide.
+      </p>
 
       <h4 style="color: var(--text-primary, #ffffff);">Mixer</h4>
       <p style="color: var(--text-secondary, #cccccc);">
@@ -982,10 +991,16 @@ export class HelpSidebar {
           <span style="color: var(--text-secondary, #cccccc);"> Modulation signals (LFOs, envelopes, frequency)</span>
         </div>
 
-        <div>
+        <div style="margin-bottom: 12px;">
           <span style="display: inline-block; width: 20px; height: 20px; background: #F44336; border-radius: 50%; vertical-align: middle; margin-right: 8px;"></span>
           <strong style="color: var(--text-primary, #ffffff);">Red - Gate:</strong>
           <span style="color: var(--text-secondary, #cccccc);"> Trigger signals (note on/off, sequencer triggers)</span>
+        </div>
+
+        <div>
+          <span style="display: inline-block; width: 20px; height: 20px; background: #c084fc; border-radius: 50%; vertical-align: middle; margin-right: 8px;"></span>
+          <strong style="color: var(--text-primary, #ffffff);">Purple - Poly CV:</strong>
+          <span style="color: var(--text-secondary, #cccccc);"> Bundled 4-voice polyphonic data (Keyboard → Poly Oscillator / Poly ADSR). Only connects to other Poly CV ports.</span>
         </div>
       </div>
 
@@ -1476,6 +1491,184 @@ export class HelpSidebar {
       <div style="background: var(--bg-secondary, #1a1a1a); padding: 12px 16px; border-radius: 8px; border-left: 4px solid var(--accent-color, #0066cc); margin: 8px 0 16px;">
         <p style="color: var(--text-secondary, #cccccc); margin: 0;">
           <strong style="color: var(--text-primary, #ffffff);">Tip:</strong> The log is capped at 500 entries. Older messages are removed automatically once the cap is reached, so the window stays responsive even during high-frequency CC or clock messages.
+        </p>
+      </div>
+    `;
+  }
+
+  /**
+   * Polyphony section content
+   */
+  private getPolyphonyContent(): string {
+    return `
+      <h2 style="margin-top: 0; color: var(--text-primary, #ffffff);">4-Voice Polyphony</h2>
+
+      <p style="color: var(--text-secondary, #cccccc);">
+        Polyphony lets you play chords — up to 4 notes simultaneously, each with its own pitch,
+        envelope, and amplitude — using three dedicated poly components and a mode switch on the Keyboard.
+      </p>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">The Poly Signal Chain</h3>
+
+      <div style="background: var(--bg-secondary, #1a1a1a); padding: 16px; border-radius: 8px; border-left: 4px solid #c084fc; margin: 16px 0;">
+        <p style="color: var(--text-secondary, #cccccc); margin: 0 0 8px;">
+          <strong style="color: var(--text-primary, #ffffff);">Standard poly patch:</strong>
+        </p>
+        <p style="color: #c084fc; font-family: monospace; margin: 0 0 4px;">
+          Keyboard (Poly CV) ──┬──▶ Poly Oscillator (Poly CV)
+        </p>
+        <p style="color: #c084fc; font-family: monospace; margin: 0 0 4px;">
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└──▶ Poly ADSR (Poly CV)
+        </p>
+        <p style="color: #4ade80; font-family: monospace; margin: 0 0 4px;">
+          Poly Oscillator Voice 0–3 ──▶ Poly VCA (Audio 0–3)
+        </p>
+        <p style="color: #60a5fa; font-family: monospace; margin: 0 0 4px;">
+          Poly ADSR Env 0–3 ──▶ Poly VCA (CV 0–3)
+        </p>
+        <p style="color: #4ade80; font-family: monospace; margin: 0;">
+          Poly VCA (Audio Out) ──▶ Master Out (or any mono effect)
+        </p>
+      </div>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Step-by-Step Setup</h3>
+      <ol style="color: var(--text-secondary, #cccccc);">
+        <li style="margin-bottom: 12px;">
+          <strong style="color: var(--text-primary, #ffffff);">Add the five components:</strong>
+          Keyboard, Poly Oscillator, Poly ADSR, Poly VCA, Master Output.
+        </li>
+        <li style="margin-bottom: 12px;">
+          <strong style="color: var(--text-primary, #ffffff);">Enable Poly Mode on the Keyboard:</strong>
+          Click the <strong>Poly Mode</strong> button on the Keyboard tile — it turns blue.
+        </li>
+        <li style="margin-bottom: 12px;">
+          <strong style="color: var(--text-primary, #ffffff);">Connect the Poly CV cables (purple):</strong>
+          <ul style="margin-top: 8px;">
+            <li>Keyboard <strong>Poly CV</strong> → Poly Oscillator <strong>Poly CV</strong></li>
+            <li>Keyboard <strong>Poly CV</strong> → Poly ADSR <strong>Poly CV</strong></li>
+          </ul>
+          Both poly components connect to the same Keyboard Poly CV port — each reads only what it needs.
+        </li>
+        <li style="margin-bottom: 12px;">
+          <strong style="color: var(--text-primary, #ffffff);">Connect the audio cables (green):</strong>
+          <ul style="margin-top: 8px;">
+            <li>Poly Oscillator <strong>Voice 0</strong> → Poly VCA <strong>Audio 0 In</strong></li>
+            <li>Poly Oscillator <strong>Voice 1</strong> → Poly VCA <strong>Audio 1 In</strong></li>
+            <li>Poly Oscillator <strong>Voice 2</strong> → Poly VCA <strong>Audio 2 In</strong></li>
+            <li>Poly Oscillator <strong>Voice 3</strong> → Poly VCA <strong>Audio 3 In</strong></li>
+          </ul>
+        </li>
+        <li style="margin-bottom: 12px;">
+          <strong style="color: var(--text-primary, #ffffff);">Connect the envelope cables (blue):</strong>
+          <ul style="margin-top: 8px;">
+            <li>Poly ADSR <strong>Env 0</strong> → Poly VCA <strong>CV 0 In</strong></li>
+            <li>Poly ADSR <strong>Env 1</strong> → Poly VCA <strong>CV 1 In</strong></li>
+            <li>Poly ADSR <strong>Env 2</strong> → Poly VCA <strong>CV 2 In</strong></li>
+            <li>Poly ADSR <strong>Env 3</strong> → Poly VCA <strong>CV 3 In</strong></li>
+          </ul>
+        </li>
+        <li style="margin-bottom: 12px;">
+          <strong style="color: var(--text-primary, #ffffff);">Connect the output:</strong>
+          Poly VCA <strong>Audio Out</strong> → Master Output (or any mono effect like Filter or Reverb).
+        </li>
+        <li style="margin-bottom: 12px;">
+          <strong style="color: var(--text-primary, #ffffff);">Play:</strong>
+          Hold multiple keys on the keyboard — each key gets its own independent voice.
+        </li>
+      </ol>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Poly Components Reference</h3>
+
+      <h4 style="color: var(--text-primary, #ffffff);">Poly Oscillator</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        4 independent oscillators — one per voice — each playing the pitch of its assigned key.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>Waveform:</strong> Sine, Square, Sawtooth, Triangle — shared across all 4 voices</li>
+        <li><strong>Input:</strong> Poly CV (reads frequency per voice)</li>
+        <li><strong>Outputs:</strong> Voice 0, Voice 1, Voice 2, Voice 3 — individual audio per voice</li>
+      </ul>
+
+      <h4 style="color: var(--text-primary, #ffffff);">Poly ADSR</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        4 independent ADSR envelopes, one per voice. Each envelope is triggered and released
+        independently — releasing one key starts only that voice's release phase.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>Attack / Decay / Sustain / Release:</strong> Shared values applied to all 4 envelopes</li>
+        <li><strong>Input:</strong> Poly CV (reads gate state per voice)</li>
+        <li><strong>Outputs:</strong> Env 0 – Env 3 — individual CV envelopes, connect to Poly VCA CV inputs</li>
+      </ul>
+
+      <h4 style="color: var(--text-primary, #ffffff);">Poly VCA</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        4 independent gain stages, each controlled by a Poly ADSR envelope. Sums all voices into a
+        single mono audio output that connects to any standard downstream module.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>Inputs:</strong> Audio 0–3 (from Poly Oscillator voices) + CV 0–3 (from Poly ADSR envelopes)</li>
+        <li><strong>Output:</strong> Audio Out — standard mono audio, compatible with Filter, Reverb, Master Output, etc.</li>
+        <li><strong>Summing gain:</strong> 0.25× per voice (4 × 0.25 = 1.0 max) — no clipping at full 4-voice load</li>
+        <li><strong>No controls:</strong> Amplitude is entirely shaped by the connected envelopes</li>
+      </ul>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Mono / Poly Mode</h3>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li style="margin-bottom: 8px;">
+          <strong style="color: var(--text-primary, #ffffff);">Mono mode (default):</strong>
+          The Keyboard behaves exactly as before — single voice, last-note priority.
+          Frequency CV, Gate, and Velocity CV outputs are active.
+          Compatible with all existing mono patches.
+        </li>
+        <li style="margin-bottom: 8px;">
+          <strong style="color: var(--text-primary, #ffffff);">Poly mode (Poly Mode button active / blue):</strong>
+          The Keyboard allocates up to 4 independent voice slots.
+          The Poly CV output carries all 4 voices; the mono Gate output is held at 0.
+        </li>
+        <li style="margin-bottom: 8px;">
+          <strong style="color: var(--text-primary, #ffffff);">Switching modes live:</strong>
+          Toggle at any time — active voices stop immediately when switching.
+          The mode is saved with the patch and restored on reload.
+        </li>
+      </ul>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Voice Stealing</h3>
+      <p style="color: var(--text-secondary, #cccccc);">
+        When all 4 voice slots are occupied and a new key is pressed, the <strong style="color: var(--text-primary, #ffffff);">oldest active voice</strong>
+        is reassigned to the new pitch. The other three voices continue without interruption.
+      </p>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Adding Effects</h3>
+      <p style="color: var(--text-secondary, #cccccc);">
+        The Poly VCA's mono Audio Out connects to any existing mono module — no special poly-aware effects needed.
+      </p>
+      <div style="background: var(--bg-secondary, #1a1a1a); padding: 12px 16px; border-radius: 8px; border-left: 4px solid var(--accent-color, #0066cc); margin: 8px 0 16px;">
+        <p style="color: var(--text-secondary, #cccccc); margin: 0 0 6px;">
+          <strong style="color: var(--text-primary, #ffffff);">Poly patch with effects:</strong>
+        </p>
+        <p style="color: var(--text-secondary, #cccccc); margin: 0; font-family: monospace; font-size: 0.85em;">
+          Poly VCA (Audio Out) → Filter → Reverb → Master Output
+        </p>
+      </div>
+
+      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Connection Rules</h3>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li style="margin-bottom: 8px;">
+          <strong style="color: var(--text-primary, #ffffff);">Poly CV only connects to Poly CV</strong> — the connection system rejects any attempt to connect a purple Poly CV cable to a blue CV or red Gate input, and vice versa.
+        </li>
+        <li style="margin-bottom: 8px;">
+          <strong style="color: var(--text-primary, #ffffff);">Mono Keyboard → Poly Oscillator is rejected</strong> — switch the Keyboard to Poly Mode first.
+        </li>
+        <li>
+          <strong style="color: var(--text-primary, #ffffff);">Poly VCA Audio Out → any mono input is accepted</strong> — it's a standard green audio cable.
+        </li>
+      </ul>
+
+      <div style="background: var(--bg-secondary, #1a1a1a); padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b; margin-top: 24px;">
+        <h4 style="margin-top: 0; color: var(--text-primary, #ffffff);">Existing patches are unaffected</h4>
+        <p style="color: var(--text-secondary, #cccccc); margin: 0;">
+          All mono components (Oscillator, ADSR, VCA) and existing patches are completely unchanged.
+          The Keyboard defaults to mono mode, so any saved patch with a Keyboard Input loads and plays identically to before.
         </p>
       </div>
     `;

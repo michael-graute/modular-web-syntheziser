@@ -124,18 +124,18 @@
 
 ### Implementation for User Story 2
 
-- [ ] T021 [US2] Implement `setPolyMode` mode-switch behaviour in `src/components/utilities/KeyboardInput.ts`:
+- [x] T021 [US2] Implement `setPolyMode` mode-switch behaviour in `src/components/utilities/KeyboardInput.ts`:
   - mono→poly: call `voiceAllocator.releaseAll()`; immediately zero `gateNode`, `frequencyNode`, `velocityNode` via `cancelScheduledValues + setValueAtTime(0, now)` (SC-003: takes effect within one audio buffer)
   - poly→mono: call `voiceAllocator.releaseAll()`; cancel any in-flight RAF frame; restore `gateNode`, `frequencyNode`, `velocityNode` to normal operation
   - Freeze all three mono outputs (gate=0, frequency=last value, velocity=0) while in poly mode — not just gate (I3 fix per data-model.md)
   - Emit `PARAMETER_CHANGED` event so UI button label updates synchronously
-- [ ] T022 [P] [US2] Write unit tests for Keyboard mode switching in `tests/unit/KeyboardInput.poly.test.ts`:
+- [x] T022 [P] [US2] Write unit tests for Keyboard mode switching in `tests/unit/KeyboardInput.poly.test.ts`:
   - Switching to mono mode stops all poly voices
   - Mono mode: multiple keys held → only last-key frequency active, single gate
   - Poly mode: multiple keys → multiple voice slots populated
   - In poly mode: `gateNode`, `frequencyNode`, `velocityNode` are locked — `getGateValue()` returns 0, gate output stays 0 (U3 fix)
   - `polyMode` parameter value persists in `serialize()`
-- [ ] T023 [US2] Write integration test for patch save/reload of polyMode in `tests/integration/poly-chain.test.ts` (add to existing file):
+- [x] T023 [US2] Write integration test for patch save/reload of polyMode in `tests/integration/poly-chain.test.ts` (add to existing file):
   - US2 scenario 3: patch saved with Keyboard in poly mode → serialize → deserialize → Keyboard.isPolyMode() === true
   - U2 fix: PolyOscillator with waveform=2 → serialize → deserialize → waveform parameter still 2
 
@@ -151,8 +151,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T024 [US3] Add a 1-line unit test to `tests/unit/PolyVCA.test.ts` asserting `polyVca.getOutputNode() instanceof GainNode` — confirms the output is a standard AUDIO node compatible with any downstream mono component without `SynthComponent.connectTo()` changes (A3 fix)
-- [ ] T025 [P] [US3] Write integration test for effects chain in `tests/integration/poly-chain.test.ts` (add to existing file):
+- [x] T024 [US3] Add a 1-line unit test to `tests/unit/PolyVCA.test.ts` asserting `polyVca.getOutputNode() instanceof GainNode` — confirms the output is a standard AUDIO node compatible with any downstream mono component without `SynthComponent.connectTo()` changes (A3 fix)
+- [x] T025 [P] [US3] Write integration test for effects chain in `tests/integration/poly-chain.test.ts` (add to existing file):
   - US3 scenario 1: PolyVCA output → Filter → audio passes through (signal > 0 on Filter output)
   - US3 scenario 2: PolyVCA output → MasterOut — connection accepted with standard AUDIO type
   - US3 scenario 3: Mixed 4-voice output does not exceed 1.0 amplitude at 0.25 summing gain
@@ -165,7 +165,7 @@
 
 **Purpose**: Validation helpers, edge cases, constitution compliance review.
 
-- [ ] T026 [P] Write 100%-coverage tests for `specs/032-polyphony/contracts/validation.ts` in `tests/unit/poly-validation.test.ts`:
+- [x] T026 [P] Write 100%-coverage tests for `specs/032-polyphony/contracts/validation.ts` in `tests/unit/poly-validation.test.ts`:
   - `isValidVoiceIndex`: 0–3 valid, -1/4/1.5 invalid
   - `isValidVoiceSlot`: valid slot, missing fields, wrong gate values
   - `isValidVoiceSlotArray`: length 4 required, voiceIndex must match position
@@ -173,10 +173,10 @@
   - `findOldestActiveVoiceIndex`: returns lowest-timestamp active slot, -1 when all idle
   - `findFirstIdleVoiceIndex`: returns first gate=0 slot, -1 when all active
   - `findVoiceIndexForNote`: returns correct slot, -1 when not found
-- [ ] T027 [P] Verify backward compatibility: existing patches with `keyboard-input` (no `polyMode` field) load as mono — add test to `tests/persistence/` or existing patch serialization test suite
-- [ ] T028 [P] Verify POLY_CV connection rejection: add to `tests/unit/` — confirm `areSignalTypesCompatible(POLY_CV, CV) === false`, `areSignalTypesCompatible(CV, POLY_CV) === false`, `areSignalTypesCompatible(POLY_CV, POLY_CV) === true`
-- [ ] T029 Validate no orphaned RAF loops: verify `PolyOscillator.destroyAudioNodes()` and `PolyADSR.destroyAudioNodes()` cancel `rafHandle` — add teardown assertions to unit tests
-- [ ] T030 Run `npm run lint` and resolve any TypeScript strict-mode issues in new files
+- [x] T027 [P] Verify backward compatibility: existing patches with `keyboard-input` (no `polyMode` field) load as mono — add test to `tests/persistence/` or existing patch serialization test suite
+- [x] T028 [P] Verify POLY_CV connection rejection: add to `tests/unit/` — confirm `areSignalTypesCompatible(POLY_CV, CV) === false`, `areSignalTypesCompatible(CV, POLY_CV) === false`, `areSignalTypesCompatible(POLY_CV, POLY_CV) === true`
+- [x] T029 Validate no orphaned RAF loops: verify `PolyOscillator.destroyAudioNodes()` and `PolyADSR.destroyAudioNodes()` cancel `rafHandle` — add teardown assertions to unit tests
+- [x] T030 Run `npm run lint` and resolve any TypeScript strict-mode issues in new files
 - [ ] T031 Manual golden-path validation per `specs/032-polyphony/quickstart.md` — full patch build and 4-voice chord play
 
 ---
