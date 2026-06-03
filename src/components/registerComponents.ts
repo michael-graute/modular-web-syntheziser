@@ -31,6 +31,7 @@ import { RingModulator } from './effects/RingModulator';
 import { Arpeggiator } from './utilities/Arpeggiator';
 import { Oscilloscope } from './analyzers/Oscilloscope';
 import { VuMeter } from './analyzers/VuMeter';
+import { EnvelopeFollower } from './analyzers/EnvelopeFollower';
 import { StepSequencer } from './utilities/StepSequencer';
 import { calculateComponentDimensions } from '../utils/componentLayout';
 
@@ -293,6 +294,15 @@ export function registerAllComponents(): void {
     'Analyzers',
     (id, position) => new VuMeter(id, position),
     calculateComponentDimensions(ComponentType.VU_METER)
+  );
+
+  componentRegistry.register(
+    ComponentType.ENVELOPE_FOLLOWER,
+    'Env Follower',
+    'Converts audio amplitude to a 0–1 CV signal',
+    'Analyzers',
+    (id, position) => new EnvelopeFollower(id, position),
+    calculateComponentDimensions(ComponentType.ENVELOPE_FOLLOWER)
   );
 
   console.log(`✅ Registered ${componentRegistry.getCount()} components`);

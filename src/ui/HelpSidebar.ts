@@ -521,7 +521,7 @@ export class HelpSidebar {
         <li><strong style="color: var(--text-primary, #ffffff);">Processors:</strong> Filters, VCA, Envelopes</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Effects:</strong> Delay, Reverb, Distortion, Chorus, Bitcrusher, Flanger, Phaser, Tremolo, Ring Modulator</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Utilities:</strong> Keyboard, Mixer, Sequencer, Arpeggiator</li>
-        <li><strong style="color: var(--text-primary, #ffffff);">Analyzers:</strong> Oscilloscope, VU Meter</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">Analyzers:</strong> Oscilloscope, VU Meter, Env Follower</li>
       </ul>
 
       <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Canvas Area</h3>
@@ -896,6 +896,39 @@ export class HelpSidebar {
         <strong style="color: var(--text-primary, #ffffff);">Typical patch:</strong>
         Tap an output from any component (Oscillator, Mixer, LFO) into the VU Meter Audio In
         alongside its normal destination. The meter reads the level without affecting the signal.
+      </p>
+
+      <h4 style="color: var(--text-primary, #ffffff);">Envelope Follower</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Converts the loudness of any audio signal into a 0–1 CV signal that rises with amplitude
+        and falls toward zero as the audio quietens. Use it to make one signal dynamically control
+        another — open a filter as a drum hits, duck a pad when a bass plays, or vary LFO depth
+        with your playing dynamics.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>Input:</strong> Audio In — accepts any audio-typed source (oscillator, effect, microphone)</li>
+        <li><strong>Output:</strong> CV Out (0–1) — connect to any CV-accepting input (filter cutoff, VCA gain, LFO rate)</li>
+        <li><strong>Attack:</strong> How fast the CV rises when input amplitude increases (1–500 ms)</li>
+        <li><strong>Release:</strong> How fast the CV falls after amplitude decreases (5–2000 ms)</li>
+        <li><strong>Gain:</strong> Scales input sensitivity before detection (0.1×–4×); increase for quiet sources, decrease for loud ones</li>
+        <li><strong>Display:</strong> Live vertical green bar showing the current CV output level</li>
+      </ul>
+      <div style="background: var(--bg-secondary, #1a1a1a); padding: 12px 16px; border-radius: 8px; border-left: 4px solid var(--accent-color, #0066cc); margin: 8px 0 16px;">
+        <p style="color: var(--text-secondary, #cccccc); margin: 0 0 6px;">
+          <strong style="color: var(--text-primary, #ffffff);">Sidechain pumping patch:</strong>
+        </p>
+        <ol style="color: var(--text-secondary, #cccccc); margin: 0; padding-left: 18px;">
+          <li>Patch a drum/bass audio source into <strong>Envelope Follower Audio In</strong></li>
+          <li>Connect <strong>CV Out → VCA Gain CV</strong> on the pad you want to duck</li>
+          <li>Set Attack to ~1 ms and Release to ~200 ms</li>
+          <li>Adjust Gain until the CV bar responds clearly on each hit</li>
+        </ol>
+      </div>
+      <p style="color: var(--text-secondary, #cccccc);">
+        <strong style="color: var(--text-primary, #ffffff);">Note:</strong>
+        The Envelope Follower is an audio sink — it has no audio output port. Patch audio to it in parallel
+        from the original source; it does not interrupt the signal chain.
+        When the audio cable is disconnected, the envelope decays naturally through the Release time.
       </p>
     `;
   }
