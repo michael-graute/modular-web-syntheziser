@@ -53,7 +53,7 @@
 
 ### Implementation for User Story 1
 
-- [ ] T011 [P] [US1] Create `PolyOscillator` in `src/components/generators/PolyOscillator.ts`:
+- [x] T011 [P] [US1] Create `PolyOscillator` in `src/components/generators/PolyOscillator.ts`:
   - Extends `SynthComponent`, implements `PolyConsumer` from `contracts/types.ts`
   - Ports: input `poly-cv` (POLY_CV), output `output` (AUDIO)
   - Parameter: `waveform` (0–3, default 0)
@@ -62,7 +62,7 @@
   - When `voiceSlotsGetter` is null (no cable connected), RAF loop skips updates — voices sustain at last known frequency (no crash)
   - `setVoiceSlotsGetter` / `clearVoiceSlotsGetter` + cancel RAF on clear
   - `getOutputNode()` returns `outputMix`
-- [ ] T012 [P] [US1] Create `PolyADSR` in `src/components/processors/PolyADSR.ts`:
+- [x] T012 [P] [US1] Create `PolyADSR` in `src/components/processors/PolyADSR.ts`:
   - Extends `SynthComponent`, implements `PolyConsumer`
   - Ports: input `poly-cv` (POLY_CV), outputs `env-0` through `env-3` (CV)
   - Parameters: `attack` (0.01s), `decay` (0.1s), `sustain` (0.7), `release` (0.3s)
@@ -70,7 +70,7 @@
   - RAF polling loop: reads **only `slot.gate`** per slot (FR-001a: PolyADSR ignores frequency field); edge-detect gate 0→1 / 1→0; fire `triggerGateOn(i)` / `triggerGateOff(i)`
   - When `voiceSlotsGetter` is null, RAF loop skips updates — envelopes hold at current value (no crash)
   - `getOutputNodeByPort(portId)`: return `outputGains[N]` for `env-N`
-- [ ] T013 [P] [US1] Create `PolyVCA` in `src/components/processors/PolyVCA.ts`:
+- [x] T013 [P] [US1] Create `PolyVCA` in `src/components/processors/PolyVCA.ts`:
   - Extends `SynthComponent`
   - Ports: inputs `audio-0..3` (AUDIO) + `cv-0..3` (CV); output `output` (AUDIO)
   - No parameters
@@ -79,32 +79,32 @@
   - `getInputNode(portId)`: return `voiceInputs[N]` for `audio-N`; return `null` for `cv-N` (CV uses AudioParam)
   - `getAudioParamForInput(portId)`: return `voiceGains[N].gain` for `cv-N`
   - `getOutputNode()`: return `sumGain`
-- [ ] T014 [US1] Update `ConnectionManager.createConnection()` in `src/canvas/ConnectionManager.ts`:
+- [x] T014 [US1] Update `ConnectionManager.createConnection()` in `src/canvas/ConnectionManager.ts`:
   - After audio connection, check `sourcePort.type === SignalType.POLY_CV`
   - If source has `getVoiceSlots` and target has `setVoiceSlotsGetter`, register getter
   - Update `removeConnection()` to call `clearVoiceSlotsGetter()` on poly-cv target
-- [ ] T015 [US1] Add layout entries for `POLY_OSCILLATOR`, `POLY_ADSR`, `POLY_VCA` in `src/utils/componentLayout.ts`:
+- [x] T015 [US1] Add layout entries for `POLY_OSCILLATOR`, `POLY_ADSR`, `POLY_VCA` in `src/utils/componentLayout.ts`:
   - `POLY_OSCILLATOR`: 1 Dropdown (waveform); inputs 1, outputs 1
   - `POLY_ADSR`: 4 Sliders (A/D/S/R); inputs 1, outputs 4
   - `POLY_VCA`: no controls; inputs 8, outputs 1
-- [ ] T016 [US1] Add `createControls()` cases for `POLY_OSCILLATOR`, `POLY_ADSR`, `POLY_VCA` in `src/canvas/CanvasComponent.ts`:
+- [x] T016 [US1] Add `createControls()` cases for `POLY_OSCILLATOR`, `POLY_ADSR`, `POLY_VCA` in `src/canvas/CanvasComponent.ts`:
   - `POLY_OSCILLATOR`: waveform Dropdown (same options as Oscillator)
   - `POLY_ADSR`: 4 vertical Sliders (same layout as ADSREnvelope)
   - `POLY_VCA`: no controls
-- [ ] T017 [US1] Register all 3 new component types in `src/components/registerComponents.ts`:
+- [x] T017 [US1] Register all 3 new component types in `src/components/registerComponents.ts`:
   - `POLY_OSCILLATOR` under 'Generators'
   - `POLY_ADSR` under 'Processors'
   - `POLY_VCA` under 'Processors'
-- [ ] T018 [US1] Write unit tests for `PolyOscillator` in `tests/unit/PolyOscillator.test.ts`:
+- [x] T018 [US1] Write unit tests for `PolyOscillator` in `tests/unit/PolyOscillator.test.ts`:
   - Creates 4 oscillator nodes on activate
   - RAF loop updates frequencies from voice slots
   - Voice gate gain set to slot.gate value
   - clearVoiceSlotsGetter stops polling
-- [ ] T019 [US1] Write unit tests for `PolyADSR` in `tests/unit/PolyADSR.test.ts`:
+- [x] T019 [US1] Write unit tests for `PolyADSR` in `tests/unit/PolyADSR.test.ts`:
   - Gate 0→1 edge fires triggerGateOn for correct voice
   - Gate 1→0 edge fires triggerGateOff for correct voice
   - Independent per-voice envelope (no cross-slot interference)
-- [ ] T020 [US1] Write integration test for full poly chain in `tests/integration/poly-chain.test.ts`:
+- [x] T020 [US1] Write integration test for full poly chain in `tests/integration/poly-chain.test.ts`:
   - US1 acceptance scenario 1: 3 held keys → 3 voices active
   - US1 acceptance scenario 2: Release 1 key → only that voice enters release, others continue
   - US1 acceptance scenario 3: Release all keys → all voices silent after release

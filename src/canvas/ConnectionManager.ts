@@ -165,6 +165,16 @@ export class ConnectionManager {
       }
     }
 
+    // For POLY_CV cables: register a VoiceSlots getter on the target so poly components
+    // can poll live voice slot data without a Web Audio node (FR-001a, research decision 2).
+    if (sourcePort.type === SignalType.POLY_CV) {
+      const src = sourceComponent.synthComponent as any;
+      const tgt = targetComponent.synthComponent as any;
+      if (typeof src.getVoiceSlots === 'function' && typeof tgt.setVoiceSlotsGetter === 'function') {
+        tgt.setVoiceSlotsGetter(() => src.getVoiceSlots());
+      }
+    }
+
     console.log(
       `✅ Connected ${sourceComponent.type}:${sourcePort.name} -> ${targetComponent.type}:${targetPort.name}`
     );
@@ -217,6 +227,14 @@ export class ConnectionManager {
         const arp = targetComponent.synthComponent;
         if (connection.targetPortId === 'cv-in') arp.clearCvGetter();
         if (connection.targetPortId === 'gate-in') arp.clearGateGetter();
+      }
+
+      // Clear POLY_CV getter on target when the poly cable is removed
+      if (connection.signalType === SignalType.POLY_CV) {
+        const tgt = targetComponent.synthComponent as any;
+        if (typeof tgt.clearVoiceSlotsGetter === 'function') {
+          tgt.clearVoiceSlotsGetter();
+        }
       }
     }
 

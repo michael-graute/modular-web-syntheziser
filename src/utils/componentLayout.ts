@@ -307,7 +307,7 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
       return { inputs: 2, outputs: 2 }; // cv-in, gate-in / cv-out, gate-out
 
     case ComponentType.POLY_OSCILLATOR:
-      return { inputs: 1, outputs: 1 }; // poly-cv in / audio out
+      return { inputs: 1, outputs: 4 }; // poly-cv in / voice-0..3 audio out
 
     case ComponentType.POLY_ADSR:
       return { inputs: 1, outputs: 4 }; // poly-cv in / env-0..3 out
@@ -326,6 +326,13 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
 export function calculateComponentHeight(type: ComponentType): number {
   const portCounts = getPortCounts(type);
   const controlLayout = getControlLayout(type);
+
+  // Special case for Keyboard: 4 output ports + polyMode button (26px) + padding
+  if (type === ComponentType.KEYBOARD_INPUT) {
+    const portAreaHeight = portCounts.outputs * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+    const buttonTop = COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+    return buttonTop + 26 + 12; // button height (26) + bottom padding (12)
+  }
 
   // Special case for Quantizer: root dropdown + scale dropdown + note label
   if (type === ComponentType.QUANTIZER) {
@@ -528,6 +535,21 @@ export function calculateComponentWidth(type: ComponentType): number {
   // Slew Limiter: narrow column with 2 knobs + bar display
   if (type === ComponentType.SLEW_LIMITER) {
     width = 140;
+  }
+
+  // PolyOscillator: same width as mono Oscillator (dropdown + 2 knobs)
+  if (type === ComponentType.POLY_OSCILLATOR) {
+    width = 150;
+  }
+
+  // PolyADSR: same width as mono ADSR (4 sliders side by side)
+  if (type === ComponentType.POLY_ADSR) {
+    width = 160;
+  }
+
+  // PolyVCA: narrow — no controls, many ports
+  if (type === ComponentType.POLY_VCA) {
+    width = 120;
   }
 
   return width;
