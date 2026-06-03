@@ -12,11 +12,11 @@
 
 **Purpose**: Extend the type system and signal routing layer — no component logic yet.
 
-- [ ] T001 Add `POLY_CV = 'poly-cv'` to `SignalType` enum in `src/core/types.ts`
-- [ ] T002 Add `POLY_OSCILLATOR`, `POLY_ADSR`, `POLY_VCA` to `ComponentType` enum in `src/core/types.ts`
-- [ ] T003 [P] Update `areSignalTypesCompatible` in `src/utils/validators.ts` — POLY_CV → POLY_CV only; all cross-type pairs rejected
-- [ ] T004 [P] Add `POLY_CV = '#c084fc'` to `COLORS` constant in `src/utils/constants.ts`
-- [ ] T005 [P] Add `POLY_CV` color case to `CanvasConnection.getColor()` in `src/canvas/Connection.ts`
+- [x] T001 Add `POLY_CV = 'poly-cv'` to `SignalType` enum in `src/core/types.ts`
+- [x] T002 Add `POLY_OSCILLATOR`, `POLY_ADSR`, `POLY_VCA` to `ComponentType` enum in `src/core/types.ts`
+- [x] T003 [P] Update `areSignalTypesCompatible` in `src/utils/validators.ts` — POLY_CV → POLY_CV only; all cross-type pairs rejected
+- [x] T004 [P] Add `POLY_CV = '#c084fc'` to `COLORS` constant in `src/utils/constants.ts`
+- [x] T005 [P] Add `POLY_CV` color case to `CanvasConnection.getColor()` in `src/canvas/Connection.ts`
 
 **Checkpoint**: Type system extended — `npm run lint` passes, no regressions in existing connection validation.
 
@@ -28,9 +28,9 @@
 
 **⚠️ CRITICAL**: No poly component work can begin until this phase is complete.
 
-- [ ] T006 Create `VoiceAllocator` class in `src/components/utilities/VoiceAllocator.ts` — `noteOn`, `noteOff`, `releaseAll`, `getSlots` per `contracts/types.ts` `IVoiceAllocator`; oldest-voice stealing using `findOldestActiveVoiceIndex` from `contracts/validation.ts`
-- [ ] T007 Write unit tests for `VoiceAllocator` in `tests/unit/VoiceAllocator.test.ts` — cover: allocate first idle slot, allocate all 4 slots, retrigger same note, oldest-voice steal, noteOff releases correct slot, releaseAll zeros all slots
-- [ ] T008 Extend `KeyboardInput` in `src/components/utilities/KeyboardInput.ts`:
+- [x] T006 Create `VoiceAllocator` class in `src/components/utilities/VoiceAllocator.ts` — `noteOn`, `noteOff`, `releaseAll`, `getSlots` per `contracts/types.ts` `IVoiceAllocator`; oldest-voice stealing using `findOldestActiveVoiceIndex` from `contracts/validation.ts`
+- [x] T007 Write unit tests for `VoiceAllocator` in `tests/unit/VoiceAllocator.test.ts` — cover: allocate first idle slot, allocate all 4 slots, retrigger same note, oldest-voice steal, noteOff releases correct slot, releaseAll zeros all slots
+- [x] T008 Extend `KeyboardInput` in `src/components/utilities/KeyboardInput.ts`:
   - Add `private voiceAllocator: VoiceAllocator` (constructed in constructor)
   - Add parameter `polyMode` (default 0, min 0, max 1, step 1)
   - Add output port `poly-cv` with `SignalType.POLY_CV`
@@ -38,8 +38,8 @@
   - Override `triggerNoteOn` / `triggerNoteOff` to branch on `isPolyMode()`
   - In poly mode: delegate to `voiceAllocator`; freeze mono outputs (gate stays 0)
   - In mono mode: existing logic unchanged
-- [ ] T009 Update `KEYBOARD_INPUT` port count in `src/utils/componentLayout.ts` — outputs: 4 (freq, gate, velocity, poly-cv)
-- [ ] T010 Add `polyMode` Button control for `KEYBOARD_INPUT` case in `CanvasComponent.createControls()` in `src/canvas/CanvasComponent.ts` — label toggles `MONO` / `POLY`; clicking calls `setPolyMode` and emits `PARAMETER_CHANGED`; on `setSynthComponent()` read the current `polyMode` parameter value to set the initial button label so patches deserialized with `polyMode=1` show `POLY` immediately (U1 fix)
+- [x] T009 Update `KEYBOARD_INPUT` port count in `src/utils/componentLayout.ts` — outputs: 4 (freq, gate, velocity, poly-cv)
+- [x] T010 Add `polyMode` Button control for `KEYBOARD_INPUT` case in `CanvasComponent.createControls()` in `src/canvas/CanvasComponent.ts` — label toggles `MONO` / `POLY`; clicking calls `setPolyMode` and emits `PARAMETER_CHANGED`; on `setSynthComponent()` read the current `polyMode` parameter value to set the initial button label so patches deserialized with `polyMode=1` show `POLY` immediately (U1 fix)
 
 **Checkpoint**: `vitest run` passes all new VoiceAllocator tests. Keyboard renders poly-cv port on canvas. polyMode persists in saved patch (save → reload shows correct mode).
 

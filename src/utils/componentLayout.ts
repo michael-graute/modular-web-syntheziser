@@ -192,6 +192,21 @@ function getControlLayout(type: ComponentType): ControlLayout {
         hasDropdown: true, // 4 dropdowns: direction, octaves, rate, gate length
       };
 
+    case ComponentType.POLY_OSCILLATOR:
+      return {
+        hasDropdown: true,
+        numKnobs: 0,
+      };
+
+    case ComponentType.POLY_ADSR:
+      return {
+        numSliders: 4, // attack, decay, sustain, release
+        sliderHeight: 80,
+      };
+
+    case ComponentType.POLY_VCA:
+      return {}; // no user controls; gain is fully CV-driven
+
     case ComponentType.KEYBOARD_INPUT:
     case ComponentType.FILTER_ENVELOPE:
     default:
@@ -220,7 +235,7 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
       return { inputs: 1, outputs: 1 }; // gate in / CV out
 
     case ComponentType.KEYBOARD_INPUT:
-      return { inputs: 0, outputs: 3 }; // frequency CV, gate, velocity
+      return { inputs: 0, outputs: 4 }; // frequency CV, gate, velocity, poly-cv
 
     case ComponentType.MASTER_OUTPUT:
       return { inputs: 1, outputs: 0 }; // audio in
@@ -290,6 +305,15 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
 
     case ComponentType.ARPEGGIATOR:
       return { inputs: 2, outputs: 2 }; // cv-in, gate-in / cv-out, gate-out
+
+    case ComponentType.POLY_OSCILLATOR:
+      return { inputs: 1, outputs: 1 }; // poly-cv in / audio out
+
+    case ComponentType.POLY_ADSR:
+      return { inputs: 1, outputs: 4 }; // poly-cv in / env-0..3 out
+
+    case ComponentType.POLY_VCA:
+      return { inputs: 8, outputs: 1 }; // audio-0..3 + cv-0..3 / audio out
 
     default:
       return { inputs: 1, outputs: 1 };

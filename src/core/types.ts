@@ -10,6 +10,7 @@ export enum SignalType {
   AUDIO = 'audio',
   CV = 'cv',
   GATE = 'gate',
+  POLY_CV = 'poly-cv',
 }
 
 /**
@@ -47,6 +48,9 @@ export enum ComponentType {
   ARPEGGIATOR = 'arpeggiator',
   ENVELOPE_FOLLOWER = 'envelope-follower',
   SLEW_LIMITER = 'slew-limiter',
+  POLY_OSCILLATOR = 'poly-oscillator',
+  POLY_ADSR = 'poly-adsr',
+  POLY_VCA = 'poly-vca',
 }
 
 /**

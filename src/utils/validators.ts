@@ -51,6 +51,16 @@ export function areSignalTypesCompatible(
     return targetType === SignalType.GATE;
   }
 
+  // POLY_CV can only connect to POLY_CV — strict isolation (FR-002)
+  if (sourceType === SignalType.POLY_CV) {
+    return targetType === SignalType.POLY_CV;
+  }
+
+  // Reject any connection targeting POLY_CV from a non-POLY_CV source
+  if (targetType === SignalType.POLY_CV) {
+    return false;
+  }
+
   return false;
 }
 

@@ -61,6 +61,8 @@ export class CanvasConnection {
         return COLORS.CV;
       case SignalType.GATE:
         return COLORS.GATE;
+      case SignalType.POLY_CV:
+        return COLORS.POLY_CV;
       default:
         return COLORS.AUDIO;
     }

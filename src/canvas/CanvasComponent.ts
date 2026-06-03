@@ -1743,6 +1743,40 @@ export class CanvasComponent {
         this.slewLimiterDisplay.updatePosition(displayX, displayY);
       }
     }
+
+    // Keyboard — polyMode toggle button (FR-003: visible on canvas without opening a modal)
+    if (this.type === ComponentType.KEYBOARD_INPUT && this.synthComponent) {
+      const kbd = this.synthComponent as import('../components/utilities/KeyboardInput').KeyboardInput;
+
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const portAreaHeight = numOutputPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      const buttonWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const buttonHeight = 26;
+      const buttonX = this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL;
+      const buttonY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+
+      // Button label "Poly Mode"; active (blue) = poly, inactive = mono.
+      // isActive reads current parameter state on every render — correct on patch load (U1 fix).
+      const polyButton = new Button(
+        buttonX,
+        buttonY,
+        buttonWidth,
+        buttonHeight,
+        'Poly Mode',
+        () => {
+          const nextMode: 0 | 1 = kbd.isPolyMode() ? 0 : 1;
+          kbd.setPolyMode(nextMode);
+          eventBus.emit(EventType.PARAMETER_CHANGED, {
+            componentId: kbd.id,
+            parameterId: 'polyMode',
+            value: nextMode,
+          });
+        },
+        () => kbd.isPolyMode()
+      );
+      this.controls.push(polyButton);
+    }
   }
 
   /**
@@ -2289,6 +2323,9 @@ export class CanvasComponent {
       [ComponentType.ARPEGGIATOR]: 'Arpeggiator',
       [ComponentType.ENVELOPE_FOLLOWER]: 'Env Follower',
       [ComponentType.SLEW_LIMITER]: 'Slew Limiter',
+      [ComponentType.POLY_OSCILLATOR]: 'Poly Osc',
+      [ComponentType.POLY_ADSR]: 'Poly ADSR',
+      [ComponentType.POLY_VCA]: 'Poly VCA',
     };
     return names[this.type] || 'Component';
   }

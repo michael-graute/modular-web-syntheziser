@@ -163,6 +163,9 @@ export class Sidebar {
       [ComponentType.ARPEGGIATOR]: '⬆',
       [ComponentType.ENVELOPE_FOLLOWER]: '〜',
       [ComponentType.SLEW_LIMITER]: '↗',
+      [ComponentType.POLY_OSCILLATOR]: '⬡',
+      [ComponentType.POLY_ADSR]: '⬡',
+      [ComponentType.POLY_VCA]: '⬡',
     };
     return icons[type] || '□';
   }
