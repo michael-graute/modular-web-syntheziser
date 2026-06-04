@@ -44,12 +44,13 @@ describe('ChordFinder constructor', () => {
     expect(cf.parameters.has('progression')).toBe(true);
   });
 
-  it('registers 4 output ports (note1, note2, note3, gate)', () => {
-    expect(cf.outputs.size).toBe(4);
+  it('registers 5 output ports (note1, note2, note3, gate, poly-cv)', () => {
+    expect(cf.outputs.size).toBe(5);
     expect(cf.outputs.has('note1')).toBe(true);
     expect(cf.outputs.has('note2')).toBe(true);
     expect(cf.outputs.has('note3')).toBe(true);
     expect(cf.outputs.has('gate')).toBe(true);
+    expect(cf.outputs.has('poly-cv')).toBe(true);
   });
 
   it('has no input ports', () => {

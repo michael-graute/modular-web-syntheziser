@@ -10,7 +10,7 @@ import { ConnectionManager } from './ConnectionManager';
 import { eventBus } from '../core/EventBus';
 import { stateManager } from '../core/StateManager';
 import { EventType, Position } from '../core/types';
-import { CANVAS, COLORS, GRID_LOD_THRESHOLDS, GRID_FADE_THRESHOLD } from '../utils/constants';
+import { CANVAS, COLORS, COMPONENT, GRID_LOD_THRESHOLDS, GRID_FADE_THRESHOLD } from '../utils/constants';
 import { snapToGrid } from '../utils/geometry';
 import { visualUpdateScheduler } from '../visualization/scheduler';
 import type { SubscriptionHandle } from '../visualization/types';
@@ -466,6 +466,11 @@ export class Canvas {
     const worldPos = this.viewport.screenToWorld(screenX, screenY);
     const component = this.findComponentAt(worldPos.x, worldPos.y);
     if (!component) return;
+
+    // Only trigger when the press is within the component header — prevents
+    // the context menu from appearing while interacting with controls (e.g.
+    // holding a chord button in ChordFinder, knobs, sliders).
+    if (worldPos.y > component.position.y + COMPONENT.HEADER_HEIGHT) return;
 
     // Clear drag state so the finger-lift doesn't also move/drag the component
     this.draggedComponents = [];

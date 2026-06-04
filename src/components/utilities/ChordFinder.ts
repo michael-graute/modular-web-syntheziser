@@ -8,6 +8,7 @@
 
 import { SynthComponent } from '../base/SynthComponent';
 import { ComponentType, EventType, Position, SignalType } from '../../core/types';
+import type { VoiceSlot } from './VoiceAllocator';
 import type { ChordNotesOnPayload, ChordNotesOffPayload } from '../../core/types';
 import { audioEngine } from '../../core/AudioEngine';
 import { eventBus } from '../../core/EventBus';
@@ -63,6 +64,15 @@ export class ChordFinder extends SynthComponent {
   // Gate targets (ADSR envelopes registered for triggering)
   private gateTargets: Set<SynthComponent> = new Set();
 
+  // Poly voice slots — 4 fixed slots (0=root, 1=third, 2=fifth, 3=always inactive)
+  private polySlots: VoiceSlot[] = Array.from({ length: 4 }, (_, i) => ({
+    voiceIndex: i as 0 | 1 | 2 | 3,
+    frequency: 0,
+    gate: 0 as 0 | 1,
+    note: null,
+    timestamp: 0,
+  }));
+
   // Visual update subscription
 
   // Canvas display reference (set by CanvasComponent in T020)
@@ -90,6 +100,7 @@ export class ChordFinder extends SynthComponent {
     this.addOutput('note2', 'Note 2', SignalType.CV);
     this.addOutput('note3', 'Note 3', SignalType.CV);
     this.addOutput('gate', 'Gate', SignalType.GATE);
+    this.addOutput('poly-cv', 'Poly CV', SignalType.POLY_CV);
 
     // Initialise diatonic chords for default key
     this.diatonicChords = getDiatonicChords(this.config.rootNote, this.config.scaleType);
@@ -189,8 +200,13 @@ export class ChordFinder extends SynthComponent {
       case 'note2': return this.note2Output;
       case 'note3': return this.note3Output;
       case 'gate': return this.gateOutput;
+      case 'poly-cv': return null; // data-only port — flows via getVoiceSlots()
       default: return this.note1Output;
     }
+  }
+
+  getVoiceSlots(): Readonly<VoiceSlot[]> {
+    return this.polySlots;
   }
 
   // ---------------------------------------------------------------------------
@@ -266,6 +282,12 @@ export class ChordFinder extends SynthComponent {
     if (this.note3Output) this.note3Output.offset.setValueAtTime(midiToHz(chord.notes[2]!), t);
     if (this.gateOutput) this.gateOutput.offset.setValueAtTime(1.0, t);
 
+    // Update poly voice slots (slots 0–2 = root/third/fifth; slot 3 stays inactive)
+    for (let i = 0; i < 3; i++) {
+      this.polySlots[i]!.frequency = midiToHz(chord.notes[i]!);
+      this.polySlots[i]!.gate = 1;
+    }
+
     this.pressedDegree = scaleDegree;
 
     // Compute octave-shifted MIDI notes and emit for keyboard visual sync
@@ -295,6 +317,12 @@ export class ChordFinder extends SynthComponent {
     const t = ctx?.currentTime ?? 0;
 
     if (this.gateOutput) this.gateOutput.offset.setValueAtTime(0.0, t);
+
+    // Release poly voice slots (frequencies retained — gate-off triggers ADSR release)
+    for (let i = 0; i < 3; i++) {
+      this.polySlots[i]!.gate = 0;
+    }
+
     this.pressedDegree = null;
 
     // Emit keyboard visual sync event before clearing lastPressedNotes
