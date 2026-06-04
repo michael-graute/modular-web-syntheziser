@@ -27,6 +27,7 @@ export class FactoryPatchLoader {
       'basic-oscillator.json',
       'basic-fm-synthesis.json',
       'two-oscillator-setup.json',
+      'polyphonic-setup.json',
       'pad-sound.json',
       'two-oscillator-setup-with-lfos-filter-and-mixer.json',
       'chord-finder.json',
