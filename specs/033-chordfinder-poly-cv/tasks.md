@@ -16,9 +16,9 @@
 
 **Purpose**: Contracts and test scaffolding — no source files changed yet.
 
-- [ ] T001 [P] Add VoiceSlot import to `src/components/utilities/ChordFinder.ts` (import type from `./VoiceAllocator`)
-- [ ] T002 [P] Verify `specs/033-chordfinder-poly-cv/contracts/types.ts` compiles cleanly (slot-index constants + `ChordFinderPolyCvSource` interface resolve correctly against `VoiceAllocator`)
-- [ ] T003 [P] Verify `specs/033-chordfinder-poly-cv/contracts/validation.ts` compiles cleanly (`assertValidChordPolySlots`, `areChordSlotsActive`, `areChordSlotsReleased`)
+- [x] T001 [P] Add VoiceSlot import to `src/components/utilities/ChordFinder.ts` (import type from `./VoiceAllocator`)
+- [x] T002 [P] Verify `specs/033-chordfinder-poly-cv/contracts/types.ts` compiles cleanly (slot-index constants + `ChordFinderPolyCvSource` interface resolve correctly against `VoiceAllocator`)
+- [x] T003 [P] Verify `specs/033-chordfinder-poly-cv/contracts/validation.ts` compiles cleanly (`assertValidChordPolySlots`, `areChordSlotsActive`, `areChordSlotsReleased`)
 
 ---
 
@@ -28,10 +28,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T004 Add `private polySlots: VoiceSlot[]` field to `src/components/utilities/ChordFinder.ts`, initialized as 4-element array with `voiceIndex`, `frequency: 0`, `gate: 0 as 0 | 1`, `note: null`, `timestamp: 0`
-- [ ] T005 Register `poly-cv` output port in the `ChordFinder` constructor in `src/components/utilities/ChordFinder.ts`: `this.addOutput('poly-cv', 'Poly CV', SignalType.POLY_CV)` (after existing gate output)
-- [ ] T006 Add `getVoiceSlots(): Readonly<VoiceSlot[]>` public method to `src/components/utilities/ChordFinder.ts` returning `this.polySlots`
-- [ ] T007 Add `case 'poly-cv': return null` to `getOutputNodeByPort()` in `src/components/utilities/ChordFinder.ts`
+- [x] T004 Add `private polySlots: VoiceSlot[]` field to `src/components/utilities/ChordFinder.ts`, initialized as 4-element array with `voiceIndex`, `frequency: 0`, `gate: 0 as 0 | 1`, `note: null`, `timestamp: 0`
+- [x] T005 Register `poly-cv` output port in the `ChordFinder` constructor in `src/components/utilities/ChordFinder.ts`: `this.addOutput('poly-cv', 'Poly CV', SignalType.POLY_CV)` (after existing gate output)
+- [x] T006 Add `getVoiceSlots(): Readonly<VoiceSlot[]>` public method to `src/components/utilities/ChordFinder.ts` returning `this.polySlots`
+- [x] T007 Add `case 'poly-cv': return null` to `getOutputNodeByPort()` in `src/components/utilities/ChordFinder.ts`
 
 **Checkpoint**: ChordFinder now has a poly-cv port and `getVoiceSlots()` — ConnectionManager can register it as a POLY_CV source. Slot values are all zero until a chord is pressed.
 
@@ -45,16 +45,16 @@
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Update `pressChord()` in `src/components/utilities/ChordFinder.ts`: after the existing mono CV writes, set `polySlots[0..2].frequency = midiToHz(chord.notes[i]! + octaveShift)` and `polySlots[0..2].gate = 1` (slot 3 remains unchanged)
-- [ ] T009 [US1] Update `releaseChord()` in `src/components/utilities/ChordFinder.ts`: after the existing mono gate release, set `polySlots[0..2].gate = 0` (frequencies intentionally retained)
-- [ ] T010 [US1] Write test file `tests/components/ChordFinder.poly.test.ts`: initial state — all slots gate=0, `assertValidChordPolySlots` passes, `areChordSlotsReleased` = true
-- [ ] T011 [US1] Extend `tests/components/ChordFinder.poly.test.ts`: `pressChord(0)` — `areChordSlotsActive` = true, slot 3 gate=0, slot frequencies match expected Hz values for root chord
-- [ ] T012 [US1] Extend `tests/components/ChordFinder.poly.test.ts`: `releaseChord()` — `areChordSlotsReleased` = true, slot[0..2].frequency > 0 (frequencies retained after release)
-- [ ] T013 [US1] Extend `tests/components/ChordFinder.poly.test.ts`: slot 3 invariant — after press and release, `polySlots[3].gate === 0` and `polySlots[3].frequency === 0`
-- [ ] T014 [US1] Extend `tests/components/ChordFinder.poly.test.ts`: `getVoiceSlots()` returns the same array reference (not a copy) — pointer identity check
-- [ ] T015 [US1] Extend `tests/components/ChordFinder.poly.test.ts`: chord-change-while-held — call `pressChord(0)`, then `pressChord(2)` without releasing; assert slots 0–2 reflect the new triad's frequencies and gate remains 1 (US1 Acceptance Scenario 3)
-- [ ] T016 [US1] Extend `tests/components/ChordFinder.poly.test.ts`: octave sync — call `pressChord(0)` at octave 3, then `setOctave(4)` (which internally re-calls `pressChord`); assert slot frequencies increase by the expected ratio (FR-008)
-- [ ] T017 [US1] Run `vitest run tests/components/ChordFinder.poly.test.ts` and confirm all tests pass
+- [x] T008 [US1] Update `pressChord()` in `src/components/utilities/ChordFinder.ts`: after the existing mono CV writes, set `polySlots[0..2].frequency = midiToHz(chord.notes[i]! + octaveShift)` and `polySlots[0..2].gate = 1` (slot 3 remains unchanged)
+- [x] T009 [US1] Update `releaseChord()` in `src/components/utilities/ChordFinder.ts`: after the existing mono gate release, set `polySlots[0..2].gate = 0` (frequencies intentionally retained)
+- [x] T010 [US1] Write test file `tests/components/ChordFinder.poly.test.ts`: initial state — all slots gate=0, `assertValidChordPolySlots` passes, `areChordSlotsReleased` = true
+- [x] T011 [US1] Extend `tests/components/ChordFinder.poly.test.ts`: `pressChord(0)` — `areChordSlotsActive` = true, slot 3 gate=0, slot frequencies match expected Hz values for root chord
+- [x] T012 [US1] Extend `tests/components/ChordFinder.poly.test.ts`: `releaseChord()` — `areChordSlotsReleased` = true, slot[0..2].frequency > 0 (frequencies retained after release)
+- [x] T013 [US1] Extend `tests/components/ChordFinder.poly.test.ts`: slot 3 invariant — after press and release, `polySlots[3].gate === 0` and `polySlots[3].frequency === 0`
+- [x] T014 [US1] Extend `tests/components/ChordFinder.poly.test.ts`: `getVoiceSlots()` returns the same array reference (not a copy) — pointer identity check
+- [x] T015 [US1] Extend `tests/components/ChordFinder.poly.test.ts`: chord-change-while-held — call `pressChord(0)`, then `pressChord(2)` without releasing; assert slots 0–2 reflect the new triad's frequencies and gate remains 1 (US1 Acceptance Scenario 3)
+- [x] T016 [US1] Extend `tests/components/ChordFinder.poly.test.ts`: octave sync — call `pressChord(0)` at octave 3, then `setOctave(4)` (which internally re-calls `pressChord`); assert slot frequencies increase by the expected ratio (FR-008)
+- [x] T017 [US1] Run `vitest run tests/components/ChordFinder.poly.test.ts` and confirm all tests pass
 
 **Checkpoint**: User Story 1 complete. ChordFinder correctly populates and releases the poly voice slots. The full poly chain patch is now audibly functional.
 
@@ -68,10 +68,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Run existing test suite `vitest run tests/components/ChordFinder.emit.test.ts` — confirm all pre-existing tests still pass with no changes needed
-- [ ] T019 [US2] Run `vitest run tests/unit/components/ChordFinder.test.ts` — confirm all pre-existing unit tests still pass
-- [ ] T020 [US2] Run `vitest run tests/persistence/ChordFinder.persistence.test.ts` — confirm patch save/load tests still pass (poly-cv port requires no serialization)
-- [ ] T021 [P] [US2] Extend `tests/components/ChordFinder.poly.test.ts`: simultaneous mono+poly — after `pressChord(0)`, assert `note1Output.offset.value` matches `polySlots[0].frequency` (both reflect the same Hz value)
+- [x] T018 [US2] Run existing test suite `vitest run tests/components/ChordFinder.emit.test.ts` — confirm all pre-existing tests still pass with no changes needed
+- [x] T019 [US2] Run `vitest run tests/unit/components/ChordFinder.test.ts` — confirm all pre-existing unit tests still pass
+- [x] T020 [US2] Run `vitest run tests/persistence/ChordFinder.persistence.test.ts` — confirm patch save/load tests still pass (poly-cv port requires no serialization)
+- [x] T021 [P] [US2] Extend `tests/components/ChordFinder.poly.test.ts`: simultaneous mono+poly — after `pressChord(0)`, assert `note1Output.offset.value` matches `polySlots[0].frequency` (both reflect the same Hz value)
 
 **Checkpoint**: Confirmed zero regression on existing mono behaviour. Serialization unchanged. US1 and US2 both independently verified.
 
@@ -85,8 +85,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T022 [US3] Manual smoke test per `specs/033-chordfinder-poly-cv/quickstart.md`: full poly chain patch (ChordFinder → PolyOscillator → PolyADSR → PolyVCA → Filter → Master Out), confirm voices pass through filter
-- [ ] T023 [P] [US3] Extend `tests/components/ChordFinder.poly.test.ts`: verify POLY_CV port is registered with `SignalType.POLY_CV` — inspect `getOutputPorts()` to confirm the port exists with correct signal type
+- [x] T022 [US3] Manual smoke test per `specs/033-chordfinder-poly-cv/quickstart.md`: full poly chain patch (ChordFinder → PolyOscillator → PolyADSR → PolyVCA → Filter → Master Out), confirm voices pass through filter
+- [x] T023 [P] [US3] Extend `tests/components/ChordFinder.poly.test.ts`: verify POLY_CV port is registered with `SignalType.POLY_CV` — inspect `getOutputPorts()` to confirm the port exists with correct signal type
 
 **Checkpoint**: All three user stories complete and independently verified.
 
@@ -96,9 +96,9 @@
 
 **Purpose**: TypeScript correctness, spec note correction, final validation.
 
-- [ ] T024 [P] Run full TypeScript type-check: `npx tsc --noEmit` — confirm no new type errors introduced by ChordFinder changes
-- [ ] T025 [P] Run full test suite: `vitest run` — confirm all tests pass including pre-existing ChordFinder and Keyboard tests
-- [ ] T026 Run `npm run lint` — confirm no new linting warnings in `src/components/utilities/ChordFinder.ts`
+- [x] T024 [P] Run full TypeScript type-check: `npx tsc --noEmit` — confirm no new type errors introduced by ChordFinder changes
+- [x] T025 [P] Run full test suite: `vitest run` — confirm all tests pass including pre-existing ChordFinder and Keyboard tests
+- [x] T026 Run `npm run lint` — confirm no new linting warnings in `src/components/utilities/ChordFinder.ts`
 
 ---
 
