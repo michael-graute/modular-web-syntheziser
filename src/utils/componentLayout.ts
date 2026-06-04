@@ -280,7 +280,7 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
       return { inputs: 0, outputs: 2 }; // CV out, Gate out
 
     case ComponentType.CHORD_FINDER:
-      return { inputs: 0, outputs: 4 }; // note1 CV, note2 CV, note3 CV, gate
+      return { inputs: 0, outputs: 5 }; // note1 CV, note2 CV, note3 CV, gate, poly-cv
 
     case ComponentType.LOOPER:
       return { inputs: 1, outputs: 1 }; // audio in / audio out
