@@ -34,6 +34,9 @@ import { VuMeter } from './analyzers/VuMeter';
 import { EnvelopeFollower } from './analyzers/EnvelopeFollower';
 import { SlewLimiter } from './utilities/SlewLimiter';
 import { StepSequencer } from './utilities/StepSequencer';
+import { PolyOscillator } from './generators/PolyOscillator';
+import { PolyADSR } from './processors/PolyADSR';
+import { PolyVCA } from './processors/PolyVCA';
 import { calculateComponentDimensions } from '../utils/componentLayout';
 
 /**
@@ -313,6 +316,33 @@ export function registerAllComponents(): void {
     'Utilities',
     (id, position) => new SlewLimiter(id, position),
     calculateComponentDimensions(ComponentType.SLEW_LIMITER)
+  );
+
+  componentRegistry.register(
+    ComponentType.POLY_OSCILLATOR,
+    'Poly Oscillator',
+    '4-voice polyphonic oscillator',
+    'Generators',
+    (id, position) => new PolyOscillator(id, position),
+    calculateComponentDimensions(ComponentType.POLY_OSCILLATOR)
+  );
+
+  componentRegistry.register(
+    ComponentType.POLY_ADSR,
+    'Poly ADSR',
+    '4-voice polyphonic ADSR envelope',
+    'Processors',
+    (id, position) => new PolyADSR(id, position),
+    calculateComponentDimensions(ComponentType.POLY_ADSR)
+  );
+
+  componentRegistry.register(
+    ComponentType.POLY_VCA,
+    'Poly VCA',
+    '4-voice polyphonic VCA with mono mix output',
+    'Processors',
+    (id, position) => new PolyVCA(id, position),
+    calculateComponentDimensions(ComponentType.POLY_VCA)
   );
 
   console.log(`✅ Registered ${componentRegistry.getCount()} components`);

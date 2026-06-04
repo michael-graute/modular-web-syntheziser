@@ -10,6 +10,9 @@ import { EventType, SignalType } from '../core/types';
 import { StepSequencer } from '../components/utilities/StepSequencer';
 import { KeyboardInput } from '../components/utilities/KeyboardInput';
 import { Arpeggiator } from '../components/utilities/Arpeggiator';
+import { PolyOscillator } from '../components/generators/PolyOscillator';
+import { PolyADSR } from '../components/processors/PolyADSR';
+import { PolyVCA } from '../components/processors/PolyVCA';
 
 /**
  * Manages all connections in the patch
@@ -165,6 +168,44 @@ export class ConnectionManager {
       }
     }
 
+    // For POLY_CV cables: register a VoiceSlots getter on the target so poly components
+    // can poll live voice slot data without a Web Audio node (FR-001a, research decision 2).
+    if (sourcePort.type === SignalType.POLY_CV) {
+      const src = sourceComponent.synthComponent as any;
+      const tgt = targetComponent.synthComponent as any;
+      if (typeof src.getVoiceSlots === 'function' && typeof tgt.setVoiceSlotsGetter === 'function') {
+        tgt.setVoiceSlotsGetter(() => src.getVoiceSlots());
+      }
+    }
+
+    // POLY_AUDIO: wire PolyOscillator's 4 voice outputs directly into PolyVCA's voice inputs
+    if (sourcePort.type === SignalType.POLY_AUDIO) {
+      const src = sourceComponent.synthComponent;
+      const tgt = targetComponent.synthComponent;
+      if (src instanceof PolyOscillator && tgt instanceof PolyVCA) {
+        const voiceOutputs = src.getVoiceOutputs();
+        tgt.connectPolyAudio(voiceOutputs);
+        src.registerPolyAudioConsumer(
+          (outs) => tgt.connectPolyAudio(outs),
+          ()     => tgt.disconnectPolyAudio(voiceOutputs)
+        );
+      }
+    }
+
+    // POLY_ENV: wire PolyADSR's 4 envelope outputs directly into PolyVCA's voice gain AudioParams
+    if (sourcePort.type === SignalType.POLY_ENV) {
+      const src = sourceComponent.synthComponent;
+      const tgt = targetComponent.synthComponent;
+      if (src instanceof PolyADSR && tgt instanceof PolyVCA) {
+        const outputGains = src.getOutputGains();
+        tgt.connectPolyEnv(outputGains);
+        src.registerPolyEnvConsumer(
+          (outs) => tgt.connectPolyEnv(outs),
+          ()     => tgt.disconnectPolyEnv(outputGains)
+        );
+      }
+    }
+
     console.log(
       `✅ Connected ${sourceComponent.type}:${sourcePort.name} -> ${targetComponent.type}:${targetPort.name}`
     );
@@ -217,6 +258,26 @@ export class ConnectionManager {
         const arp = targetComponent.synthComponent;
         if (connection.targetPortId === 'cv-in') arp.clearCvGetter();
         if (connection.targetPortId === 'gate-in') arp.clearGateGetter();
+      }
+
+      // Clear POLY_CV getter on target when the poly cable is removed
+      if (connection.signalType === SignalType.POLY_CV) {
+        const tgt = targetComponent.synthComponent as any;
+        if (typeof tgt.clearVoiceSlotsGetter === 'function') {
+          tgt.clearVoiceSlotsGetter();
+        }
+      }
+
+      // Tear down POLY_AUDIO internal wiring
+      if (connection.signalType === SignalType.POLY_AUDIO) {
+        const src = sourceComponent.synthComponent;
+        if (src instanceof PolyOscillator) src.clearPolyAudioConsumer();
+      }
+
+      // Tear down POLY_ENV internal wiring
+      if (connection.signalType === SignalType.POLY_ENV) {
+        const src = sourceComponent.synthComponent;
+        if (src instanceof PolyADSR) src.clearPolyEnvConsumer();
       }
     }
 

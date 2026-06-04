@@ -1,0 +1,148 @@
+{
+  "name": "Polyphonic Setup",
+  "version": "1.0",
+  "created": "2026-06-04T10:56:30.133Z",
+  "modified": "2026-06-04T10:56:30.133Z",
+  "components": [
+    {
+      "id": "b962d9ec-c1bc-4d8a-a761-bf022adc0ee7",
+      "type": "keyboard-input",
+      "position": {
+        "x": 180,
+        "y": 160
+      },
+      "parameters": {
+        "polyMode": 1
+      }
+    },
+    {
+      "id": "54a22846-5830-4347-9b6c-79fa52c34dc7",
+      "type": "poly-oscillator",
+      "position": {
+        "x": 340,
+        "y": 160
+      },
+      "parameters": {
+        "waveform": 2
+      }
+    },
+    {
+      "id": "f760a6dd-f992-455c-a7ec-9e5006718814",
+      "type": "poly-adsr",
+      "position": {
+        "x": 340,
+        "y": 300
+      },
+      "parameters": {
+        "attack": 0.01,
+        "decay": 0.1,
+        "sustain": 0.7,
+        "release": 0.3
+      }
+    },
+    {
+      "id": "6e2ac7f1-acf3-48b1-89c3-2717e05e390d",
+      "type": "poly-vca",
+      "position": {
+        "x": 540,
+        "y": 160
+      },
+      "parameters": {}
+    },
+    {
+      "id": "4bd31ef5-9db3-4a3a-a457-805d992c86b8",
+      "type": "master-output",
+      "position": {
+        "x": 960,
+        "y": 160
+      },
+      "parameters": {
+        "volume": 0.7,
+        "limiter": 1
+      }
+    },
+    {
+      "id": "b6816aee-a0b6-41a9-bf2b-d20cfc99eb30",
+      "type": "oscilloscope",
+      "position": {
+        "x": 700,
+        "y": 160
+      },
+      "parameters": {
+        "timeScale": 50,
+        "fftSize": 2048,
+        "displayMode": 0,
+        "gain": 1
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "b1759136-e85f-4a31-a837-d2b96b89544c",
+      "sourceComponentId": "b962d9ec-c1bc-4d8a-a761-bf022adc0ee7",
+      "sourcePortId": "poly-cv",
+      "targetComponentId": "54a22846-5830-4347-9b6c-79fa52c34dc7",
+      "targetPortId": "poly-cv",
+      "signalType": "poly-cv"
+    },
+    {
+      "id": "75734fcb-7765-4220-9f21-2cec6cff0c19",
+      "sourceComponentId": "b962d9ec-c1bc-4d8a-a761-bf022adc0ee7",
+      "sourcePortId": "poly-cv",
+      "targetComponentId": "f760a6dd-f992-455c-a7ec-9e5006718814",
+      "targetPortId": "poly-cv",
+      "signalType": "poly-cv"
+    },
+    {
+      "id": "e9bb3d22-7866-47f1-aec7-3753fa54b590",
+      "sourceComponentId": "54a22846-5830-4347-9b6c-79fa52c34dc7",
+      "sourcePortId": "poly-audio",
+      "targetComponentId": "6e2ac7f1-acf3-48b1-89c3-2717e05e390d",
+      "targetPortId": "poly-audio",
+      "signalType": "poly-audio"
+    },
+    {
+      "id": "3773e7c9-b585-40a6-ac57-2ef18476db27",
+      "sourceComponentId": "f760a6dd-f992-455c-a7ec-9e5006718814",
+      "sourcePortId": "poly-env",
+      "targetComponentId": "6e2ac7f1-acf3-48b1-89c3-2717e05e390d",
+      "targetPortId": "poly-env",
+      "signalType": "poly-env"
+    },
+    {
+      "id": "95f649fb-86fb-4697-ba92-91bf1e80daa2",
+      "sourceComponentId": "6e2ac7f1-acf3-48b1-89c3-2717e05e390d",
+      "sourcePortId": "output",
+      "targetComponentId": "b6816aee-a0b6-41a9-bf2b-d20cfc99eb30",
+      "targetPortId": "input",
+      "signalType": "audio"
+    },
+    {
+      "id": "a122233e-31c6-4280-8193-c291d716253e",
+      "sourceComponentId": "b6816aee-a0b6-41a9-bf2b-d20cfc99eb30",
+      "sourcePortId": "output",
+      "targetComponentId": "4bd31ef5-9db3-4a3a-a457-805d992c86b8",
+      "targetPortId": "input",
+      "signalType": "audio"
+    }
+  ],
+  "globalBpm": 120,
+  "midiMappings": [
+    {
+      "componentId": "e6299ebd-52b9-4ee8-a80c-8184d21a3338",
+      "parameterName": "gain1",
+      "channel": 0,
+      "cc": 21,
+      "minValue": 0,
+      "maxValue": 1
+    },
+    {
+      "componentId": "7c470704-7d10-490e-a5b5-5c5cd3c9c03e",
+      "parameterName": "detune",
+      "channel": 0,
+      "cc": 22,
+      "minValue": -100,
+      "maxValue": 100
+    }
+  ]
+}

@@ -51,6 +51,14 @@ export function areSignalTypesCompatible(
     return targetType === SignalType.GATE;
   }
 
+  // Poly signal types are strictly self-compatible only
+  if (sourceType === SignalType.POLY_CV)    return targetType === SignalType.POLY_CV;
+  if (sourceType === SignalType.POLY_AUDIO) return targetType === SignalType.POLY_AUDIO;
+  if (sourceType === SignalType.POLY_ENV)   return targetType === SignalType.POLY_ENV;
+  if (targetType === SignalType.POLY_CV || targetType === SignalType.POLY_AUDIO || targetType === SignalType.POLY_ENV) {
+    return false;
+  }
+
   return false;
 }
 

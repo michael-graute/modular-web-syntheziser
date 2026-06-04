@@ -1743,6 +1743,102 @@ export class CanvasComponent {
         this.slewLimiterDisplay.updatePosition(displayX, displayY);
       }
     }
+
+    // PolyOscillator — waveform dropdown (same options as mono Oscillator)
+    if (this.type === ComponentType.POLY_OSCILLATOR) {
+      const waveformParam = this.synthComponent.getParameter('waveform');
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      if (waveformParam) {
+        const options: DropdownOption[] = [
+          { value: 0, label: 'Sine' },
+          { value: 1, label: 'Square' },
+          { value: 2, label: 'Sawtooth' },
+          { value: 3, label: 'Triangle' },
+        ];
+        this.controls.push(new Dropdown(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
+          this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP,
+          this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2,
+          COMPONENT.DROPDOWN_HEIGHT,
+          waveformParam,
+          options,
+          'Waveform'
+        ));
+      }
+    }
+
+    // PolyADSR — 4 vertical sliders (same layout as mono ADSREnvelope)
+    if (this.type === ComponentType.POLY_ADSR) {
+      const attackParam  = this.synthComponent.getParameter('attack');
+      const decayParam   = this.synthComponent.getParameter('decay');
+      const sustainParam = this.synthComponent.getParameter('sustain');
+      const releaseParam = this.synthComponent.getParameter('release');
+
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      const sliderStartY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const sliderHeight = COMPONENT.SLIDER_HEIGHT;
+      const sliderWidth = COMPONENT.SLIDER_WIDTH;
+      const numSliders = 4;
+      const totalSpacing = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const spacing = (totalSpacing - numSliders * sliderWidth) / (numSliders + 1);
+
+      const params = [attackParam, decayParam, sustainParam, releaseParam];
+      params.forEach((param, idx) => {
+        if (!param) return;
+        this.controls.push(new Slider(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * (idx + 1) + sliderWidth * idx,
+          sliderStartY,
+          sliderWidth,
+          sliderHeight,
+          param,
+          'vertical'
+        ));
+      });
+    }
+
+    // PolyVCA — no controls (gain is entirely CV-driven by PolyADSR)
+
+    // Keyboard — polyMode toggle button (FR-003: visible on canvas without opening a modal)
+    if (this.type === ComponentType.KEYBOARD_INPUT && this.synthComponent) {
+      const kbd = this.synthComponent as import('../components/utilities/KeyboardInput').KeyboardInput;
+
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const portAreaHeight = numOutputPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      const buttonWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const buttonHeight = 26;
+      const buttonX = this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL;
+      const buttonY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+
+      // Button label "Poly Mode"; active (blue) = poly, inactive = mono.
+      // isActive reads current parameter state on every render — correct on patch load (U1 fix).
+      const polyButton = new Button(
+        buttonX,
+        buttonY,
+        buttonWidth,
+        buttonHeight,
+        'Poly Mode',
+        () => {
+          const nextMode: 0 | 1 = kbd.isPolyMode() ? 0 : 1;
+          kbd.setPolyMode(nextMode);
+          eventBus.emit(EventType.PARAMETER_CHANGED, {
+            componentId: kbd.id,
+            parameterId: 'polyMode',
+            value: nextMode,
+          });
+        },
+        () => kbd.isPolyMode()
+      );
+      this.controls.push(polyButton);
+    }
   }
 
   /**
@@ -2105,6 +2201,10 @@ export class CanvasComponent {
         return COLORS.CV;
       case SignalType.GATE:
         return COLORS.GATE;
+      case SignalType.POLY_CV:
+      case SignalType.POLY_AUDIO:
+      case SignalType.POLY_ENV:
+        return COLORS.POLY_CV;
       default:
         return '#ffffff';
     }
@@ -2289,6 +2389,9 @@ export class CanvasComponent {
       [ComponentType.ARPEGGIATOR]: 'Arpeggiator',
       [ComponentType.ENVELOPE_FOLLOWER]: 'Env Follower',
       [ComponentType.SLEW_LIMITER]: 'Slew Limiter',
+      [ComponentType.POLY_OSCILLATOR]: 'Poly Osc',
+      [ComponentType.POLY_ADSR]: 'Poly ADSR',
+      [ComponentType.POLY_VCA]: 'Poly VCA',
     };
     return names[this.type] || 'Component';
   }
