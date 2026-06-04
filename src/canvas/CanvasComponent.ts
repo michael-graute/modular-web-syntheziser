@@ -2201,6 +2201,10 @@ export class CanvasComponent {
         return COLORS.CV;
       case SignalType.GATE:
         return COLORS.GATE;
+      case SignalType.POLY_CV:
+      case SignalType.POLY_AUDIO:
+      case SignalType.POLY_ENV:
+        return COLORS.POLY_CV;
       default:
         return '#ffffff';
     }

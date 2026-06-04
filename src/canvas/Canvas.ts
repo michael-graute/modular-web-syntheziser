@@ -1104,7 +1104,15 @@ export class Canvas {
    * Get color for signal type
    */
   private getColorForSignalType(type: string): string {
-    return type === 'audio' ? COLORS.AUDIO : type === 'cv' ? COLORS.CV : COLORS.GATE;
+    switch (type) {
+      case 'audio':     return COLORS.AUDIO;
+      case 'cv':        return COLORS.CV;
+      case 'gate':      return COLORS.GATE;
+      case 'poly-cv':
+      case 'poly-audio':
+      case 'poly-env':  return COLORS.POLY_CV;
+      default:          return COLORS.AUDIO;
+    }
   }
 
   /**
