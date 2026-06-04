@@ -45,6 +45,26 @@
 
 ---
 
+### 3a. Bundled Inter-Component Signal Types: POLY_AUDIO and POLY_ENV *(post-implementation revision)*
+
+**Decision**: Replace the 4 individual `voice-N` (AUDIO) outputs on PolyOscillator and 4 `env-N` (CV) outputs on PolyADSR with two new bundled signal types:
+- `POLY_AUDIO` (`'poly-audio'`): carries all 4 voice audio GainNode references in a single cable (PolyOscillator → PolyVCA).
+- `POLY_ENV` (`'poly-env'`): carries all 4 envelope GainNode references in a single cable (PolyADSR → PolyVCA).
+
+Both types use the same purple `#c084fc` color as `POLY_CV` and follow the same strict self-compatibility rule (POLY_AUDIO only connects to POLY_AUDIO, etc.).
+
+ConnectionManager intercepts these cables in `createConnection` and directly wires the 4 internal GainNodes between the source and target components — the user sees one cable, the audio graph gets 4 node connections internally.
+
+**Rationale**: The original design exposed 4 Voice output ports on PolyOscillator and 4 Env ports on PolyADSR, requiring 8 cables just to connect two components that are conceptually a single unit. The voice-per-voice fan-out is an internal implementation detail that adds no user value — a musician can never usefully route Voice 0 audio to a different VCA than Voice 1. Collapsing these to single bundled cables reduces the standard poly patch from 11 cables to 5 and makes the signal flow immediately readable.
+
+**Implementation**: `PolyOscillator.registerPolyAudioConsumer(connect, disconnect)` and `PolyADSR.registerPolyEnvConsumer(connect, disconnect)` allow ConnectionManager to register connect/disconnect callbacks. `PolyVCA.connectPolyAudio(voiceOutputs[])` and `connectPolyEnv(outputGains[])` perform the actual 4-way GainNode wiring. Each component also exposes a dummy `GainNode` as the port's AudioNode so the existing port/connection data model continues to function unchanged.
+
+**Alternatives considered**:
+- Keeping 4 explicit ports — working but cluttered; the patch canvas becomes unreadable with a 4+4 cable fan between every poly component pair.
+- A single `POLY_AUDIO` type shared with `POLY_CV` — rejected; keeping them distinct prevents accidentally connecting a Keyboard Poly CV output to a Poly VCA audio input.
+
+---
+
 ### 4. Voice Allocator Design
 
 **Decision**: `VoiceAllocator` is a plain JS class (not a SynthComponent) embedded in `KeyboardInput`. It maintains 4 `VoiceSlot` objects (`{ voiceIndex, frequency, gate, timestamp }`). On `noteOn`:
@@ -67,36 +87,38 @@ The full slot array is returned by `getVoiceSlots(): VoiceSlot[]` — this is wh
 
 ### 5. PolyOscillator Audio Graph
 
-**Decision**: PolyOscillator creates 4 `OscillatorNode` instances (one per voice slot). Each oscillator connects to a per-voice `GainNode` that acts as a voice gate (gain 0 when slot.gate=0, gain 1 when slot.gate=1). All 4 voice gates connect to a shared `GainNode` output. The component polls the Keyboard's voice slots on every `ScriptProcessorNode`-free scheduler tick using `requestAnimationFrame` — simpler, no DSP thread usage.
+**Decision**: PolyOscillator creates 4 `OscillatorNode` instances (one per voice slot). Each oscillator connects to a per-voice `GainNode` (`voiceOutputs[i]`) that acts as a voice gate (gain 0 when slot.gate=0, gain 1 when slot.gate=1). The component exposes a single `poly-audio` output port (POLY_AUDIO type); ConnectionManager wires the 4 `voiceOutputs` GainNodes directly into PolyVCA's voice inputs when this cable is connected. A dummy summing GainNode (`polyAudioOut`) is registered as the port's AudioNode to satisfy the port/connection data model. The component polls the Keyboard's voice slots via `requestAnimationFrame`.
 
-**Rationale**: RAF polling at 60 FPS is fast enough for musical gate tracking (16ms resolution). The existing Oscilloscope and Collider use RAF. Creating 4 OscillatorNodes is lightweight (~240 bytes each in V8). The per-voice gain gate gives clean, artifact-free envelope separation.
+**Rationale**: RAF polling at 60 FPS is fast enough for musical gate tracking. The single `poly-audio` output port replaces the original 4 `voice-N` ports (see decision 3a). The dummy GainNode approach avoids changes to the connection system's port registration logic.
 
 **Alternatives considered**:
 - `AudioWorkletProcessor` for per-sample gate switching — overkill; gate switching at 60 FPS is imperceptible for ADSR-shaped envelopes.
 - Single OscillatorNode + ChannelSplitter — Web Audio API does not support polyphonic OscillatorNodes.
+- 4 separate `voice-N` AUDIO output ports — implemented initially but replaced by the single `poly-audio` port for UX clarity (see decision 3a).
 
 ---
 
 ### 6. PolyADSR Audio Graph
 
-**Decision**: PolyADSR creates 4 independent ADSR gain envelopes (one per voice slot), using the same attack/decay/sustain/release parameters shared across all voices. Each envelope's output is wired to a corresponding slot in PolyVCA. Gate transitions (0→1 = note on, 1→0 = note off) are detected by comparing the polled `gate` value against the stored previous gate state per slot.
+**Decision**: PolyADSR creates 4 independent ADSR gain envelopes (one per voice slot), using the same attack/decay/sustain/release parameters shared across all voices. Gate transitions (0→1 = note on, 1→0 = note off) are detected by comparing the polled `gate` value against the stored previous gate state per slot. The component exposes a single `poly-env` output port (POLY_ENV type); ConnectionManager wires the 4 `outputGains` GainNodes directly into PolyVCA's voice gain AudioParams when this cable is connected. A dummy `polyEnvOut` GainNode is registered as the port's AudioNode to satisfy the port/connection data model.
 
-**Rationale**: Mirrors mono ADSREnvelope exactly (ConstantSource → GainNode envelope → output GainNode) but replicated ×4. Parameter sharing matches the spec assumption ("All 4 voices within a poly component share the same parameter values").
+**Rationale**: Mirrors mono ADSREnvelope exactly (ConstantSource → GainNode envelope → output GainNode) but replicated ×4. Parameter sharing matches the spec assumption. The single `poly-env` port replaces the original 4 `env-N` CV ports (see decision 3a).
 
 **Alternatives considered**:
 - Receiving gate directly from PolyOscillator — violates the independent-cable-to-POLY_CV architecture; PolyADSR must cable directly to the Keyboard's poly-cv port.
+- 4 separate `env-N` CV output ports — implemented initially but replaced by the single `poly-env` port for UX clarity (see decision 3a).
 
 ---
 
 ### 7. PolyVCA Audio Graph
 
-**Decision**: PolyVCA creates 4 input GainNodes (one per voice). Each gain node receives audio from the corresponding PolyOscillator voice output. The PolyADSR's 4 envelope CV outputs connect to the `gain` AudioParam of each voice GainNode. All 4 voice gains feed into a single summing GainNode (gain = 0.25 to prevent clipping at full 4-voice load), which is the mono AUDIO output port connectable to any downstream mono component.
+**Decision**: PolyVCA creates 4 voice input GainNodes and 4 voice gain GainNodes, all summing into a single `sumGain` GainNode (gain = 0.25) that is the mono AUDIO output. Rather than exposing 8 individual ports, PolyVCA exposes two bundled input ports: `poly-audio` (POLY_AUDIO) and `poly-env` (POLY_ENV). `connectPolyAudio(voiceOutputs[])` wires the 4 source voice GainNodes into the 4 `voiceInputs`; `connectPolyEnv(outputGains[])` connects the 4 envelope GainNodes to the 4 `voiceGains[i].gain` AudioParams.
 
-**Rationale**: Standard summing mixer approach. 0.25 gain per-sum (4 voices × 0.25 = 1.0 max) prevents clipping. FR-012 and FR-013 are satisfied: mono output, standard AUDIO port, pluggable into any existing mono input.
+**Rationale**: Standard summing mixer approach. 0.25 gain per voice prevents clipping. The two bundled ports replace the original 8 individual ports (4 `audio-N` + 4 `cv-N`), collapsing 8 cables into 2 (see decision 3a). FR-012 and FR-013 are still satisfied: single mono AUDIO output, compatible with any downstream mono module.
 
 **Alternatives considered**:
 - DynamicsCompressorNode on output — over-engineering; a fixed 0.25 gain is sufficient and predictable.
-- Separate PolyVCA output GainNode per voice summed outside — same result, more nodes.
+- 8 individual input ports — implemented initially; replaced by 2 bundled ports for UX clarity.
 
 ---
 

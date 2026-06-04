@@ -11,6 +11,8 @@ export enum SignalType {
   CV = 'cv',
   GATE = 'gate',
   POLY_CV = 'poly-cv',
+  POLY_AUDIO = 'poly-audio',
+  POLY_ENV = 'poly-env',
 }
 
 /**

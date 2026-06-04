@@ -162,18 +162,17 @@ describe('US1 — Play a Chord from the Keyboard', () => {
     kbd.triggerNoteOn(60, midiToFreq(60), 1);
     kbd.triggerNoteOn(64, midiToFreq(64), 1);
 
-    // Manually invoke the polling step (RAF not ticking in test env)
     (polyOsc as any)._applySlots();
 
     const oscillators = (polyOsc as any).oscillators;
     expect(oscillators[0].frequency.value).toBeCloseTo(midiToFreq(60), 1);
     expect(oscillators[1].frequency.value).toBeCloseTo(midiToFreq(64), 1);
 
-    // Voice outputs should be open for active voices
-    const voiceOutputs = (polyOsc as any).voiceOutputs;
-    expect(voiceOutputs[0].gain.value).toBe(1);
-    expect(voiceOutputs[1].gain.value).toBe(1);
-    expect(voiceOutputs[2].gain.value).toBe(0); // inactive
+    // Internal voice outputs (exposed via getVoiceOutputs()) open for active voices
+    const voiceOutputs = polyOsc.getVoiceOutputs();
+    expect(voiceOutputs[0]!.gain.value).toBe(1);
+    expect(voiceOutputs[1]!.gain.value).toBe(1);
+    expect(voiceOutputs[2]!.gain.value).toBe(0);
   });
 
   it('PolyADSR fires gate-on for each newly active voice', () => {
@@ -253,47 +252,62 @@ describe('US2 — polyMode persistence', () => {
 });
 
 // ---------------------------------------------------------------------------
-// US3 — PolyVCA getOutputNode returns a standard GainNode (A3 fix)
+// US3 — PolyVCA mono output via single poly-audio / poly-env connections
 // ---------------------------------------------------------------------------
 
 describe('US3 — PolyVCA mono output', () => {
   beforeEach(() => setupAudio());
   afterEach(() => teardownAudio());
 
-  it('getOutputNode() returns a GainNode (compatible with any mono audio input)', () => {
+  it('getOutputNode() returns a GainNode (standard AUDIO-compatible node)', () => {
     const vca = new PolyVCA('vca3', { x: 0, y: 0 });
     vca.activate();
-
     const out = vca.getOutputNode();
-    // In the mock environment, GainNode is MockGainNode — verify it has a gain param
     expect(out).toBeTruthy();
-    expect((out as any).gain).toBeDefined(); // GainNode has .gain AudioParam
-
+    expect((out as any).gain).toBeDefined();
     vca.deactivate();
   });
 
-  it('getAudioParamForInput returns gain AudioParam for each cv-N port', () => {
-    const vca = new PolyVCA('vca4', { x: 0, y: 0 });
+  it('SC3 — summing gain is 0.25, preventing clipping at full 4-voice load', () => {
+    const vca = new PolyVCA('vca3b', { x: 0, y: 0 });
     vca.activate();
-
-    for (let i = 0; i < 4; i++) {
-      const param = vca.getAudioParamForInput(`cv-${i}`);
-      expect(param).toBeTruthy();
-    }
-
+    expect((vca as any).sumGain.gain.value).toBe(0.25);
     vca.deactivate();
   });
 
-  it('getInputNode returns the correct audio GainNode for each audio-N port', () => {
-    const vca = new PolyVCA('vca5', { x: 0, y: 0 });
+  it('connectPolyAudio wires PolyOscillator voice outputs into PolyVCA voice inputs', () => {
+    const osc = new PolyOscillator('osc-us3', { x: 0, y: 0 });
+    const vca = new PolyVCA('vca-us3', { x: 0, y: 0 });
+    osc.activate();
     vca.activate();
 
-    for (let i = 0; i < 4; i++) {
-      const node = vca.getInputNode(`audio-${i}`);
-      expect(node).toBeTruthy();
-    }
+    const voiceOutputs = osc.getVoiceOutputs();
+    expect(() => vca.connectPolyAudio(voiceOutputs)).not.toThrow();
+    expect(() => vca.disconnectPolyAudio(voiceOutputs)).not.toThrow();
 
+    osc.deactivate();
     vca.deactivate();
+  });
+
+  it('connectPolyEnv wires PolyADSR envelope outputs into PolyVCA gain AudioParams', () => {
+    const adsr = new PolyADSR('adsr-us3', { x: 0, y: 0 });
+    const vca = new PolyVCA('vca-us3b', { x: 0, y: 0 });
+    adsr.activate();
+    vca.activate();
+
+    const outputGains = adsr.getOutputGains();
+    expect(() => vca.connectPolyEnv(outputGains)).not.toThrow();
+    expect(() => vca.disconnectPolyEnv(outputGains)).not.toThrow();
+
+    adsr.deactivate();
+    vca.deactivate();
+  });
+
+  it('SC2 — PolyVCA output port is AUDIO-compatible with MasterOutput input port', () => {
+    const vca = new PolyVCA('vca-us3c', { x: 0, y: 0 });
+    const master = new MasterOutput('master-us3', { x: 0, y: 0 });
+    expect(vca.outputs.get('output')!.type).toBe(SignalType.AUDIO);
+    expect(master.inputs.get('input')!.type).toBe(SignalType.AUDIO);
   });
 });
 

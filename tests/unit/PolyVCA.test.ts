@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { PolyVCA } from '../../src/components/processors/PolyVCA';
-import { MockAudioContext } from '../mocks/WebAudioAPI.mock';
+import { MockAudioContext, MockGainNode } from '../mocks/WebAudioAPI.mock';
 import { audioEngine } from '../../src/core/AudioEngine';
+import { SignalType } from '../../src/core/types';
 
 describe('PolyVCA', () => {
   let vca: PolyVCA;
@@ -22,66 +23,67 @@ describe('PolyVCA', () => {
   });
 
   describe('construction', () => {
-    it('registers 8 input ports (audio-0..3 and cv-0..3)', () => {
-      for (let i = 0; i < 4; i++) {
-        expect(vca.inputs.has(`audio-${i}`)).toBe(true);
-        expect(vca.inputs.has(`cv-${i}`)).toBe(true);
-      }
+    it('registers 2 inputs: poly-audio and poly-env', () => {
+      expect(vca.inputs.has('poly-audio')).toBe(true);
+      expect(vca.inputs.has('poly-env')).toBe(true);
+      expect(vca.inputs.size).toBe(2);
+    });
+
+    it('poly-audio input carries POLY_AUDIO signal type', () => {
+      expect(vca.inputs.get('poly-audio')!.type).toBe(SignalType.POLY_AUDIO);
+    });
+
+    it('poly-env input carries POLY_ENV signal type', () => {
+      expect(vca.inputs.get('poly-env')!.type).toBe(SignalType.POLY_ENV);
     });
 
     it('registers a single audio output port', () => {
       expect(vca.outputs.has('output')).toBe(true);
+      expect(vca.outputs.size).toBe(1);
     });
   });
 
   describe('audio graph', () => {
-    it('getOutputNode() returns a GainNode (A3 fix — standard AUDIO node, no special handling needed)', () => {
+    it('getOutputNode() returns a GainNode (standard AUDIO-compatible node)', () => {
       const out = vca.getOutputNode();
-      // GainNode has a .gain AudioParam — confirms it is a standard Web Audio GainNode
       expect(out).toBeTruthy();
       expect((out as any).gain).toBeDefined();
     });
 
-    it('getOutputNode() returns the summing GainNode with gain=0.25 (FR-012 — prevents clipping)', () => {
-      const sumGain = (vca as any).sumGain;
-      expect(sumGain.gain.value).toBe(0.25);
+    it('summing GainNode uses 0.25 gain (prevents clipping at 4-voice load)', () => {
+      expect((vca as any).sumGain.gain.value).toBe(0.25);
     });
 
-    it('getInputNode() returns a GainNode for each audio-N port', () => {
-      for (let i = 0; i < 4; i++) {
-        const node = vca.getInputNode(`audio-${i}`);
-        expect(node).toBeTruthy();
-        expect((node as any).gain).toBeDefined();
+    it('voice gain AudioParams start at 0 (silent until PolyADSR drives them)', () => {
+      for (const g of (vca as any).voiceGains) {
+        expect(g.gain.value).toBe(0);
       }
     });
+  });
 
-    it('getInputNode() returns null for cv-N ports (CV uses AudioParam, not AudioNode)', () => {
-      for (let i = 0; i < 4; i++) {
-        expect(vca.getInputNode(`cv-${i}`)).toBeNull();
-      }
+  describe('connectPolyAudio / disconnectPolyAudio', () => {
+    it('wires 4 mock GainNodes into the 4 voice inputs without error', () => {
+      const fakeOutputs = Array.from({ length: 4 }, () => new MockGainNode()) as unknown as GainNode[];
+      expect(() => vca.connectPolyAudio(fakeOutputs)).not.toThrow();
     });
 
-    it('getAudioParamForInput() returns a distinct AudioParam for each cv-N port', () => {
-      const params = [];
-      for (let i = 0; i < 4; i++) {
-        const param = vca.getAudioParamForInput(`cv-${i}`);
-        expect(param).toBeTruthy();
-        params.push(param);
-      }
-      // Each cv port maps to a different gain param
-      expect(new Set(params).size).toBe(4);
+    it('disconnects them without error', () => {
+      const fakeOutputs = Array.from({ length: 4 }, () => new MockGainNode()) as unknown as GainNode[];
+      vca.connectPolyAudio(fakeOutputs);
+      expect(() => vca.disconnectPolyAudio(fakeOutputs)).not.toThrow();
+    });
+  });
+
+  describe('connectPolyEnv / disconnectPolyEnv', () => {
+    it('wires 4 envelope GainNodes into the 4 voice gain AudioParams without error', () => {
+      const fakeEnvs = Array.from({ length: 4 }, () => new MockGainNode()) as unknown as GainNode[];
+      expect(() => vca.connectPolyEnv(fakeEnvs)).not.toThrow();
     });
 
-    it('getAudioParamForInput() returns null for unknown port IDs', () => {
-      expect(vca.getAudioParamForInput('audio-0')).toBeNull();
-      expect(vca.getAudioParamForInput('output')).toBeNull();
-    });
-
-    it('voice gain AudioParams start at 0 (silent until PolyADSR CV drives them)', () => {
-      for (let i = 0; i < 4; i++) {
-        const param = vca.getAudioParamForInput(`cv-${i}`);
-        expect((param as any).value).toBe(0);
-      }
+    it('disconnects them without error', () => {
+      const fakeEnvs = Array.from({ length: 4 }, () => new MockGainNode()) as unknown as GainNode[];
+      vca.connectPolyEnv(fakeEnvs);
+      expect(() => vca.disconnectPolyEnv(fakeEnvs)).not.toThrow();
     });
   });
 });

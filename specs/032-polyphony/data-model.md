@@ -63,8 +63,8 @@ Embedded inside `KeyboardInput`. Not serialized; reconstructed from the paramete
 | Field | Type | Description |
 |-------|------|-------------|
 | `oscillators` | `OscillatorNode[4]` | One per voice slot |
-| `voiceGates` | `GainNode[4]` | Silence a voice when gate=0 (gain 0→1 transitions) |
-| `outputMix` | `GainNode` | Sums all 4 voice gates; final audio output |
+| `voiceOutputs` | `GainNode[4]` | Per-voice gate GainNode (gain 0→1); wired into PolyVCA by ConnectionManager |
+| `polyAudioOut` | `GainNode` | Dummy node registered as the `poly-audio` port's AudioNode |
 | `voiceSlotsGetter` | `(() => Readonly<VoiceSlot[]>) \| null` | Registered by ConnectionManager on connect |
 | `rafHandle` | `number \| null` | requestAnimationFrame ID for polling loop |
 
@@ -74,14 +74,14 @@ Embedded inside `KeyboardInput`. Not serialized; reconstructed from the paramete
 | `waveform` | 0 (sine) | 0 | 3 | 1 | — |
 
 **Ports**:
-| Port | Direction | Signal Type |
-|------|-----------|-------------|
-| `poly-cv` | Input | `POLY_CV` |
-| `output` | Output | `AUDIO` |
+| Port | Direction | Signal Type | Description |
+|------|-----------|-------------|-------------|
+| `poly-cv` | Input | `POLY_CV` | Voice slot data from Keyboard |
+| `poly-audio` | Output | `POLY_AUDIO` | Bundled 4-voice audio; ConnectionManager wires all 4 `voiceOutputs` into PolyVCA |
 
 **Polling loop** (RAF): On each frame, read `voiceSlotsGetter()`. For each slot i:
 - Set `oscillators[i].frequency.value = slot.frequency` (if changed).
-- Set `voiceGates[i].gain.value = slot.gate` (hard switch; envelope shaping is PolyADSR's job).
+- Set `voiceOutputs[i].gain.value = slot.gate` (hard switch; envelope shaping is PolyADSR's job).
 
 ---
 
@@ -93,7 +93,8 @@ Embedded inside `KeyboardInput`. Not serialized; reconstructed from the paramete
 |-------|------|-------------|
 | `envGains` | `GainNode[4]` | Envelope-shaped gain for each voice |
 | `constantSources` | `ConstantSourceNode[4]` | Constant 1.0 source per voice |
-| `outputGains` | `GainNode[4]` | Per-voice output (connects to PolyVCA CV inputs) |
+| `outputGains` | `GainNode[4]` | Per-voice envelope output; wired into PolyVCA gain AudioParams by ConnectionManager |
+| `polyEnvOut` | `GainNode` | Dummy node registered as the `poly-env` port's AudioNode |
 | `previousGates` | `(0 \| 1)[4]` | Last polled gate value per slot (edge detection) |
 | `voiceSlotsGetter` | `(() => Readonly<VoiceSlot[]>) \| null` | Registered by ConnectionManager |
 | `rafHandle` | `number \| null` | RAF polling handle |
@@ -107,13 +108,10 @@ Embedded inside `KeyboardInput`. Not serialized; reconstructed from the paramete
 | `release` | 0.3 | 0.001 | 5.0 | 0.001 | s |
 
 **Ports**:
-| Port | Direction | Signal Type |
-|------|-----------|-------------|
-| `poly-cv` | Input | `POLY_CV` |
-| `env-0` | Output | `CV` |
-| `env-1` | Output | `CV` |
-| `env-2` | Output | `CV` |
-| `env-3` | Output | `CV` |
+| Port | Direction | Signal Type | Description |
+|------|-----------|-------------|-------------|
+| `poly-cv` | Input | `POLY_CV` | Voice slot data from Keyboard |
+| `poly-env` | Output | `POLY_ENV` | Bundled 4-voice envelopes; ConnectionManager wires all 4 `outputGains` into PolyVCA |
 
 **Polling loop** (RAF): For each slot i, compare `slot.gate` vs `previousGates[i]`:
 - 0→1 transition → call `triggerGateOn(i)` (A-D-S phase on `envGains[i].gain`).
@@ -127,31 +125,31 @@ Embedded inside `KeyboardInput`. Not serialized; reconstructed from the paramete
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `voiceInputs` | `GainNode[4]` | Audio input per voice (receives PolyOscillator voice audio) |
-| `voiceGains` | `GainNode[4]` | CV-controlled gain per voice (driven by PolyADSR env-N outputs) |
+| `voiceInputs` | `GainNode[4]` | Audio input per voice; wired by `connectPolyAudio()` when poly-audio cable is connected |
+| `voiceGains` | `GainNode[4]` | CV-controlled gain per voice; wired by `connectPolyEnv()` when poly-env cable is connected |
 | `sumGain` | `GainNode` | Final summing node (gain = 0.25 to prevent clipping) |
 
-**Parameters**: None (gain is entirely CV-driven).
+**Parameters**: None (gain is entirely driven by the connected PolyADSR).
 
 **Ports**:
-| Port | Direction | Signal Type |
-|------|-----------|-------------|
-| `audio-0` | Input | `AUDIO` |
-| `audio-1` | Input | `AUDIO` |
-| `audio-2` | Input | `AUDIO` |
-| `audio-3` | Input | `AUDIO` |
-| `cv-0` | Input | `CV` |
-| `cv-1` | Input | `CV` |
-| `cv-2` | Input | `CV` |
-| `cv-3` | Input | `CV` |
-| `output` | Output | `AUDIO` |
+| Port | Direction | Signal Type | Description |
+|------|-----------|-------------|-------------|
+| `poly-audio` | Input | `POLY_AUDIO` | Bundled 4-voice audio from PolyOscillator |
+| `poly-env` | Input | `POLY_ENV` | Bundled 4-voice envelopes from PolyADSR |
+| `output` | Output | `AUDIO` | Mixed mono audio; connects to any standard downstream module |
 
-**Audio graph per voice i**:
+**Audio graph per voice i** (wired internally by ConnectionManager):
 ```
-PolyOscillator voice[i] output ──▶ voiceInputs[i] ──▶ voiceGains[i] ──▶ sumGain ──▶ output
-                                                            ▲
-                                    PolyADSR env-i ─────────┘ (via AudioParam)
+PolyOscillator voiceOutputs[i] ──▶ voiceInputs[i] ──▶ voiceGains[i] ──▶ sumGain (×0.25) ──▶ output
+                                                              ▲
+                               PolyADSR outputGains[i] ───────┘ (via AudioParam)
 ```
+
+**Connection API**:
+- `connectPolyAudio(voiceOutputs: GainNode[])` — wires 4 source GainNodes into `voiceInputs`
+- `disconnectPolyAudio(voiceOutputs: GainNode[])` — unwires them
+- `connectPolyEnv(outputGains: GainNode[])` — wires 4 envelope GainNodes into `voiceGains[i].gain`
+- `disconnectPolyEnv(outputGains: GainNode[])` — unwires them
 
 ---
 
@@ -185,17 +183,21 @@ PolyOscillator voice[i] output ──▶ voiceInputs[i] ──▶ voiceGains[i] 
 
 ```typescript
 export enum SignalType {
-  AUDIO = 'audio',
-  CV    = 'cv',
-  GATE  = 'gate',
-  POLY_CV = 'poly-cv',   // ← new
+  AUDIO     = 'audio',
+  CV        = 'cv',
+  GATE      = 'gate',
+  POLY_CV   = 'poly-cv',    // ← new: Keyboard → PolyOscillator / PolyADSR
+  POLY_AUDIO = 'poly-audio', // ← new: PolyOscillator → PolyVCA (bundled voice audio)
+  POLY_ENV  = 'poly-env',   // ← new: PolyADSR → PolyVCA (bundled voice envelopes)
 }
 ```
 
-Compatibility rules in `areSignalTypesCompatible`:
+Compatibility rules in `areSignalTypesCompatible` — each poly type is strictly self-compatible only:
 - `POLY_CV → POLY_CV`: allowed.
-- `POLY_CV → anything else`: rejected.
-- `anything else → POLY_CV`: rejected.
+- `POLY_AUDIO → POLY_AUDIO`: allowed.
+- `POLY_ENV → POLY_ENV`: allowed.
+- Any poly type → any different type: rejected.
+- Any non-poly type → any poly type: rejected.
 
 ---
 
@@ -215,10 +217,10 @@ POLY_VCA        = 'poly-vca',
 
 | Entity | Change | Backward compatible? |
 |--------|--------|----------------------|
-| `SignalType` | New enum value `poly-cv` | Yes — old patches never emit this value |
+| `SignalType` | 3 new values: `poly-cv`, `poly-audio`, `poly-env` | Yes — old patches never emit these |
 | `ComponentType` | 3 new enum values | Yes — old patches never contain these types |
 | `ComponentData.parameters` | `polyMode` key on Keyboard | Yes — missing key → default 0 (mono) |
-| `Connection.signalType` | `poly-cv` value possible | Yes — new patches only |
+| `Connection.signalType` | `poly-cv`, `poly-audio`, `poly-env` values possible | Yes — new patches only |
 | `PatchData` | No new top-level fields | Fully backward compatible |
 
 ---
@@ -229,12 +231,10 @@ New entries required in `componentLayout.ts` for port counts and control layout:
 
 | ComponentType | Inputs | Outputs | Controls |
 |---------------|--------|---------|----------|
-| `POLY_OSCILLATOR` | 1 (poly-cv) | 1 (audio) | 1 Dropdown (waveform) |
-| `POLY_ADSR` | 1 (poly-cv) | 4 (env-0..3) | 4 Sliders (A/D/S/R) |
-| `POLY_VCA` | 9 (audio-0..3, cv-0..3, output) | 1 (audio) | None |
+| `POLY_OSCILLATOR` | 1 (poly-cv) | 1 (poly-audio) | 1 Dropdown (waveform) |
+| `POLY_ADSR` | 1 (poly-cv) | 1 (poly-env) | 4 Sliders (A/D/S/R) |
+| `POLY_VCA` | 2 (poly-audio, poly-env) | 1 (audio) | None |
 | `KEYBOARD_INPUT` | 0 | 4 (freq, gate, velocity, poly-cv) | 1 Button (polyMode) |
-
-> Note: PolyVCA input count is 8 (4 audio + 4 cv), output count is 1.
 
 ---
 

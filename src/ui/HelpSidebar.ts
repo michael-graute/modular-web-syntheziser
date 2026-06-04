@@ -1520,11 +1520,11 @@ export class HelpSidebar {
         <p style="color: #c084fc; font-family: monospace; margin: 0 0 4px;">
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└──▶ Poly ADSR (Poly CV)
         </p>
-        <p style="color: #4ade80; font-family: monospace; margin: 0 0 4px;">
-          Poly Oscillator Voice 0–3 ──▶ Poly VCA (Audio 0–3)
+        <p style="color: #c084fc; font-family: monospace; margin: 0 0 4px;">
+          Poly Oscillator (Poly Audio) ──▶ Poly VCA (Poly Audio)
         </p>
-        <p style="color: #60a5fa; font-family: monospace; margin: 0 0 4px;">
-          Poly ADSR Env 0–3 ──▶ Poly VCA (CV 0–3)
+        <p style="color: #c084fc; font-family: monospace; margin: 0 0 4px;">
+          Poly ADSR (Poly Env) ──▶ Poly VCA (Poly Env)
         </p>
         <p style="color: #4ade80; font-family: monospace; margin: 0;">
           Poly VCA (Audio Out) ──▶ Master Out (or any mono effect)
@@ -1550,22 +1550,18 @@ export class HelpSidebar {
           Both poly components connect to the same Keyboard Poly CV port — each reads only what it needs.
         </li>
         <li style="margin-bottom: 12px;">
-          <strong style="color: var(--text-primary, #ffffff);">Connect the audio cables (green):</strong>
+          <strong style="color: var(--text-primary, #ffffff);">Connect the poly audio cable (purple):</strong>
           <ul style="margin-top: 8px;">
-            <li>Poly Oscillator <strong>Voice 0</strong> → Poly VCA <strong>Audio 0 In</strong></li>
-            <li>Poly Oscillator <strong>Voice 1</strong> → Poly VCA <strong>Audio 1 In</strong></li>
-            <li>Poly Oscillator <strong>Voice 2</strong> → Poly VCA <strong>Audio 2 In</strong></li>
-            <li>Poly Oscillator <strong>Voice 3</strong> → Poly VCA <strong>Audio 3 In</strong></li>
+            <li>Poly Oscillator <strong>Poly Audio</strong> → Poly VCA <strong>Poly Audio</strong></li>
           </ul>
+          All 4 voice audio signals are bundled in a single cable — no fan-out required.
         </li>
         <li style="margin-bottom: 12px;">
-          <strong style="color: var(--text-primary, #ffffff);">Connect the envelope cables (blue):</strong>
+          <strong style="color: var(--text-primary, #ffffff);">Connect the poly envelope cable (purple):</strong>
           <ul style="margin-top: 8px;">
-            <li>Poly ADSR <strong>Env 0</strong> → Poly VCA <strong>CV 0 In</strong></li>
-            <li>Poly ADSR <strong>Env 1</strong> → Poly VCA <strong>CV 1 In</strong></li>
-            <li>Poly ADSR <strong>Env 2</strong> → Poly VCA <strong>CV 2 In</strong></li>
-            <li>Poly ADSR <strong>Env 3</strong> → Poly VCA <strong>CV 3 In</strong></li>
+            <li>Poly ADSR <strong>Poly Env</strong> → Poly VCA <strong>Poly Env</strong></li>
           </ul>
+          All 4 per-voice envelopes are bundled in a single cable.
         </li>
         <li style="margin-bottom: 12px;">
           <strong style="color: var(--text-primary, #ffffff);">Connect the output:</strong>
@@ -1586,7 +1582,7 @@ export class HelpSidebar {
       <ul style="color: var(--text-secondary, #cccccc);">
         <li><strong>Waveform:</strong> Sine, Square, Sawtooth, Triangle — shared across all 4 voices</li>
         <li><strong>Input:</strong> Poly CV (reads frequency per voice)</li>
-        <li><strong>Outputs:</strong> Voice 0, Voice 1, Voice 2, Voice 3 — individual audio per voice</li>
+        <li><strong>Output:</strong> Poly Audio — all 4 voice audio signals bundled in one cable</li>
       </ul>
 
       <h4 style="color: var(--text-primary, #ffffff);">Poly ADSR</h4>
@@ -1597,16 +1593,16 @@ export class HelpSidebar {
       <ul style="color: var(--text-secondary, #cccccc);">
         <li><strong>Attack / Decay / Sustain / Release:</strong> Shared values applied to all 4 envelopes</li>
         <li><strong>Input:</strong> Poly CV (reads gate state per voice)</li>
-        <li><strong>Outputs:</strong> Env 0 – Env 3 — individual CV envelopes, connect to Poly VCA CV inputs</li>
+        <li><strong>Output:</strong> Poly Env — all 4 per-voice envelopes bundled in one cable</li>
       </ul>
 
       <h4 style="color: var(--text-primary, #ffffff);">Poly VCA</h4>
       <p style="color: var(--text-secondary, #cccccc);">
-        4 independent gain stages, each controlled by a Poly ADSR envelope. Sums all voices into a
+        4 independent gain stages, each shaped by a per-voice envelope. Sums all voices into a
         single mono audio output that connects to any standard downstream module.
       </p>
       <ul style="color: var(--text-secondary, #cccccc);">
-        <li><strong>Inputs:</strong> Audio 0–3 (from Poly Oscillator voices) + CV 0–3 (from Poly ADSR envelopes)</li>
+        <li><strong>Input:</strong> Poly Audio (from Poly Oscillator) + Poly Env (from Poly ADSR)</li>
         <li><strong>Output:</strong> Audio Out — standard mono audio, compatible with Filter, Reverb, Master Output, etc.</li>
         <li><strong>Summing gain:</strong> 0.25× per voice (4 × 0.25 = 1.0 max) — no clipping at full 4-voice load</li>
         <li><strong>No controls:</strong> Amplitude is entirely shaped by the connected envelopes</li>

@@ -180,6 +180,8 @@ export const COLORS = {
   CV: '#60a5fa',
   GATE: '#f87171',
   POLY_CV: '#c084fc',
+  POLY_AUDIO: '#c084fc',
+  POLY_ENV: '#c084fc',
   SELECTED: '#4a9eff',
   GRID: 'rgba(255, 255, 255, 0.05)',
   COMPONENT_BG: '#2a2a2a',

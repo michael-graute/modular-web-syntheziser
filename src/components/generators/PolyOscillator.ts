@@ -10,21 +10,22 @@ const VOICE_COUNT = 4;
 
 export class PolyOscillator extends SynthComponent {
   private oscillators: OscillatorNode[] = [];
-  // One output GainNode per voice — PolyVCA connects to each individually (FR-007)
-  private voiceOutputs: GainNode[] = [];
+  private voiceOutputs: GainNode[] = [];   // one per voice; gate open/close here
+  private polyAudioOut: GainNode | null = null; // single summing node exposed as poly-audio port
   private voiceSlotsGetter: VoiceSlotsGetter | null = null;
   private rafHandle: number | null = null;
+
+  // PolyVCA registers itself here when connected; ConnectionManager calls it
+  // to wire the internal audio nodes directly (bypassing the Web Audio port)
+  private polyAudioDisconnector: (() => void) | null = null;
 
   constructor(id: string, position: Position) {
     super(id, ComponentType.POLY_OSCILLATOR, 'Poly Osc', position);
 
     this.addInput('poly-cv', 'Poly CV', SignalType.POLY_CV);
-    // Four individual audio outputs — one per voice (connect each to PolyVCA audio-N)
-    for (let i = 0; i < VOICE_COUNT; i++) {
-      this.addOutput(`voice-${i}`, `Voice ${i}`, SignalType.AUDIO);
-    }
+    // Single bundled audio output — connects to Poly VCA poly-audio input
+    this.addOutput('poly-audio', 'Poly Audio', SignalType.POLY_AUDIO);
 
-    // waveform: 0=sine, 1=square, 2=sawtooth, 3=triangle (FR-008: shared across all voices)
     this.addParameter('waveform', 'Waveform', 0, 0, 3, 1, '');
   }
 
@@ -35,24 +36,29 @@ export class PolyOscillator extends SynthComponent {
     const waveformIndex = Math.round(this.getParameter('waveform')?.getValue() ?? 0);
     const waveform = WAVEFORM_TYPES[waveformIndex] ?? 'sine';
 
+    // Dummy summing node — exposed as the port's AudioNode so the connection
+    // system has something to hold on to; actual audio flows via voiceOutputs
+    this.polyAudioOut = ctx.createGain();
+    this.polyAudioOut.gain.value = 1.0;
+
     for (let i = 0; i < VOICE_COUNT; i++) {
       const osc = ctx.createOscillator();
       osc.type = waveform;
       osc.frequency.value = 0;
       osc.start();
 
-      // Each voice has its own output GainNode — starts silent (gate=0)
       const out = ctx.createGain();
-      out.gain.value = 0;
+      out.gain.value = 0; // silent until gate opens
 
       osc.connect(out);
+      // Also feed the dummy summing node (so something is reachable via the port)
+      out.connect(this.polyAudioOut);
 
       this.oscillators.push(osc);
       this.voiceOutputs.push(out);
-
-      this.registerAudioNode(`voice-${i}`, out);
     }
 
+    this.registerAudioNode('poly-audio', this.polyAudioOut);
     this._startPolling();
   }
 
@@ -63,34 +69,26 @@ export class PolyOscillator extends SynthComponent {
       try { osc.stop(); } catch (_) { /* already stopped */ }
       osc.disconnect();
     }
-    for (const out of this.voiceOutputs) {
-      out.disconnect();
-    }
+    for (const out of this.voiceOutputs) { out.disconnect(); }
+    if (this.polyAudioOut) { this.polyAudioOut.disconnect(); this.polyAudioOut = null; }
 
     this.oscillators = [];
     this.voiceOutputs = [];
+    this.polyAudioDisconnector = null;
   }
 
   updateAudioParameter(parameterId: string, value: number): void {
     if (parameterId === 'waveform') {
       const waveform = WAVEFORM_TYPES[Math.round(value)] ?? 'sine';
-      for (const osc of this.oscillators) {
-        osc.type = waveform;
-      }
+      for (const osc of this.oscillators) osc.type = waveform;
     }
   }
 
   getInputNode(): AudioNode | null { return null; }
+  getOutputNode(): AudioNode | null { return this.polyAudioOut; }
 
-  // Default output: voice 0 (fallback; proper connections use getOutputNodeByPort)
-  getOutputNode(): AudioNode | null { return this.voiceOutputs[0] ?? null; }
-
-  protected override getOutputNodeByPort(portId: string): AudioNode | null {
-    const match = portId.match(/^voice-(\d)$/);
-    if (match) {
-      return this.voiceOutputs[parseInt(match[1]!, 10)] ?? null;
-    }
-    return this.voiceOutputs[0] ?? null;
+  protected override getOutputNodeByPort(_portId: string): AudioNode | null {
+    return this.polyAudioOut;
   }
 
   // PolyConsumer interface
@@ -100,7 +98,6 @@ export class PolyOscillator extends SynthComponent {
 
   clearVoiceSlotsGetter(): void {
     this.voiceSlotsGetter = null;
-    // Zero all voice outputs immediately when cable is removed
     const ctx = audioEngine.isReady() ? audioEngine.getContext() : null;
     const now = ctx?.currentTime ?? 0;
     for (const out of this.voiceOutputs) {
@@ -108,6 +105,25 @@ export class PolyOscillator extends SynthComponent {
       out.gain.setValueAtTime(0, now);
     }
   }
+
+  // Called by ConnectionManager when poly-audio cable is connected to a PolyVCA.
+  // The consumer immediately wires all 4 voiceOutput GainNodes into its own graph.
+  registerPolyAudioConsumer(
+    connect: (voiceOutputs: GainNode[]) => void,
+    disconnect: () => void
+  ): void {
+    this.polyAudioDisconnector = disconnect;
+    if (this.voiceOutputs.length === VOICE_COUNT) {
+      connect(this.voiceOutputs);
+    }
+  }
+
+  clearPolyAudioConsumer(): void {
+    if (this.polyAudioDisconnector) this.polyAudioDisconnector();
+    this.polyAudioDisconnector = null;
+  }
+
+  getVoiceOutputs(): GainNode[] { return this.voiceOutputs; }
 
   private _startPolling(): void {
     const poll = () => {
@@ -126,25 +142,15 @@ export class PolyOscillator extends SynthComponent {
   }
 
   private _applySlots(): void {
-    // FR-001a: reads only slot.frequency (gate switching via per-voice output gain)
     if (!this.voiceSlotsGetter) return;
-
     const slots = this.voiceSlotsGetter();
     for (let i = 0; i < VOICE_COUNT; i++) {
       const slot = slots[i];
-      if (!slot) continue;
-
       const osc = this.oscillators[i];
       const out = this.voiceOutputs[i];
-      if (!osc || !out) continue;
-
-      if (osc.frequency.value !== slot.frequency) {
-        osc.frequency.value = slot.frequency;
-      }
-      // Gate the voice output directly — PolyVCA CV envelope shapes the amplitude
-      if (out.gain.value !== slot.gate) {
-        out.gain.value = slot.gate;
-      }
+      if (!slot || !osc || !out) continue;
+      if (osc.frequency.value !== slot.frequency) osc.frequency.value = slot.frequency;
+      if (out.gain.value !== slot.gate) out.gain.value = slot.gate;
     }
   }
 }

@@ -3,22 +3,19 @@ import { ComponentType, Position, SignalType } from '../../core/types';
 import { audioEngine } from '../../core/AudioEngine';
 
 const VOICE_COUNT = 4;
-// Summing gain prevents clipping: 4 voices × 0.25 = 1.0 max (FR-012)
-const SUM_GAIN = 0.25;
+const SUM_GAIN = 0.25; // 4 voices × 0.25 = 1.0 max (prevents clipping)
 
 export class PolyVCA extends SynthComponent {
-  private voiceInputs: GainNode[] = [];  // receive audio from PolyOscillator per-voice output
-  private voiceGains: GainNode[] = [];   // CV-controlled per voice (from PolyADSR env-N)
+  private voiceInputs: GainNode[] = [];   // receive audio per voice from PolyOscillator
+  private voiceGains: GainNode[] = [];    // CV-controlled per voice from PolyADSR
   private sumGain: GainNode | null = null;
 
   constructor(id: string, position: Position) {
     super(id, ComponentType.POLY_VCA, 'Poly VCA', position);
 
-    // FR-011: 4 independent gain stages; FR-012: mono mix output
-    for (let i = 0; i < VOICE_COUNT; i++) {
-      this.addInput(`audio-${i}`, `Audio ${i} In`, SignalType.AUDIO);
-      this.addInput(`cv-${i}`, `CV ${i} In`, SignalType.CV);
-    }
+    // Single bundled inputs — wired internally by ConnectionManager
+    this.addInput('poly-audio', 'Poly Audio', SignalType.POLY_AUDIO);
+    this.addInput('poly-env',   'Poly Env',   SignalType.POLY_ENV);
     this.addOutput('output', 'Audio Out', SignalType.AUDIO);
   }
 
@@ -30,13 +27,11 @@ export class PolyVCA extends SynthComponent {
     this.sumGain.gain.value = SUM_GAIN;
 
     for (let i = 0; i < VOICE_COUNT; i++) {
-      // voiceInput receives audio from PolyOscillator voice output
       const input = ctx.createGain();
       input.gain.value = 1.0;
 
-      // voiceGain controlled by PolyADSR env-N CV
       const gain = ctx.createGain();
-      gain.gain.value = 0; // start silent — CV drives it
+      gain.gain.value = 0; // CV-driven
 
       input.connect(gain);
       gain.connect(this.sumGain);
@@ -52,39 +47,61 @@ export class PolyVCA extends SynthComponent {
   }
 
   destroyAudioNodes(): void {
-    for (const n of this.voiceInputs) { n.disconnect(); }
-    for (const n of this.voiceGains) { n.disconnect(); }
+    for (const n of this.voiceInputs) n.disconnect();
+    for (const n of this.voiceGains) n.disconnect();
     if (this.sumGain) { this.sumGain.disconnect(); this.sumGain = null; }
     this.voiceInputs = [];
     this.voiceGains = [];
   }
 
-  updateAudioParameter(_parameterId: string, _value: number): void {
-    // No user-adjustable parameters; gain is entirely CV-driven
-  }
+  updateAudioParameter(_parameterId: string, _value: number): void { /* no user params */ }
 
-  getInputNode(portId?: string): AudioNode | null {
-    if (!portId) return this.voiceInputs[0] ?? null;
-    const audioMatch = portId.match(/^audio-(\d)$/);
-    if (audioMatch) {
-      return this.voiceInputs[parseInt(audioMatch[1]!, 10)] ?? null;
-    }
-    // cv-N ports use AudioParam — return null here; getAudioParamForInput handles them
+  getInputNode(_portId?: string): AudioNode | null {
+    // poly-audio and poly-env are wired by ConnectionManager directly; return null here
     return null;
-  }
-
-  protected override getInputNodeByPort(portId: string): AudioNode | null {
-    return this.getInputNode(portId);
   }
 
   getOutputNode(): AudioNode | null { return this.sumGain; }
 
-  override getAudioParamForInput(inputId: string): AudioParam | null {
-    const cvMatch = inputId.match(/^cv-(\d)$/);
-    if (cvMatch) {
-      const gain = this.voiceGains[parseInt(cvMatch[1]!, 10)];
-      return gain?.gain ?? null;
+  // Called by ConnectionManager when a poly-audio cable arrives from PolyOscillator
+  connectPolyAudio(voiceOutputs: GainNode[]): void {
+    for (let i = 0; i < VOICE_COUNT; i++) {
+      const src = voiceOutputs[i];
+      const dst = this.voiceInputs[i];
+      if (src && dst) src.connect(dst);
     }
-    return null;
   }
+
+  disconnectPolyAudio(voiceOutputs: GainNode[]): void {
+    for (let i = 0; i < VOICE_COUNT; i++) {
+      const src = voiceOutputs[i];
+      const dst = this.voiceInputs[i];
+      if (src && dst) {
+        try { src.disconnect(dst); } catch (_) { /* already disconnected */ }
+      }
+    }
+  }
+
+  // Called by ConnectionManager when a poly-env cable arrives from PolyADSR
+  connectPolyEnv(outputGains: GainNode[]): void {
+    for (let i = 0; i < VOICE_COUNT; i++) {
+      const src = outputGains[i];
+      const dst = this.voiceGains[i];
+      if (src && dst) src.connect(dst.gain);
+    }
+  }
+
+  disconnectPolyEnv(outputGains: GainNode[]): void {
+    for (let i = 0; i < VOICE_COUNT; i++) {
+      const src = outputGains[i];
+      const dst = this.voiceGains[i];
+      if (src && dst) {
+        try { src.disconnect(dst.gain); } catch (_) { /* already disconnected */ }
+      }
+    }
+  }
+
+  // Expose internal arrays for ConnectionManager to inspect on disconnect
+  getVoiceInputs(): GainNode[]  { return this.voiceInputs; }
+  getVoiceGains(): GainNode[]   { return this.voiceGains; }
 }

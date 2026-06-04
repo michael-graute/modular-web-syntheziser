@@ -307,13 +307,13 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
       return { inputs: 2, outputs: 2 }; // cv-in, gate-in / cv-out, gate-out
 
     case ComponentType.POLY_OSCILLATOR:
-      return { inputs: 1, outputs: 4 }; // poly-cv in / voice-0..3 audio out
+      return { inputs: 1, outputs: 1 }; // poly-cv in / poly-audio out
 
     case ComponentType.POLY_ADSR:
-      return { inputs: 1, outputs: 4 }; // poly-cv in / env-0..3 out
+      return { inputs: 1, outputs: 1 }; // poly-cv in / poly-env out
 
     case ComponentType.POLY_VCA:
-      return { inputs: 8, outputs: 1 }; // audio-0..3 + cv-0..3 / audio out
+      return { inputs: 2, outputs: 1 }; // poly-audio + poly-env / audio out
 
     default:
       return { inputs: 1, outputs: 1 };

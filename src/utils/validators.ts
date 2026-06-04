@@ -51,13 +51,11 @@ export function areSignalTypesCompatible(
     return targetType === SignalType.GATE;
   }
 
-  // POLY_CV can only connect to POLY_CV — strict isolation (FR-002)
-  if (sourceType === SignalType.POLY_CV) {
-    return targetType === SignalType.POLY_CV;
-  }
-
-  // Reject any connection targeting POLY_CV from a non-POLY_CV source
-  if (targetType === SignalType.POLY_CV) {
+  // Poly signal types are strictly self-compatible only
+  if (sourceType === SignalType.POLY_CV)    return targetType === SignalType.POLY_CV;
+  if (sourceType === SignalType.POLY_AUDIO) return targetType === SignalType.POLY_AUDIO;
+  if (sourceType === SignalType.POLY_ENV)   return targetType === SignalType.POLY_ENV;
+  if (targetType === SignalType.POLY_CV || targetType === SignalType.POLY_AUDIO || targetType === SignalType.POLY_ENV) {
     return false;
   }
 

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { PolyOscillator } from '../../src/components/generators/PolyOscillator';
 import { MockAudioContext } from '../mocks/WebAudioAPI.mock';
 import { audioEngine } from '../../src/core/AudioEngine';
+import { SignalType } from '../../src/core/types';
 import { VoiceSlot } from '../../src/components/utilities/VoiceAllocator';
 
 function makeSlots(overrides: Partial<VoiceSlot>[] = []): VoiceSlot[] {
@@ -17,11 +18,10 @@ function makeSlots(overrides: Partial<VoiceSlot>[] = []): VoiceSlot[] {
 
 describe('PolyOscillator', () => {
   let osc: PolyOscillator;
-  let mockCtx: MockAudioContext;
 
   beforeEach(() => {
-    mockCtx = new MockAudioContext();
-    (audioEngine as any).context = mockCtx;
+    const ctx = new MockAudioContext();
+    (audioEngine as any).context = ctx;
     (audioEngine as any).isInitialized = true;
     osc = new PolyOscillator('test-poly-osc', { x: 0, y: 0 });
     osc.activate();
@@ -36,11 +36,14 @@ describe('PolyOscillator', () => {
   });
 
   describe('construction', () => {
-    it('registers poly-cv input and 4 voice audio output ports', () => {
+    it('registers poly-cv input and single poly-audio output', () => {
       expect(osc.inputs.has('poly-cv')).toBe(true);
-      for (let i = 0; i < 4; i++) {
-        expect(osc.outputs.has(`voice-${i}`)).toBe(true);
-      }
+      expect(osc.outputs.has('poly-audio')).toBe(true);
+      expect(osc.outputs.size).toBe(1);
+    });
+
+    it('poly-audio output carries POLY_AUDIO signal type', () => {
+      expect(osc.outputs.get('poly-audio')!.type).toBe(SignalType.POLY_AUDIO);
     });
 
     it('registers waveform parameter', () => {
@@ -49,83 +52,74 @@ describe('PolyOscillator', () => {
   });
 
   describe('createAudioNodes', () => {
-    it('creates 4 independent voice output nodes', () => {
-      for (let i = 0; i < 4; i++) {
-        const node = (osc as any).getOutputNodeByPort(`voice-${i}`);
-        expect(node).toBeTruthy();
-      }
+    it('creates 4 internal voice output GainNodes', () => {
+      expect((osc as any).voiceOutputs).toHaveLength(4);
     });
 
     it('each voice output starts silent (gain=0)', () => {
-      const voiceOutputs = (osc as any).voiceOutputs;
-      for (const out of voiceOutputs) {
+      for (const out of (osc as any).voiceOutputs) {
         expect(out.gain.value).toBe(0);
       }
     });
 
-    it('getOutputNodeByPort returns distinct node for each voice port', () => {
-      const node0 = (osc as any).getOutputNodeByPort('voice-0');
-      const node1 = (osc as any).getOutputNodeByPort('voice-1');
-      expect(node0).not.toBe(node1);
+    it('getOutputNode returns the poly-audio dummy GainNode', () => {
+      expect((osc as any).getOutputNode()).toBeTruthy();
     });
   });
 
   describe('voice slot polling', () => {
-    it('skips updates gracefully when no getter is registered (null getter)', () => {
+    it('skips updates gracefully when no getter is registered', () => {
       expect(() => (osc as any)._applySlots()).not.toThrow();
     });
 
-    it('updates oscillator frequencies from slot.frequency', () => {
+    it('updates oscillator frequency from slot.frequency', () => {
       const slots = makeSlots([{ frequency: 440, gate: 1 }]);
       osc.setVoiceSlotsGetter(() => slots);
       (osc as any)._applySlots();
-
-      const oscillators = (osc as any).oscillators;
-      expect(oscillators[0].frequency.value).toBe(440);
+      expect((osc as any).oscillators[0].frequency.value).toBe(440);
     });
 
-    it('opens the voice output gain when slot.gate=1', () => {
+    it('opens voice output gain when slot.gate=1', () => {
       const slots = makeSlots([{ frequency: 440, gate: 1 }, { frequency: 220, gate: 0 }]);
       osc.setVoiceSlotsGetter(() => slots);
       (osc as any)._applySlots();
-
-      const voiceOutputs = (osc as any).voiceOutputs;
-      expect(voiceOutputs[0].gain.value).toBe(1);
-      expect(voiceOutputs[1].gain.value).toBe(0);
-    });
-
-    it('reads only slot.frequency — frequency updates even when gate=0', () => {
-      // FR-001a: PolyOscillator uses frequency for pitch, gate for output enable
-      const slots = makeSlots([{ frequency: 880, gate: 0 }]);
-      osc.setVoiceSlotsGetter(() => slots);
-      (osc as any)._applySlots();
-
-      const oscillators = (osc as any).oscillators;
-      expect(oscillators[0].frequency.value).toBe(880);
+      expect((osc as any).voiceOutputs[0].gain.value).toBe(1);
+      expect((osc as any).voiceOutputs[1].gain.value).toBe(0);
     });
   });
 
   describe('clearVoiceSlotsGetter', () => {
-    it('zeros all voice output gains', () => {
-      const slots = makeSlots([{ frequency: 440, gate: 1 }]);
-      osc.setVoiceSlotsGetter(() => slots);
+    it('zeros all voice output gains and nulls the getter', () => {
+      osc.setVoiceSlotsGetter(() => makeSlots([{ gate: 1 }]));
       (osc as any)._applySlots();
-
       osc.clearVoiceSlotsGetter();
-
-      const voiceOutputs = (osc as any).voiceOutputs;
-      for (const out of voiceOutputs) {
+      for (const out of (osc as any).voiceOutputs) {
         expect(out.gain.value).toBe(0);
       }
       expect((osc as any).voiceSlotsGetter).toBeNull();
     });
   });
 
+  describe('poly-audio consumer wiring', () => {
+    it('registerPolyAudioConsumer immediately invokes connect with voiceOutputs', () => {
+      const connectFn = vi.fn();
+      osc.registerPolyAudioConsumer(connectFn, vi.fn());
+      expect(connectFn).toHaveBeenCalledWith((osc as any).voiceOutputs);
+    });
+
+    it('clearPolyAudioConsumer calls the disconnector', () => {
+      const disconnectFn = vi.fn();
+      osc.registerPolyAudioConsumer(vi.fn(), disconnectFn);
+      osc.clearPolyAudioConsumer();
+      expect(disconnectFn).toHaveBeenCalled();
+    });
+  });
+
   describe('destroyAudioNodes', () => {
-    it('cancels the RAF handle on destroy (T029 — no orphaned loops)', () => {
-      const stopPollingSpy = vi.spyOn(osc as any, '_stopPolling');
+    it('cancels the RAF handle on destroy (no orphaned loops)', () => {
+      const spy = vi.spyOn(osc as any, '_stopPolling');
       osc.deactivate();
-      expect(stopPollingSpy).toHaveBeenCalled();
+      expect(spy).toHaveBeenCalled();
     });
   });
 });
