@@ -2043,25 +2043,65 @@ export class CanvasComponent {
   private renderControls(ctx: CanvasRenderingContext2D): void {
     const mappings = midiEngine.getMappings();
     const mappedParams = new Set(mappings.map((m) => m.componentId === this.synthComponent?.id ? m.parameterName : null).filter(Boolean));
+    const learnActive = midiEngine.isLearnActive();
+    const learnSession = midiEngine.getLearnSession();
+    const pendingParamName = learnSession && learnSession.componentId === this.synthComponent?.id
+      ? learnSession.parameterName
+      : null;
 
     this.controls.forEach(control => {
       control.render(ctx);
 
-      // Draw a small MIDI-assigned dot on controls that have an active mapping
-      if ((control instanceof Knob || control instanceof Slider) && mappedParams.size > 0) {
-        const param = control.getParameter();
-        const paramName = this.bareParamId(param.id);
-        if (mappedParams.has(paramName)) {
-          const bounds = control.getBounds();
-          const dotR = 3;
-          const dotX = bounds.x + bounds.width - dotR - 1;
-          const dotY = bounds.y + dotR + 1;
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(dotX, dotY, dotR, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(66, 165, 245, 0.9)';
-          ctx.fill();
-          ctx.restore();
+      if (control instanceof Knob || control instanceof Slider) {
+        const bounds = control.getBounds();
+        const paramName = this.bareParamId(control.getParameter().id);
+        const isPending = pendingParamName === paramName;
+
+        if (learnActive) {
+          if (isPending) {
+            // Selected control: bright solid border + prompt label
+            ctx.save();
+            ctx.strokeStyle = 'rgba(66, 165, 245, 1.0)';
+            ctx.lineWidth = 2;
+            ctx.shadowColor = 'rgba(66, 165, 245, 0.9)';
+            ctx.shadowBlur = 10;
+            ctx.strokeRect(bounds.x - 2, bounds.y - 2, bounds.width + 4, bounds.height + 4);
+            ctx.restore();
+
+            ctx.save();
+            ctx.font = '9px -apple-system, sans-serif';
+            ctx.fillStyle = 'rgba(66, 165, 245, 1.0)';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText('Move a CC →', bounds.x + bounds.width / 2, bounds.y + bounds.height + 3);
+            ctx.restore();
+          } else {
+            // Other controls: dim blue glow to indicate they are also targetable
+            ctx.save();
+            ctx.strokeStyle = 'rgba(66, 165, 245, 0.45)';
+            ctx.lineWidth = 1.5;
+            ctx.shadowColor = 'rgba(66, 165, 245, 0.3)';
+            ctx.shadowBlur = 4;
+            ctx.strokeRect(bounds.x - 2, bounds.y - 2, bounds.width + 4, bounds.height + 4);
+            ctx.restore();
+          }
+        }
+
+        // Draw a small MIDI-assigned dot on controls that have an active mapping
+        if (mappedParams.size > 0) {
+          const param = control.getParameter();
+          const paramName = this.bareParamId(param.id);
+          if (mappedParams.has(paramName)) {
+            const dotR = 3;
+            const dotX = bounds.x + bounds.width - dotR - 1;
+            const dotY = bounds.y + dotR + 1;
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(dotX, dotY, dotR, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(66, 165, 245, 0.9)';
+            ctx.fill();
+            ctx.restore();
+          }
         }
       }
     });

@@ -9,6 +9,7 @@ import { SelectionManager } from './SelectionManager';
 import { ConnectionManager } from './ConnectionManager';
 import { eventBus } from '../core/EventBus';
 import { stateManager } from '../core/StateManager';
+import { midiEngine } from '../midi/MidiEngine';
 import { EventType, Position } from '../core/types';
 import { CANVAS, COLORS, COMPONENT, GRID_LOD_THRESHOLDS, GRID_FADE_THRESHOLD } from '../utils/constants';
 import { snapToGrid } from '../utils/geometry';
@@ -586,7 +587,11 @@ export class Canvas {
 
     if (clickedComponent) {
       // Check if clicking on a control first
+      const wasLearnActive = midiEngine.isLearnActive();
       if (clickedComponent.handleControlMouseDown(worldPos.x, worldPos.y)) {
+        // MIDI learn interception: don't enter drag mode — the click just registered
+        // a learn target; the user will next move a MIDI controller to complete it.
+        if (wasLearnActive) return;
         // Don't set DRAGGING mode for dropdowns - they handle their own state
         const dropdowns = clickedComponent.getDropdownControls();
         const clickedDropdown = dropdowns.find(d => d.containsPoint(worldPos.x, worldPos.y));

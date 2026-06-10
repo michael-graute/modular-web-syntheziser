@@ -25,6 +25,11 @@ class MidiEngine {
     return this.learnModeEnabled || this.learnSession !== null;
   }
 
+  /** Returns the component/parameter currently waiting for a CC, or null if none. */
+  getLearnSession(): MidiLearnSession | null {
+    return this.learnSession;
+  }
+
   async init(): Promise<void> {
     if (!navigator.requestMIDIAccess) {
       this.midiAccess = null;
