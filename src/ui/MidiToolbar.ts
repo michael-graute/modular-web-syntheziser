@@ -142,6 +142,10 @@ export class MidiToolbar {
     }
   }
 
+  setComponentNameResolver(fn: (id: string) => string): void {
+    this.mappingsModal.setComponentNameResolver(fn);
+  }
+
   destroy(): void {
     this.unsubConnected?.();
     this.unsubDisconnected?.();

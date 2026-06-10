@@ -2396,7 +2396,7 @@ export class CanvasComponent {
   /**
    * Get display name for this component type
    */
-  private getDisplayName(): string {
+  getDisplayName(): string {
     const names: Record<ComponentType, string> = {
       [ComponentType.OSCILLATOR]: 'Oscillator',
       [ComponentType.LFO]: 'LFO',

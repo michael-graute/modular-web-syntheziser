@@ -9,6 +9,11 @@ export class MidiMappingsModal {
   private emptyMsg: HTMLParagraphElement;
   private unsubMappingsChanged: (() => void) | null = null;
   private isOpen: boolean = false;
+  private componentNameResolver: ((id: string) => string) | null = null;
+
+  setComponentNameResolver(fn: (id: string) => string): void {
+    this.componentNameResolver = fn;
+  }
 
   constructor() {
     this.overlay = document.createElement('div');
@@ -114,6 +119,35 @@ export class MidiMappingsModal {
     this.unsubMappingsChanged = null;
   }
 
+  private resolveComponentLabel(mappings: MidiMapping[]): Map<string, string> {
+    const nameCount = new Map<string, number>();
+    const idToName = new Map<string, string>();
+
+    for (const m of mappings) {
+      if (!idToName.has(m.componentId)) {
+        const name = this.componentNameResolver
+          ? this.componentNameResolver(m.componentId)
+          : m.componentId;
+        idToName.set(m.componentId, name);
+        nameCount.set(name, (nameCount.get(name) ?? 0) + 1);
+      }
+    }
+
+    // For names that appear more than once, append a per-name counter
+    const nameIndex = new Map<string, number>();
+    const labels = new Map<string, string>();
+    for (const [id, name] of idToName) {
+      if ((nameCount.get(name) ?? 1) > 1) {
+        const idx = (nameIndex.get(name) ?? 0) + 1;
+        nameIndex.set(name, idx);
+        labels.set(id, `${name} (${idx})`);
+      } else {
+        labels.set(id, name);
+      }
+    }
+    return labels;
+  }
+
   private renderTable(): void {
     const mappings = midiEngine.getMappings();
     this.tableBody.innerHTML = '';
@@ -125,13 +159,16 @@ export class MidiMappingsModal {
       this.emptyMsg.style.display = 'none';
       (this.tableBody.closest('table') as HTMLTableElement).style.display = '';
 
+      const componentLabels = this.resolveComponentLabel(mappings);
+
       mappings.forEach((m: MidiMapping) => {
         const row = document.createElement('tr');
 
         const channelLabel = m.channel === 0 ? 'Any' : String(m.channel);
+        const componentLabel = componentLabels.get(m.componentId) ?? m.componentId;
 
         row.innerHTML = `
-          <td>${this.escapeHtml(m.componentId)}</td>
+          <td>${this.escapeHtml(componentLabel)}</td>
           <td>${this.escapeHtml(m.parameterName)}</td>
           <td>${m.cc}</td>
           <td>${channelLabel}</td>

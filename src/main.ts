@@ -319,7 +319,7 @@ async function init(): Promise<void> {
 
   // Initialize MIDI engine (graceful — no error if MIDI unavailable)
   await midiEngine.init();
-  new MidiToolbar();
+  const midiToolbar = new MidiToolbar();
 
   // Route MIDI note events to the existing note trigger functions
   eventBus.on(EventType.NOTE_ON, (data) => {
@@ -355,6 +355,12 @@ async function init(): Promise<void> {
         if (sc?.id === id) return sc;
       }
       return null;
+    });
+
+    // Give MidiMappingsModal a way to resolve componentId → display name
+    midiToolbar.setComponentNameResolver((id: string) => {
+      const vc = canvas!.getComponents().find((c) => c.id === id);
+      return vc ? vc.getDisplayName() : id;
     });
 
     // Listen for component add requests from drag-and-drop
