@@ -2432,6 +2432,7 @@ export class CanvasComponent {
       [ComponentType.POLY_OSCILLATOR]: 'Poly Osc',
       [ComponentType.POLY_ADSR]: 'Poly ADSR',
       [ComponentType.POLY_VCA]: 'Poly VCA',
+      [ComponentType.KARPLUS_STRONG]: 'Karplus-Strong',
     };
     return names[this.type] || 'Component';
   }

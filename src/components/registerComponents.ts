@@ -5,6 +5,7 @@
 import { componentRegistry } from './ComponentRegistry';
 import { ComponentType } from '../core/types';
 import { Oscillator } from './generators/Oscillator';
+import { KarplusStrong } from './generators/KarplusStrong';
 import { FMOscillator } from './generators/FMOscillator';
 import { LFO } from './generators/LFO';
 import { NoiseGenerator } from './generators/NoiseGenerator';
@@ -78,6 +79,15 @@ export function registerAllComponents(): void {
     'Generators',
     (id, position) => new NoiseGenerator(id, position),
     calculateComponentDimensions(ComponentType.NOISE)
+  );
+
+  componentRegistry.register(
+    ComponentType.KARPLUS_STRONG,
+    'Karplus-Strong',
+    'Algorithmic plucked-string / percussive synthesizer',
+    'Generators',
+    (id, position) => new KarplusStrong(id, position),
+    calculateComponentDimensions(ComponentType.KARPLUS_STRONG)
   );
 
   // Processors

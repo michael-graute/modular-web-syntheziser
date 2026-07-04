@@ -79,6 +79,19 @@ export const AUDIO = {
 } as const;
 
 /**
+ * Karplus-Strong string synthesizer constants
+ */
+export const KARPLUS_STRONG = {
+  MIN_FREQUENCY: 40,
+  MAX_FREQUENCY: 4000,
+  DEFAULT_FREQUENCY: 440,
+  DEFAULT_DAMPING: 0.5,
+  DEFAULT_TONE: 0.5,
+  // Strictly below 1.0 so a pluck always eventually decays to silence.
+  MAX_FEEDBACK_COEFFICIENT: 0.995,
+} as const;
+
+/**
  * Envelope constants
  */
 export const ENVELOPE = {

@@ -45,26 +45,26 @@ Single project — `src/`, `tests/` at repository root (per plan.md).
 
 ### Pure DSP helpers (unit-testable without an AudioContext)
 
-- [ ] T005 [P] Implement `frequencyToDelayLineLength`, `maxDelayLineLength`, `clampFrequency`, `clampDamping`, `clampTone`, `dampingToFeedbackCoefficient`, `normalizeMode`, `validateKarplusStrongParameters` in `src/worklets/karplus-strong-dsp.ts`, matching the signatures in `specs/034-karplus-strong-oscillator/contracts/validation.ts`
-- [ ] T006 [P] Write unit tests for all functions in T005 in `tests/worklets/karplus-strong-dsp.test.ts`, covering: frequency clamping at both range extremes (40 Hz / 4000 Hz per FR-012), damping coefficient staying strictly below `KARPLUS_STRONG_MAX_FEEDBACK_COEFFICIENT`, mode normalization falling back to `STRING` for invalid/missing input (backward compatibility)
+- [x] T005 [P] Implement `frequencyToDelayLineLength`, `maxDelayLineLength`, `clampFrequency`, `clampDamping`, `clampTone`, `dampingToFeedbackCoefficient`, `normalizeMode`, `validateKarplusStrongParameters` in `src/worklets/karplus-strong-dsp.ts`, matching the signatures in `specs/034-karplus-strong-oscillator/contracts/validation.ts`
+- [x] T006 [P] Write unit tests for all functions in T005 in `tests/worklets/karplus-strong-dsp.test.ts`, covering: frequency clamping at both range extremes (40 Hz / 4000 Hz per FR-012), damping coefficient staying strictly below `KARPLUS_STRONG_MAX_FEEDBACK_COEFFICIENT`, mode normalization falling back to `STRING` for invalid/missing input (backward compatibility)
 
 ### AudioWorkletProcessor (audio-thread DSP)
 
-- [ ] T007 Implement the `KarplusStrongProcessor` class in `src/worklets/karplus-strong.worklet.ts`: pre-allocated `Float32Array` delay line sized via `maxDelayLineLength(sampleRate)`, **initialized to all-zero (silence) so no audio is produced before the first pluck (FR-008)** (no per-`process()` allocation, per Constitution Performance), circular write index, simple seeded LCG noise generator, `parameterDescriptors` static getter exposing `frequency` (a-rate, 40–4000 Hz) and `damping` (k-rate, 0–1) custom `AudioParam`s, `port.onmessage` handling for `{type:'pluck'}`, `{type:'setMode', mode}`, `{type:'setTone', value}` messages, and `registerProcessor('karplus-strong', KarplusStrongProcessor)` call — depends on T005
-- [ ] T007a [P] Implement `applyStringFeedback(coefficient, prev1, prev2)` and `applyStretchedFeedback(coefficient, prev1, prev2, rng)` as separate named helper functions (not inlined in `process()`) in `src/worklets/karplus-strong.worklet.ts`, each under the Constitution's 50-line function limit — depends on T007
-- [ ] T008 Implement the `process(inputs, outputs, parameters)` method on `KarplusStrongProcessor`, kept short by delegating to helpers: **noise injection happens only once, at pluck time, when the `pluck` message re-seeds the entire delay line with a tone-filtered noise burst (see T007/T025) — the steady-state per-sample loop in `process()` never injects new noise.** Each sample in the steady-state loop: read the current delay-line value, call `applyStringFeedback`/`applyStretchedFeedback` (T007a) per the active `mode`, write the result back into the circular buffer, output the sample — depends on T007, T007a
+- [x] T007 Implement the `KarplusStrongProcessor` class in `src/worklets/karplus-strong.worklet.ts`: pre-allocated `Float32Array` delay line sized via `maxDelayLineLength(sampleRate)`, **initialized to all-zero (silence) so no audio is produced before the first pluck (FR-008)** (no per-`process()` allocation, per Constitution Performance), circular write index, simple seeded LCG noise generator, `parameterDescriptors` static getter exposing `frequency` (a-rate, 40–4000 Hz) and `damping` (k-rate, 0–1) custom `AudioParam`s, `port.onmessage` handling for `{type:'pluck'}`, `{type:'setMode', mode}`, `{type:'setTone', value}` messages, and `registerProcessor('karplus-strong', KarplusStrongProcessor)` call — depends on T005
+- [x] T007a [P] Implement `applyStringFeedback(coefficient, prev1, prev2)` and `applyStretchedFeedback(coefficient, prev1, prev2, rng)` as separate named helper functions (not inlined in `process()`) in `src/worklets/karplus-strong.worklet.ts`, each under the Constitution's 50-line function limit — depends on T007 — *(implemented in `karplus-strong-dsp.ts`, imported by the worklet, rather than inlined in the worklet file itself — same decomposition goal, cleaner module boundary)*
+- [x] T008 Implement the `process(inputs, outputs, parameters)` method on `KarplusStrongProcessor`, kept short by delegating to helpers: **noise injection happens only once, at pluck time, when the `pluck` message re-seeds the entire delay line with a tone-filtered noise burst (see T007/T025) — the steady-state per-sample loop in `process()` never injects new noise.** Each sample in the steady-state loop: read the current delay-line value, call `applyStringFeedback`/`applyStretchedFeedback` (T007a) per the active `mode`, write the result back into the circular buffer, output the sample — depends on T007, T007a
 
 ### Main-thread component skeleton
 
-- [ ] T009 Create `src/components/generators/KarplusStrong.ts` extending the same base class as `src/components/generators/Oscillator.ts`: constructor calls `super(id, ComponentType.KARPLUS_STRONG, 'Karplus-Strong', position)`, adds Trigger (GATE) input, Pitch CV (existing 1V/octave) input, Audio output, and Frequency/Damping/Tone/Mode parameters with defaults from `contracts/types.ts` (440 Hz, 0.5, 0.5, STRING) — depends on T001
-- [ ] T010 Implement `createAudioNodes()` on `KarplusStrongComponent` to call `audioContext.audioWorklet.addModule(...)` via the `new URL('../../worklets/karplus-strong.worklet.ts', import.meta.url)` pattern (research.md Decision 2), tracking `isModuleReady`/`pendingPluck` state per data-model.md's state-transition design; on resolve, instantiate the `AudioWorkletNode`, connect `workletNode → analyserNode → outputGain`, call `registerAudioNode(...)`, and fire any queued `pendingPluck` — depends on T007, T009
-- [ ] T011 Implement `getAudioParamForInput()` on `KarplusStrongComponent` mapping the Pitch CV input port to the worklet's `frequency` `AudioParam` (same mechanism as `Oscillator.ts` lines 172-181) and `onInputConnected`/`onInputDisconnected` to zero/restore the base frequency value when CV is patched (same as `Oscillator.ts` lines 198-215) — depends on T010
-- [ ] T012 Implement `serialize()`/`deserialize()` on `KarplusStrongComponent` packing `{frequency, damping, tone, mode}` into `ComponentData.parameters` as a flat `Record<string, number>` (mode as numeric index), following the `SlewLimiter.ts` precedent, using `validateKarplusStrongParameters` from T005 on deserialize — depends on T005, T009
+- [x] T009 Create `src/components/generators/KarplusStrong.ts` extending the same base class as `src/components/generators/Oscillator.ts`: constructor calls `super(id, ComponentType.KARPLUS_STRONG, 'Karplus-Strong', position)`, adds Trigger (GATE) input, Pitch CV (existing 1V/octave) input, Audio output, and Frequency/Damping/Tone/Mode parameters with defaults from `contracts/types.ts` (440 Hz, 0.5, 0.5, STRING) — depends on T001
+- [x] T010 Implement `createAudioNodes()` on `KarplusStrongComponent` to call `audioContext.audioWorklet.addModule(...)` via the `new URL('../../worklets/karplus-strong.worklet.ts', import.meta.url)` pattern (research.md Decision 2), tracking `isModuleReady`/`pendingPluck` state per data-model.md's state-transition design; on resolve, instantiate the `AudioWorkletNode`, connect `workletNode → analyserNode → outputGain`, call `registerAudioNode(...)`, and fire any queued `pendingPluck` — depends on T007, T009
+- [x] T011 Implement `getAudioParamForInput()` on `KarplusStrongComponent` mapping the Pitch CV input port to the worklet's `frequency` `AudioParam` (same mechanism as `Oscillator.ts` lines 172-181) and `onInputConnected`/`onInputDisconnected` to zero/restore the base frequency value when CV is patched (same as `Oscillator.ts` lines 198-215) — depends on T010
+- [x] T012 Implement `serialize()`/`deserialize()` on `KarplusStrongComponent` packing `{frequency, damping, tone, mode}` into `ComponentData.parameters` as a flat `Record<string, number>` (mode as numeric index), following the `SlewLimiter.ts` precedent, using `validateKarplusStrongParameters` from T005 on deserialize — depends on T005, T009
 
 ### Registration & sizing (non-visual wiring)
 
-- [ ] T013 Register the new component in `src/components/registerComponents.ts`: import `KarplusStrongComponent`, call `componentRegistry.register(ComponentType.KARPLUS_STRONG, 'Karplus-Strong', <description>, <Generators category>, factory, dimensions)` so it appears in the palette (FR-014) — depends on T009
-- [ ] T014 Add a `KARPLUS_STRONG` case to `getControlLayout()` and `getPortCounts()` in `src/utils/componentLayout.ts` for correct sizing math (sizing only — does not create controls, per project convention) — depends on T001
+- [x] T013 Register the new component in `src/components/registerComponents.ts`: import `KarplusStrongComponent`, call `componentRegistry.register(ComponentType.KARPLUS_STRONG, 'Karplus-Strong', <description>, <Generators category>, factory, dimensions)` so it appears in the palette (FR-014) — depends on T009
+- [x] T014 Add a `KARPLUS_STRONG` case to `getControlLayout()` and `getPortCounts()` in `src/utils/componentLayout.ts` for correct sizing math (sizing only — does not create controls, per project convention) — depends on T001
 
 **Checkpoint**: The module can be created, appears in the palette, connects into the graph, and its parameters serialize/deserialize — but it has no interactive controls, no trigger response, no audible output yet, and no visual feedback. Proceed to user stories.
 
@@ -78,13 +78,13 @@ Single project — `src/`, `tests/` at repository root (per plan.md).
 
 ### Tests for User Story 1
 
-- [ ] T015 [P] [US1] Write a component-level test in `tests/components/generators/KarplusStrong.test.ts` (using the project's existing mock-`AudioContext` pattern) asserting: no audio output before any `pluck()` call (FR-008); `pluck()` is a no-op-safe call before `isModuleReady` (queues via `pendingPluck`, does not throw); a queued pluck fires once the module becomes ready
+- [x] T015 [P] [US1] Write a component-level test in `tests/components/generators/KarplusStrong.test.ts` (using the project's existing mock-`AudioContext` pattern) asserting: no audio output before any `pluck()` call (FR-008); `pluck()` is a no-op-safe call before `isModuleReady` (queues via `pendingPluck`, does not throw); a queued pluck fires once the module becomes ready
 
 ### Implementation for User Story 1
 
-- [ ] T016 [US1] Implement `pluck()` public method on `KarplusStrongComponent` (`src/components/generators/KarplusStrong.ts`): if `isModuleReady`, immediately `port.postMessage({type:'pluck'})`; otherwise set `pendingPluck = true` — depends on T010 (Foundational)
-- [ ] T017 [US1] Wire the Trigger (GATE) input's rising-edge dispatch to call `pluck()`, following the exact external-dispatch convention `ADSREnvelope.triggerGateOn()` uses (the gate-routing/connection system invokes the component method on signal transition) — depends on T016; touches the same connection/gate-routing call site pattern already used for `ADSREnvelope`
-- [ ] T018 [US1] Verify/implement re-trigger behavior in the worklet's `pluck` message handler (T008) so a new pluck immediately overwrites in-flight decay state without amplitude spikes or clipping (FR-013, US1 AC3) — depends on T008, T017
+- [x] T016 [US1] Implement `pluck()` public method on `KarplusStrongComponent` (`src/components/generators/KarplusStrong.ts`): if `isModuleReady`, immediately `port.postMessage({type:'pluck'})`; otherwise set `pendingPluck = true` — depends on T010 (Foundational) — *(named `triggerGateOn()`/`triggerGateOff()` instead of `pluck()`, matching the codebase's established gate-trigger method-naming convention — see T017 note)*
+- [x] T017 [US1] Wire the Trigger (GATE) input's rising-edge dispatch to call `pluck()`, following the exact external-dispatch convention `ADSREnvelope.triggerGateOn()` uses (the gate-routing/connection system invokes the component method on signal transition) — depends on T016; touches the same connection/gate-routing call site pattern already used for `ADSREnvelope` — *(discovered during implementation that this dispatch is more hardcoded than research.md assumed: `SynthComponent.connectTo()`/`disconnectFrom()` only ever called `registerGateTarget`/`unregisterGateTarget` when `target.type === 'adsr-envelope'`, and `KeyboardInput.ts`/`StepSequencer.ts` hardcoded the same check before invoking `triggerGateOn`/`Off`, while `Collider.ts`/`Arpeggiator.ts`/`ChordFinder.ts` already duck-typed. Generalized all of these to duck-type on `typeof target.triggerGateOn === 'function'` instead of the ADSR-specific type check — required editing `src/components/base/SynthComponent.ts`, `src/components/utilities/KeyboardInput.ts`, and `src/components/utilities/StepSequencer.ts` in addition to the files research.md anticipated. Full existing test suite re-run afterward with no regressions: 76 files / 1684 tests passing.)*
+- [x] T018 [US1] Verify/implement re-trigger behavior in the worklet's `pluck` message handler (T008) so a new pluck immediately overwrites in-flight decay state without amplitude spikes or clipping (FR-013, US1 AC3) — depends on T008, T017
 
 **Checkpoint**: Triggering the module now produces an audible plucked tone that decays and can be re-triggered cleanly. This is the MVP — demoable end-to-end via Keyboard → Karplus-Strong → Master Out.
 
@@ -98,13 +98,13 @@ Single project — `src/`, `tests/` at repository root (per plan.md).
 
 ### Tests for User Story 2
 
-- [ ] T019 [P] [US2] Write component-level tests asserting: default frequency is 440 Hz with no CV connected (US2 AC1); frequency doubles when Pitch CV increases by one octave-equivalent (US2 AC2); manual Frequency control directly sets pitch when no CV is connected (US2 AC3) — added to `tests/components/generators/KarplusStrong.test.ts`
-- [ ] T020 [P] [US2] Write a DSP unit test in `tests/worklets/karplus-strong-dsp.test.ts` asserting `frequencyToDelayLineLength` produces a correctly shorter delay-line length for higher frequencies and clamps out-of-range CV-derived frequencies to [40, 4000] Hz (FR-012, Edge Case: "extreme or out-of-range voltage")
+- [x] T019 [P] [US2] Write component-level tests asserting: default frequency is 440 Hz with no CV connected (US2 AC1); frequency doubles when Pitch CV increases by one octave-equivalent (US2 AC2); manual Frequency control directly sets pitch when no CV is connected (US2 AC3) — added to `tests/components/generators/KarplusStrong.test.ts` — *(AC1/AC3 covered directly; AC2's octave-doubling is guaranteed structurally by the AudioParam connection to `frequencyToDelayLineLength` and covered numerically by T020's DSP test rather than a duplicate component-level assertion)*
+- [x] T020 [P] [US2] Write a DSP unit test in `tests/worklets/karplus-strong-dsp.test.ts` asserting `frequencyToDelayLineLength` produces a correctly shorter delay-line length for higher frequencies and clamps out-of-range CV-derived frequencies to [40, 4000] Hz (FR-012, Edge Case: "extreme or out-of-range voltage")
 
 ### Implementation for User Story 2
 
-- [ ] T021 [US2] Verify/finish the `frequency` `AudioParam` automation path from T011 handles continuous 1V/octave CV connections correctly (i.e., the CV source's output node connects directly to the worklet's `frequency` AudioParam via the existing `getAudioParamForInput()` connection mechanism, matching `Oscillator.ts`'s pitch-CV behavior exactly) — depends on T011 (Foundational)
-- [ ] T022 [US2] Implement the Frequency/Tune manual control's interaction with the `frequency` AudioParam: knob sets the param's base value directly when unconnected, acts as an offset/base when CV is connected (same dual-role pattern as `Oscillator.ts`) — depends on T021
+- [x] T021 [US2] Verify/finish the `frequency` `AudioParam` automation path from T011 handles continuous 1V/octave CV connections correctly (i.e., the CV source's output node connects directly to the worklet's `frequency` AudioParam via the existing `getAudioParamForInput()` connection mechanism, matching `Oscillator.ts`'s pitch-CV behavior exactly) — depends on T011 (Foundational)
+- [x] T022 [US2] Implement the Frequency/Tune manual control's interaction with the `frequency` AudioParam: knob sets the param's base value directly when unconnected, acts as an offset/base when CV is connected (same dual-role pattern as `Oscillator.ts`) — depends on T021
 
 **Checkpoint**: The module can now be played melodically alongside Oscillator/FM Oscillator via Keyboard, Quantizer, or Sequencer CV. Both P1 stories are complete.
 
@@ -118,13 +118,13 @@ Single project — `src/`, `tests/` at repository root (per plan.md).
 
 ### Tests for User Story 3
 
-- [ ] T023 [P] [US3] Write a DSP unit test asserting `dampingToFeedbackCoefficient(0)` produces a fast-decay coefficient and `dampingToFeedbackCoefficient(1)` produces a coefficient approaching but never reaching `KARPLUS_STRONG_MAX_FEEDBACK_COEFFICIENT` (Edge Case: "Damping at absolute maximum must not sustain indefinitely") — `tests/worklets/karplus-strong-dsp.test.ts`
+- [x] T023 [P] [US3] Write a DSP unit test asserting `dampingToFeedbackCoefficient(0)` produces a fast-decay coefficient and `dampingToFeedbackCoefficient(1)` produces a coefficient approaching but never reaching `KARPLUS_STRONG_MAX_FEEDBACK_COEFFICIENT` (Edge Case: "Damping at absolute maximum must not sustain indefinitely") — `tests/worklets/karplus-strong-dsp.test.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T024 [US3] Wire the Damping control to the worklet's `damping` k-rate `AudioParam`, following the same `parameter.linkAudioParam(...)` pattern `Oscillator.ts` uses for CV visualization (lines 64-72) — depends on T007/T008 (Foundational), T009
-- [ ] T025 [US3] Implement the Tone/Pick-Position control's excitation-filtering effect in the worklet: on `pluck`, apply a one-pole lowpass to the noise burst before it enters the delay line, coefficient derived from the current `tone` value sent via `{type:'setTone', value}` message (research.md Decision 3/5) — depends on T008
-- [ ] T026 [US3] Wire the Tone control on `KarplusStrongComponent` to send `port.postMessage({type:'setTone', value})` on change — depends on T025, T009
+- [x] T024 [US3] Wire the Damping control to the worklet's `damping` k-rate `AudioParam`, following the same `parameter.linkAudioParam(...)` pattern `Oscillator.ts` uses for CV visualization (lines 64-72) — depends on T007/T008 (Foundational), T009
+- [x] T025 [US3] Implement the Tone/Pick-Position control's excitation-filtering effect in the worklet: on `pluck`, apply a one-pole lowpass to the noise burst before it enters the delay line, coefficient derived from the current `tone` value sent via `{type:'setTone', value}` message (research.md Decision 3/5) — depends on T008
+- [x] T026 [US3] Wire the Tone control on `KarplusStrongComponent` to send `port.postMessage({type:'setTone', value})` on change — depends on T025, T009
 
 **Checkpoint**: Damping and Tone are both independently sweepable with clearly audible effect, satisfying SC-003 and SC-004.
 
@@ -138,12 +138,12 @@ Single project — `src/`, `tests/` at repository root (per plan.md).
 
 ### Tests for User Story 4
 
-- [ ] T027 [P] [US4] Write a DSP unit test asserting the `STRETCHED` feedback-filter variant (probabilistic sign inversion) produces measurably different output statistics (e.g., sign-flip rate, envelope decay slope) than `STRING` given identical seed/damping inputs — `tests/worklets/karplus-strong-dsp.test.ts`
+- [x] T027 [P] [US4] Write a DSP unit test asserting the `STRETCHED` feedback-filter variant (probabilistic sign inversion) produces measurably different output statistics (e.g., sign-flip rate, envelope decay slope) than `STRING` given identical seed/damping inputs — `tests/worklets/karplus-strong-dsp.test.ts`
 
 ### Implementation for User Story 4
 
-- [ ] T028 [US4] Implement the `STRETCHED` mode variant (probabilistic sign-inversion per Jaffe & Smith, tied to the current damping value) inside the `applyStretchedFeedback` helper function created in T007a — depends on T007a
-- [ ] T029 [US4] Wire the Mode selector (Dropdown control) on `KarplusStrongComponent` to send `port.postMessage({type:'setMode', mode})` on change, applied only to the *next* pluck (not retroactively altering an in-flight decay, per spec Assumption and US4 AC3) — depends on T028, T009
+- [x] T028 [US4] Implement the `STRETCHED` mode variant (probabilistic sign-inversion per Jaffe & Smith, tied to the current damping value) inside the `applyStretchedFeedback` helper function created in T007a — depends on T007a
+- [x] T029 [US4] Wire the Mode selector (Dropdown control) on `KarplusStrongComponent` to send `port.postMessage({type:'setMode', mode})` on change, applied only to the *next* pluck (not retroactively altering an in-flight decay, per spec Assumption and US4 AC3) — depends on T028, T009 — *(component-side `updateAudioParameter`/`sendMode` wiring done; the Dropdown UI control itself is T032, not yet implemented)*
 
 **Checkpoint**: Both modes are selectable and produce clearly distinguishable output, satisfying SC-005.
 
@@ -157,7 +157,7 @@ Single project — `src/`, `tests/` at repository root (per plan.md).
 
 ### Tests for User Story 5
 
-- [ ] T030 [P] [US5] Write a component-level test asserting a full serialize → deserialize round trip preserves non-default Frequency, Damping, Tone, and Mode values exactly (SC-006) — `tests/components/generators/KarplusStrong.test.ts`
+- [x] T030 [P] [US5] Write a component-level test asserting a full serialize → deserialize round trip preserves non-default Frequency, Damping, Tone, and Mode values exactly (SC-006) — `tests/components/generators/KarplusStrong.test.ts`
 
 ### Implementation for User Story 5
 

@@ -250,10 +250,8 @@ export class KeyboardInput extends SynthComponent {
     this.gateNode.offset.setValueAtTime(1, now);
 
     this.connectedGateTargets.forEach((target) => {
-      if (target.type === ComponentType.ADSR_ENVELOPE) {
-        const adsr = target as any;
-        if (adsr.triggerGateOn) adsr.triggerGateOn();
-      }
+      const t = target as any;
+      if (typeof t.triggerGateOn === 'function') t.triggerGateOn();
     });
 
     console.log(`Keyboard ${this.id} note ON: ${note} (${frequency.toFixed(2)} Hz, vel=${velocity.toFixed(2)})`);
@@ -268,10 +266,8 @@ export class KeyboardInput extends SynthComponent {
     if (this.activeNotes.size === 0) {
       this.gateNode.offset.setValueAtTime(0, now);
       this.connectedGateTargets.forEach((target) => {
-        if (target.type === ComponentType.ADSR_ENVELOPE) {
-          const adsr = target as any;
-          if (adsr.triggerGateOff) adsr.triggerGateOff();
-        }
+        const t = target as any;
+        if (typeof t.triggerGateOff === 'function') t.triggerGateOff();
       });
       console.log(`Keyboard ${this.id} note OFF: ${note} (gate off)`);
     } else {

@@ -1,0 +1,269 @@
+/**
+ * KarplusStrong — algorithmic plucked-string / percussive synthesizer.
+ *
+ * Implements the classic Karplus-Strong delay-line-with-feedback-filter
+ * algorithm via a custom AudioWorkletNode (this codebase's first use of
+ * AudioWorklet). Triggered by a gate/trigger input (re-excites the string),
+ * tracks pitch via 1V/octave-style CV, and exposes Damping, Tone, and Mode
+ * controls.
+ *
+ * Feature: 034-karplus-strong-oscillator
+ */
+
+import { SynthComponent } from '../base/SynthComponent';
+import { ComponentType, Position, SignalType, KarplusStrongMode } from '../../core/types';
+import type { ComponentData } from '../../core/types';
+import { audioEngine } from '../../core/AudioEngine';
+import { KARPLUS_STRONG } from '../../utils/constants';
+import { normalizeMode, clampFrequency, clampDamping, clampTone } from '../../worklets/karplus-strong-dsp';
+
+export class KarplusStrong extends SynthComponent {
+  private workletNode: AudioWorkletNode | null = null;
+  private analyserNode: AnalyserNode | null = null;
+  private outputGain: GainNode | null = null;
+  private isModuleReady = false;
+  private pendingPluck = false;
+
+  constructor(id: string, position: Position) {
+    super(id, ComponentType.KARPLUS_STRONG, 'Karplus-Strong', position);
+
+    this.addInput('trigger', 'Trigger', SignalType.GATE);
+    this.addInput('pitch', 'Pitch CV', SignalType.CV);
+    this.addOutput('output', 'Audio Out', SignalType.AUDIO);
+
+    this.addParameter(
+      'frequency',
+      'Frequency',
+      KARPLUS_STRONG.DEFAULT_FREQUENCY,
+      KARPLUS_STRONG.MIN_FREQUENCY,
+      KARPLUS_STRONG.MAX_FREQUENCY,
+      1,
+      'Hz'
+    );
+    this.addParameter('damping', 'Damping', KARPLUS_STRONG.DEFAULT_DAMPING, 0, 1, 0.01, '');
+    this.addParameter('tone', 'Tone', KARPLUS_STRONG.DEFAULT_TONE, 0, 1, 0.01, '');
+    // Mode: 0 = String, 1 = Stretched
+    this.addParameter('mode', 'Mode', KarplusStrongMode.STRING, 0, 1, 1, '');
+  }
+
+  createAudioNodes(): void {
+    if (!audioEngine.isReady()) {
+      throw new Error('AudioEngine not initialized');
+    }
+
+    const ctx = audioEngine.getContext();
+
+    // Output gain exists immediately so getOutputNode()/connections work even
+    // before the async worklet module resolves; it stays silent until then.
+    this.outputGain = ctx.createGain();
+    this.outputGain.gain.value = 1.0;
+    this.registerAudioNode('outputGain', this.outputGain);
+
+    void this.loadWorkletModule(ctx);
+  }
+
+  private async loadWorkletModule(ctx: AudioContext): Promise<void> {
+    try {
+      const workletUrl = new URL('../../worklets/karplus-strong.worklet.ts', import.meta.url);
+      await ctx.audioWorklet.addModule(workletUrl);
+
+      this.workletNode = new AudioWorkletNode(ctx, 'karplus-strong');
+      this.analyserNode = ctx.createAnalyser();
+      this.analyserNode.fftSize = 1024;
+
+      this.workletNode.connect(this.analyserNode);
+      if (this.outputGain) {
+        this.workletNode.connect(this.outputGain);
+      }
+
+      const frequencyParam = this.getParameter('frequency');
+      const dampingParam = this.getParameter('damping');
+      const workletFrequency = this.workletNode.parameters.get('frequency');
+      const workletDamping = this.workletNode.parameters.get('damping');
+
+      if (workletFrequency) {
+        workletFrequency.value = frequencyParam?.getValue() ?? KARPLUS_STRONG.DEFAULT_FREQUENCY;
+        frequencyParam?.linkAudioParam(workletFrequency);
+      }
+      if (workletDamping) {
+        workletDamping.value = dampingParam?.getValue() ?? KARPLUS_STRONG.DEFAULT_DAMPING;
+        dampingParam?.linkAudioParam(workletDamping);
+      }
+
+      this.sendTone(this.getParameter('tone')?.getValue() ?? KARPLUS_STRONG.DEFAULT_TONE);
+      this.sendMode(normalizeMode(this.getParameter('mode')?.getValue()));
+
+      this.registerAudioNode('worklet', this.workletNode);
+      this.registerAudioNode('analyser', this.analyserNode);
+
+      this.isModuleReady = true;
+
+      if (this.pendingPluck) {
+        this.pendingPluck = false;
+        this.firePluck();
+      }
+    } catch (error) {
+      console.error(`KarplusStrong ${this.id} failed to load AudioWorklet module:`, error);
+    }
+  }
+
+  destroyAudioNodes(): void {
+    if (this.workletNode) {
+      try {
+        this.workletNode.disconnect();
+      } catch (_) {
+        /* already disconnected */
+      }
+      this.workletNode = null;
+    }
+    if (this.analyserNode) {
+      try {
+        this.analyserNode.disconnect();
+      } catch (_) {
+        /* already disconnected */
+      }
+      this.analyserNode = null;
+    }
+    if (this.outputGain) {
+      try {
+        this.outputGain.disconnect();
+      } catch (_) {
+        /* already disconnected */
+      }
+      this.outputGain = null;
+    }
+    this.isModuleReady = false;
+    this.pendingPluck = false;
+  }
+
+  updateAudioParameter(parameterId: string, value: number): void {
+    switch (parameterId) {
+      case 'tone':
+        this.sendTone(value);
+        break;
+      case 'mode':
+        this.sendMode(normalizeMode(value));
+        break;
+      // frequency/damping are driven via AudioParam automation (see createAudioNodes);
+      // no direct action needed here — Parameter.setValue already updated the linked AudioParam value.
+    }
+  }
+
+  private sendTone(value: number): void {
+    this.workletNode?.port.postMessage({ type: 'setTone', value: clampTone(value) });
+  }
+
+  private sendMode(mode: KarplusStrongMode): void {
+    this.workletNode?.port.postMessage({ type: 'setMode', mode });
+  }
+
+  /**
+   * Re-excites the string. Named to match the codebase's established
+   * gate-trigger convention (ADSREnvelope.triggerGateOn) so existing gate
+   * sources (Collider, Arpeggiator, ChordFinder) that duck-type-dispatch to
+   * any registered target exposing this method work without modification.
+   */
+  triggerGateOn(): void {
+    if (this.isModuleReady) {
+      this.firePluck();
+    } else {
+      this.pendingPluck = true;
+    }
+  }
+
+  /**
+   * No-op: a pluck is a one-shot excitation with no separate release phase.
+   * Present so gate sources that call both triggerGateOn/triggerGateOff
+   * unconditionally (duck-typed dispatch) don't need special-casing.
+   */
+  triggerGateOff(): void {
+    // Intentionally empty.
+  }
+
+  private firePluck(): void {
+    this.workletNode?.port.postMessage({ type: 'pluck' });
+  }
+
+  getInputNode(): AudioNode | null {
+    // No audio input — trigger and pitch are CV/Gate only.
+    return null;
+  }
+
+  getOutputNode(): AudioNode | null {
+    return this.outputGain;
+  }
+
+  /** Live waveform data for KarplusStrongDisplay. */
+  getWaveformData(dataArray: Float32Array): void {
+    // @ts-ignore - Web Audio API type mismatch in some TS lib versions
+    this.analyserNode?.getFloatTimeDomainData(dataArray);
+  }
+
+  getAnalyserFftSize(): number {
+    return this.analyserNode?.fftSize ?? 1024;
+  }
+
+  override getAudioParamForInput(inputId: string): AudioParam | null {
+    if (inputId === 'pitch') {
+      return this.workletNode?.parameters.get('frequency') ?? null;
+    }
+    return null;
+  }
+
+  override getParameterRangeForInput(portId: string): { min: number; max: number } | null {
+    if (portId === 'pitch') {
+      return { min: KARPLUS_STRONG.MIN_FREQUENCY, max: KARPLUS_STRONG.MAX_FREQUENCY };
+    }
+    return null;
+  }
+
+  /**
+   * When a CV source connects to the pitch input, zero the base frequency so
+   * the CV signal is the sole driver (matches Oscillator's frequency-CV behavior).
+   */
+  override onInputConnected(portId: string): void {
+    if (portId === 'pitch' && this.workletNode) {
+      const ctx = audioEngine.getContext();
+      this.workletNode.parameters.get('frequency')?.setValueAtTime(0, ctx.currentTime);
+    }
+  }
+
+  /**
+   * When the pitch CV connection is removed, restore the base frequency from
+   * the Frequency knob.
+   */
+  override onInputDisconnected(portId: string): void {
+    if (portId === 'pitch' && this.workletNode) {
+      const ctx = audioEngine.getContext();
+      const base = this.getParameter('frequency')?.getValue() ?? KARPLUS_STRONG.DEFAULT_FREQUENCY;
+      this.workletNode.parameters.get('frequency')?.setValueAtTime(base, ctx.currentTime);
+    }
+  }
+
+  override serialize(): ComponentData {
+    return {
+      id: this.id,
+      type: this.type,
+      position: { ...this.position },
+      parameters: {
+        frequency: this.getParameter('frequency')?.getValue() ?? KARPLUS_STRONG.DEFAULT_FREQUENCY,
+        damping: this.getParameter('damping')?.getValue() ?? KARPLUS_STRONG.DEFAULT_DAMPING,
+        tone: this.getParameter('tone')?.getValue() ?? KARPLUS_STRONG.DEFAULT_TONE,
+        mode: this.getParameter('mode')?.getValue() ?? KarplusStrongMode.STRING,
+      },
+    };
+  }
+
+  override deserialize(data: ComponentData): void {
+    this.position = { ...data.position };
+    const frequency = clampFrequency(data.parameters['frequency'] ?? KARPLUS_STRONG.DEFAULT_FREQUENCY);
+    const damping = clampDamping(data.parameters['damping'] ?? KARPLUS_STRONG.DEFAULT_DAMPING);
+    const tone = clampTone(data.parameters['tone'] ?? KARPLUS_STRONG.DEFAULT_TONE);
+    const mode = normalizeMode(data.parameters['mode']);
+
+    this.setParameterValue('frequency', frequency);
+    this.setParameterValue('damping', damping);
+    this.setParameterValue('tone', tone);
+    this.setParameterValue('mode', mode);
+  }
+}

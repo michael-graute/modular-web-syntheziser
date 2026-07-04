@@ -53,6 +53,16 @@ export enum ComponentType {
   POLY_OSCILLATOR = 'poly-oscillator',
   POLY_ADSR = 'poly-adsr',
   POLY_VCA = 'poly-vca',
+  KARPLUS_STRONG = 'karplus-strong',
+}
+
+/**
+ * Karplus-Strong decay-algorithm variant.
+ * Persisted as a numeric enum index (0/1) in ComponentData.parameters.
+ */
+export enum KarplusStrongMode {
+  STRING = 0,
+  STRETCHED = 1,
 }
 
 /**
