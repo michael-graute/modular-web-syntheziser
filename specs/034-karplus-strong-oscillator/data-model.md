@@ -14,7 +14,7 @@ Extends `SynthComponent` (same base as `Oscillator`). Represents the component i
 | `type` | `ComponentType.KARPLUS_STRONG` | New enum member added to `src/core/types.ts` |
 | `frequency` | `number` (Hz) | Manual Frequency/Tune control value. Range: 40–4000 Hz (per spec clarification). Default: 440 Hz. Backed by an `AudioParam` on the worklet node. |
 | `damping` | `number` (0–1 normalized) | Damping/decay control. 0 = fastest decay, 1 = longest sustain (internally clamped below the self-oscillation threshold). Default: 0.5 (moderate sustain, ~1–2s). Backed by an `AudioParam`. |
-| `tone` | `number` (0–1 normalized) | Tone/Pick-Position control — brightness of excitation noise burst. 0 = dull/warm, 1 = bright/metallic. Default: 0.5. Backed by an `AudioParam`. |
+| `tone` | `number` (0–1 normalized) | Tone/Pick-Position control — brightness of excitation noise burst. 0 = dull/warm, 1 = bright/metallic. Default: 0.5. Sent via `port.postMessage({type:'setTone', value})`, **not** an `AudioParam` — Tone only affects the noise burst at the moment of excitation (pluck time), not a continuously-automatable per-sample signal, so it does not need the automation timeline an `AudioParam` provides (see research.md Decision 5). |
 | `mode` | `KarplusStrongMode` (enum: `STRING` \| `STRETCHED`) | Discrete mode selector. Default: `STRING`. Sent via `port.postMessage`, not an `AudioParam` (discrete, non-automatable per spec FR-006). |
 | `workletNode` | `AudioWorkletNode \| null` | Null until `audioContext.audioWorklet.addModule(...)` resolves (async — see Risk in plan.md). |
 | `analyserNode` | `AnalyserNode \| null` | Feeds `KarplusStrongDisplay`; created alongside `workletNode`. |

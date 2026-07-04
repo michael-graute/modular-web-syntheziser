@@ -50,8 +50,9 @@ Single project — `src/`, `tests/` at repository root (per plan.md).
 
 ### AudioWorkletProcessor (audio-thread DSP)
 
-- [ ] T007 Implement the `KarplusStrongProcessor` class in `src/worklets/karplus-strong.worklet.ts`: pre-allocated `Float32Array` delay line sized via `maxDelayLineLength(sampleRate)` (no per-`process()` allocation, per Constitution Performance), circular write index, simple seeded LCG noise generator, `parameterDescriptors` static getter exposing `frequency` (a-rate, 40–4000 Hz) and `damping` (k-rate, 0–1) custom `AudioParam`s, `port.onmessage` handling for `{type:'pluck'}`, `{type:'setMode', mode}`, `{type:'setTone', value}` messages, and `registerProcessor('karplus-strong', KarplusStrongProcessor)` call — depends on T005
-- [ ] T008 Implement the `process(inputs, outputs, parameters)` method on `KarplusStrongProcessor`: on `pluck`, re-seed the delay line with tone-filtered noise burst; each sample, read from the delay line, apply the mode-appropriate feedback filter (`STRING`: `damping * 0.5 * (y[n-1] + y[n-2])`; `STRETCHED`: probabilistic sign-inversion variant per research.md Decision 3), write back into the circular buffer, output the sample — depends on T007
+- [ ] T007 Implement the `KarplusStrongProcessor` class in `src/worklets/karplus-strong.worklet.ts`: pre-allocated `Float32Array` delay line sized via `maxDelayLineLength(sampleRate)`, **initialized to all-zero (silence) so no audio is produced before the first pluck (FR-008)** (no per-`process()` allocation, per Constitution Performance), circular write index, simple seeded LCG noise generator, `parameterDescriptors` static getter exposing `frequency` (a-rate, 40–4000 Hz) and `damping` (k-rate, 0–1) custom `AudioParam`s, `port.onmessage` handling for `{type:'pluck'}`, `{type:'setMode', mode}`, `{type:'setTone', value}` messages, and `registerProcessor('karplus-strong', KarplusStrongProcessor)` call — depends on T005
+- [ ] T007a [P] Implement `applyStringFeedback(coefficient, prev1, prev2)` and `applyStretchedFeedback(coefficient, prev1, prev2, rng)` as separate named helper functions (not inlined in `process()`) in `src/worklets/karplus-strong.worklet.ts`, each under the Constitution's 50-line function limit — depends on T007
+- [ ] T008 Implement the `process(inputs, outputs, parameters)` method on `KarplusStrongProcessor`, kept short by delegating to helpers: **noise injection happens only once, at pluck time, when the `pluck` message re-seeds the entire delay line with a tone-filtered noise burst (see T007/T025) — the steady-state per-sample loop in `process()` never injects new noise.** Each sample in the steady-state loop: read the current delay-line value, call `applyStringFeedback`/`applyStretchedFeedback` (T007a) per the active `mode`, write the result back into the circular buffer, output the sample — depends on T007, T007a
 
 ### Main-thread component skeleton
 
@@ -141,7 +142,7 @@ Single project — `src/`, `tests/` at repository root (per plan.md).
 
 ### Implementation for User Story 4
 
-- [ ] T028 [US4] Implement the `STRETCHED` mode variant of the feedback filter in the worklet's `process()` method (probabilistic sign-inversion per Jaffe & Smith, tied to the current damping value) — depends on T008 (already scaffolded in T008; this task completes the `STRETCHED` branch specifically)
+- [ ] T028 [US4] Implement the `STRETCHED` mode variant (probabilistic sign-inversion per Jaffe & Smith, tied to the current damping value) inside the `applyStretchedFeedback` helper function created in T007a — depends on T007a
 - [ ] T029 [US4] Wire the Mode selector (Dropdown control) on `KarplusStrongComponent` to send `port.postMessage({type:'setMode', mode})` on change, applied only to the *next* pluck (not retroactively altering an in-flight decay, per spec Assumption and US4 AC3) — depends on T028, T009
 
 **Checkpoint**: Both modes are selectable and produce clearly distinguishable output, satisfying SC-005.
@@ -174,7 +175,8 @@ Single project — `src/`, `tests/` at repository root (per plan.md).
 
 - [ ] T034 [P] Run `npm run lint` and fix any warnings across all new/modified files (`src/worklets/`, `src/components/generators/KarplusStrong.ts`, `src/canvas/CanvasComponent.ts`, `src/canvas/displays/KarplusStrongDisplay.ts`, `src/utils/componentLayout.ts`, `src/components/registerComponents.ts`, `src/core/types.ts`)
 - [ ] T035 [P] Run `vitest run` and confirm all new tests pass and existing suites are unaffected (no regressions in `Oscillator`/`ADSREnvelope`/`SlewLimiter` tests from shared-pattern changes)
-- [ ] T036 Manually execute `specs/034-karplus-strong-oscillator/quickstart.md` end-to-end in the dev server (`npm run dev`), confirming SC-001 through SC-008 hold, including rapid re-trigger stability at ≥10 triggers/sec (SC-007) and no perceptible latency/responsiveness degradation (SC-008)
+- [ ] T038 [P] Write an automated stress test in `tests/components/generators/KarplusStrong.test.ts` (or a dedicated `KarplusStrong.stress.test.ts`) that calls `pluck()` at a simulated rate of ≥10 times/sec against a mock `AudioContext`/worklet stub and asserts: no thrown errors, no `NaN`/`Infinity` produced in the output signal, and no unbounded growth in internal delay-line values — automates SC-007 rather than relying solely on manual verification
+- [ ] T036 Manually execute `specs/034-karplus-strong-oscillator/quickstart.md` end-to-end in the dev server (`npm run dev`), confirming SC-001 through SC-008 hold, including rapid re-trigger stability at ≥10 triggers/sec (SC-007, cross-checked against T038's automated result) and no perceptible latency/responsiveness degradation (SC-008)
 - [ ] T037 Verify backward compatibility: load a pre-existing patch file (containing no Karplus-Strong component) and confirm it still loads without error (per plan.md Constraints: "Patch format changes must be backward-compatible")
 
 ---
