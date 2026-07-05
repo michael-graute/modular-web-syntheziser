@@ -198,3 +198,131 @@ describe('applyToneFilter', () => {
     expect(overRange).toBe(withClamp);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Rapid re-trigger stress test (T038, SC-007) — simulates the worklet's own
+// pluck/process loop (matching karplus-strong.worklet.ts's corrected feedback
+// indexing: reads from writeIndex/writeIndex-1, one full period back) at a
+// high re-trigger rate, asserting no NaN/Infinity and no unbounded growth.
+// ---------------------------------------------------------------------------
+
+describe('rapid re-trigger numerical stability (SC-007)', () => {
+  function simulatePluck(
+    delayLine: Float32Array,
+    activeLength: number,
+    rng: () => number,
+    tone: number
+  ): number {
+    let toneFilterState = 0;
+    for (let i = 0; i < activeLength; i++) {
+      const noiseSample = rng() * 2 - 1;
+      toneFilterState = applyToneFilter(tone, noiseSample, toneFilterState);
+      delayLine[i] = toneFilterState;
+    }
+    return 0; // writeIndex reset to 0
+  }
+
+  function simulateProcessBlock(
+    delayLine: Float32Array,
+    activeLength: number,
+    writeIndex: number,
+    coefficient: number,
+    mode: Parameters<typeof applyFeedbackFilter>[0],
+    rng: () => number,
+    blockSize: number
+  ): { writeIndex: number; samples: number[] } {
+    const samples: number[] = [];
+    for (let i = 0; i < blockSize; i++) {
+      const idx1 = writeIndex;
+      const idx2 = (writeIndex - 1 + activeLength) % activeLength;
+      const prev1 = delayLine[idx1] ?? 0;
+      const prev2 = delayLine[idx2] ?? 0;
+      const filtered = applyFeedbackFilter(mode, coefficient, prev1, prev2, rng);
+      delayLine[idx1] = filtered;
+      samples.push(filtered);
+      writeIndex = (writeIndex + 1) % activeLength;
+    }
+    return { writeIndex, samples };
+  }
+
+  it('produces no NaN/Infinity and no unbounded growth at ≥10 re-triggers/sec', () => {
+    const sampleRate = 44100;
+    const frequency = 220;
+    const activeLength = frequencyToDelayLineLength(frequency, sampleRate);
+    const delayLine = new Float32Array(maxDelayLineLength(sampleRate));
+    const rng = createSeededRng(12345);
+    const coefficient = dampingToFeedbackCoefficient(0.5);
+    const tone = 0.5;
+
+    let writeIndex = 0;
+    const blockSize = 128;
+    // 10 triggers/sec at 44.1kHz ≈ one re-pluck every 4410 samples (~34 blocks).
+    const blocksBetweenPlucks = Math.floor(4410 / blockSize);
+    const totalBlocks = blocksBetweenPlucks * 50; // 50 re-triggers total
+
+    let allSamples: number[] = [];
+    for (let block = 0; block < totalBlocks; block++) {
+      if (block % blocksBetweenPlucks === 0) {
+        writeIndex = simulatePluck(delayLine, activeLength, rng, tone);
+      }
+      const result = simulateProcessBlock(
+        delayLine,
+        activeLength,
+        writeIndex,
+        coefficient,
+        0 as Parameters<typeof applyFeedbackFilter>[0], // STRING mode
+        rng,
+        blockSize
+      );
+      writeIndex = result.writeIndex;
+      allSamples = allSamples.concat(result.samples);
+    }
+
+    expect(allSamples.length).toBeGreaterThan(0);
+    for (const sample of allSamples) {
+      expect(Number.isNaN(sample)).toBe(false);
+      expect(Number.isFinite(sample)).toBe(true);
+    }
+
+    const maxAbs = allSamples.reduce((max, s) => Math.max(max, Math.abs(s)), 0);
+    // Bounded by the noise burst's amplitude range; the feedback coefficient
+    // is strictly < 1.0, so output must never grow beyond the initial excitation.
+    expect(maxAbs).toBeLessThanOrEqual(1.5);
+  });
+
+  it('handles re-triggering faster than the DSP can decay without runaway amplitude', () => {
+    const sampleRate = 44100;
+    const frequency = 440;
+    const activeLength = frequencyToDelayLineLength(frequency, sampleRate);
+    const delayLine = new Float32Array(maxDelayLineLength(sampleRate));
+    const rng = createSeededRng(999);
+    const coefficient = dampingToFeedbackCoefficient(1); // max sustain — worst case for runaway
+    const tone = 1;
+
+    let writeIndex = 0;
+    // Re-pluck every single block (128 samples ≈ 2.9ms) — far faster than 10/sec.
+    for (let trigger = 0; trigger < 200; trigger++) {
+      writeIndex = simulatePluck(delayLine, activeLength, rng, tone);
+      const result = simulateProcessBlock(
+        delayLine,
+        activeLength,
+        writeIndex,
+        coefficient,
+        0 as Parameters<typeof applyFeedbackFilter>[0],
+        rng,
+        128
+      );
+      writeIndex = result.writeIndex;
+
+      for (const sample of result.samples) {
+        expect(Number.isFinite(sample)).toBe(true);
+      }
+    }
+
+    // Final delay-line state must still be finite and bounded.
+    for (let i = 0; i < activeLength; i++) {
+      expect(Number.isFinite(delayLine[i])).toBe(true);
+      expect(Math.abs(delayLine[i]!)).toBeLessThanOrEqual(1.5);
+    }
+  });
+});
