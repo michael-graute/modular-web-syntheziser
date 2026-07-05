@@ -13,6 +13,7 @@ import { OscilloscopeDisplay } from './displays/OscilloscopeDisplay';
 import { VuMeterDisplay } from './displays/VuMeterDisplay';
 import { EnvelopeFollowerDisplay } from './displays/EnvelopeFollowerDisplay';
 import { SlewLimiterDisplay } from './displays/SlewLimiterDisplay';
+import { KarplusStrongDisplay } from './displays/KarplusStrongDisplay';
 import { StepSequencerDisplay, SEQUENCER_DISPLAY_HEIGHT } from './displays/StepSequencerDisplay';
 import { ColliderDisplay } from './displays/ColliderDisplay';
 import { ChordFinderDisplay } from './displays/ChordFinderDisplay';
@@ -51,6 +52,7 @@ export class CanvasComponent {
   private vuMeterDisplay: VuMeterDisplay | null = null;
   private envelopeFollowerDisplay: EnvelopeFollowerDisplay | null = null;
   private slewLimiterDisplay: SlewLimiterDisplay | null = null;
+  private karplusStrongDisplay: KarplusStrongDisplay | null = null;
   private _looperRafId: number | null = null;
 
   constructor(
@@ -1744,6 +1746,84 @@ export class CanvasComponent {
       }
     }
 
+    // Karplus-Strong — Mode dropdown + 3 knobs (frequency, damping, tone) + waveform display
+    if (this.type === ComponentType.KARPLUS_STRONG && this.synthComponent) {
+      const frequencyParam = this.synthComponent.getParameter('frequency');
+      const dampingParam = this.synthComponent.getParameter('damping');
+      const toneParam = this.synthComponent.getParameter('tone');
+      const modeParam = this.synthComponent.getParameter('mode');
+
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      let cursorY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+
+      if (modeParam) {
+        const options: DropdownOption[] = [
+          { value: 0, label: 'String' },
+          { value: 1, label: 'Stretched' },
+        ];
+        this.controls.push(new Dropdown(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
+          cursorY,
+          this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2,
+          COMPONENT.DROPDOWN_HEIGHT,
+          modeParam,
+          options,
+          'Mode'
+        ));
+        cursorY += COMPONENT.DROPDOWN_HEIGHT + 12 + 10;
+      }
+
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const numKnobs = 3;
+      const totalSpacing = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const spacing = (totalSpacing - numKnobs * knobSize) / (numKnobs + 1);
+      const knobY = cursorY;
+
+      if (frequencyParam) {
+        this.controls.push(new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing,
+          knobY,
+          knobSize,
+          frequencyParam
+        ));
+      }
+      if (dampingParam) {
+        this.controls.push(new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 2 + knobSize,
+          knobY,
+          knobSize,
+          dampingParam
+        ));
+      }
+      if (toneParam) {
+        this.controls.push(new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 3 + knobSize * 2,
+          knobY,
+          knobSize,
+          toneParam
+        ));
+      }
+
+      const knobAreaHeight = 12 + knobSize + 12;
+      const displayX = this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL;
+      const displayY = knobY + knobAreaHeight + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const displayWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const displayHeight = 100;
+
+      const ks = this.synthComponent as import('../components/generators/KarplusStrong').KarplusStrong;
+      if (!this.karplusStrongDisplay) {
+        this.karplusStrongDisplay = new KarplusStrongDisplay(
+          displayX, displayY, displayWidth, displayHeight, ks
+        );
+      } else {
+        this.karplusStrongDisplay.updatePosition(displayX, displayY);
+      }
+    }
+
     // PolyOscillator — waveform dropdown (same options as mono Oscillator)
     if (this.type === ComponentType.POLY_OSCILLATOR) {
       const waveformParam = this.synthComponent.getParameter('waveform');
@@ -2027,6 +2107,11 @@ export class CanvasComponent {
         this.slewLimiterDisplay.render(ctx);
       }
 
+      // Render Karplus-Strong waveform display onto the main canvas
+      if (this.karplusStrongDisplay) {
+        this.karplusStrongDisplay.render(ctx);
+      }
+
       // Render step sequencer display onto the main canvas
       if (this.stepSequencerDisplay) {
         this.stepSequencerDisplay.render(ctx);
@@ -2288,6 +2373,10 @@ export class CanvasComponent {
     if (this.slewLimiterDisplay) {
       this.slewLimiterDisplay.destroy();
       this.slewLimiterDisplay = null;
+    }
+    if (this.karplusStrongDisplay) {
+      this.karplusStrongDisplay.destroy();
+      this.karplusStrongDisplay = null;
     }
   }
 
