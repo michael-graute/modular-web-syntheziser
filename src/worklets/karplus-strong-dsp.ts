@@ -30,11 +30,16 @@ export function clampTone(tone: number): number {
 }
 
 /**
- * Maps normalized Damping (0-1) to a feedback coefficient strictly below 1.0,
- * guaranteeing the string always eventually decays to silence.
+ * Maps normalized Damping (0-1) to a feedback coefficient in
+ * [MIN_FEEDBACK_COEFFICIENT, MAX_FEEDBACK_COEFFICIENT] — strictly below 1.0
+ * (guaranteeing eventual decay to silence) but never so low that the
+ * averaging filter's inherent per-sample energy loss decays a pluck to
+ * silence within a handful of samples (see MIN_FEEDBACK_COEFFICIENT).
  */
 export function dampingToFeedbackCoefficient(damping: number): number {
-  return clampDamping(damping) * KARPLUS_STRONG.MAX_FEEDBACK_COEFFICIENT;
+  const { MIN_FEEDBACK_COEFFICIENT, MAX_FEEDBACK_COEFFICIENT } = KARPLUS_STRONG;
+  const range = MAX_FEEDBACK_COEFFICIENT - MIN_FEEDBACK_COEFFICIENT;
+  return MIN_FEEDBACK_COEFFICIENT + clampDamping(damping) * range;
 }
 
 /** Validates and normalizes a Mode value loaded from persisted patch data (FR-010). */

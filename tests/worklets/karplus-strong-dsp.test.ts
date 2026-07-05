@@ -54,13 +54,13 @@ describe('clampDamping / clampTone', () => {
 });
 
 describe('dampingToFeedbackCoefficient', () => {
-  it('produces a fast-decay coefficient at damping=0', () => {
-    expect(dampingToFeedbackCoefficient(0)).toBe(0);
+  it('produces the fastest-decay coefficient (MIN_FEEDBACK_COEFFICIENT) at damping=0', () => {
+    expect(dampingToFeedbackCoefficient(0)).toBeCloseTo(KARPLUS_STRONG.MIN_FEEDBACK_COEFFICIENT, 10);
   });
 
-  it('approaches but never reaches MAX_FEEDBACK_COEFFICIENT at damping=1', () => {
+  it('approaches but never reaches 1.0 at damping=1 (MAX_FEEDBACK_COEFFICIENT)', () => {
     const coeff = dampingToFeedbackCoefficient(1);
-    expect(coeff).toBe(KARPLUS_STRONG.MAX_FEEDBACK_COEFFICIENT);
+    expect(coeff).toBeCloseTo(KARPLUS_STRONG.MAX_FEEDBACK_COEFFICIENT, 10);
     expect(coeff).toBeLessThan(1.0);
   });
 
