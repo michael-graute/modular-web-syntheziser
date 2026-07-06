@@ -80,6 +80,7 @@ export function dampingToFeedbackCoefficient(damping: number, _sampleRate: numbe
 /** Validates and normalizes a Mode value loaded from persisted patch data (FR-010). */
 export function normalizeMode(rawMode: unknown): KarplusStrongMode {
   if (rawMode === KarplusStrongMode.STRETCHED) return KarplusStrongMode.STRETCHED;
+  if (rawMode === KarplusStrongMode.MUTED) return KarplusStrongMode.MUTED;
   return KarplusStrongMode.STRING;
 }
 
@@ -107,9 +108,25 @@ export function applyStringFeedback(coefficient: number, prev1: number, prev2: n
 }
 
 /**
- * Applies the "Stretched" mode feedback filter (Jaffe & Smith): the averaged
- * sample is randomly sign-inverted with a fixed low probability, extending
- * sustain and adding a percussive/noisy character suited to drum-like sounds.
+ * Fixed blend probability for "Stretched" mode: the fraction of samples that
+ * skip damping entirely each cycle (see applyStretchedFeedback). Empirically
+ * tuned (simulating the actual feedback loop) to give both a clearly longer
+ * sustain AND an audibly rougher/noisier character than String mode — an
+ * earlier implementation that randomly inverted the SIGN of the already-
+ * damped sample (rather than skipping damping) had it backwards: it made
+ * Stretched mode decay to silence FASTER than String, not slower.
+ */
+const STRETCH_SKIP_DAMPING_PROBABILITY = 0.4;
+
+/**
+ * Applies the "Stretched" mode feedback filter (Jaffe & Smith): with a fixed
+ * probability, the delay-line sample passes through UNCHANGED (skipping this
+ * cycle's damping entirely); otherwise the normal String-mode averaging is
+ * applied. Skipping damping some of the time lets the fundamental linger
+ * much longer while the effective "coin flips" add broadband roughness/noise
+ * — producing a duller, longer-sustaining, more percussive/tom-like
+ * character than String mode, suited to drum/membrane sounds rather than a
+ * melodic pluck.
  */
 export function applyStretchedFeedback(
   coefficient: number,
@@ -117,23 +134,62 @@ export function applyStretchedFeedback(
   prev2: number,
   rng: () => number
 ): number {
-  const averaged = coefficient * 0.5 * (prev1 + prev2);
-  // Fixed low blend probability: mostly pass through, occasionally invert sign.
-  const STRETCH_INVERT_PROBABILITY = 0.02;
-  return rng() < STRETCH_INVERT_PROBABILITY ? -averaged : averaged;
+  if (rng() < STRETCH_SKIP_DAMPING_PROBABILITY) {
+    return prev1;
+  }
+  return applyStringFeedback(coefficient, prev1, prev2);
 }
 
-/** Applies the mode-appropriate feedback filter for a single delay-line sample. */
+/**
+ * Applies the "Muted" mode feedback filter: a one-pole lowpass is applied
+ * INSIDE the feedback path itself (unlike the Tone control, which only
+ * shapes the initial excitation) — so high harmonics are damped away much
+ * faster than the fundamental on every single pass through the delay line.
+ * This is the classic palm-muted / plucked-near-the-middle string
+ * character: a dull, quickly-decaying tone with little brightness,
+ * distinct from both String (bright, natural decay) and Stretched
+ * (rough, long-sustaining, percussive).
+ *
+ * `mutedFilterState` is the lowpass filter's persistent state, owned by the
+ * caller (the AudioWorkletProcessor) since it must survive across samples —
+ * unlike String/Stretched, which are stateless per-sample computations.
+ */
+const MUTED_LOWPASS_ALPHA = 0.35;
+
+export function applyMutedFeedback(
+  coefficient: number,
+  prev1: number,
+  prev2: number,
+  mutedFilterState: number
+): { output: number; nextFilterState: number } {
+  const averaged = coefficient * 0.5 * (prev1 + prev2);
+  const nextFilterState = mutedFilterState + MUTED_LOWPASS_ALPHA * (averaged - mutedFilterState);
+  return { output: nextFilterState, nextFilterState };
+}
+
+/**
+ * Applies the mode-appropriate feedback filter for a single delay-line sample.
+ * Muted mode requires persistent filter state (mutedFilterState/onMutedState)
+ * since it isn't a stateless per-sample computation like String/Stretched.
+ */
 export function applyFeedbackFilter(
   mode: KarplusStrongMode,
   coefficient: number,
   prev1: number,
   prev2: number,
-  rng: () => number
+  rng: () => number,
+  mutedFilterState: number,
+  onMutedState: (nextState: number) => void
 ): number {
-  return mode === KarplusStrongMode.STRETCHED
-    ? applyStretchedFeedback(coefficient, prev1, prev2, rng)
-    : applyStringFeedback(coefficient, prev1, prev2);
+  if (mode === KarplusStrongMode.STRETCHED) {
+    return applyStretchedFeedback(coefficient, prev1, prev2, rng);
+  }
+  if (mode === KarplusStrongMode.MUTED) {
+    const { output, nextFilterState } = applyMutedFeedback(coefficient, prev1, prev2, mutedFilterState);
+    onMutedState(nextFilterState);
+    return output;
+  }
+  return applyStringFeedback(coefficient, prev1, prev2);
 }
 
 /**

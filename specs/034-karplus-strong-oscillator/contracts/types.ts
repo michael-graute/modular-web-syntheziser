@@ -7,10 +7,11 @@
  * and src/worklets/karplus-strong.worklet.ts.
  */
 
-/** Discrete decay-algorithm variant. Persisted as a numeric enum index (0/1). */
+/** Discrete decay-algorithm variant. Persisted as a numeric enum index (0-2). */
 export enum KarplusStrongMode {
   STRING = 0,
   STRETCHED = 1,
+  MUTED = 2,
 }
 
 /** Supported fundamental frequency range, in Hz. Per spec clarification (2026-07-04). */
@@ -73,16 +74,23 @@ export interface KarplusStrongDspHelpers {
   /** Converts a frequency in Hz + sample rate into an integer delay-line length (samples). */
   frequencyToDelayLineLength(frequencyHz: number, sampleRate: number): number;
 
-  /** Converts the normalized 0-1 Damping control + sample rate into a feedback coefficient < 1.0, via a linear decay-time interpolation. */
+  /** Converts the normalized 0-1 Damping control into a feedback coefficient < 1.0, via linear interpolation over an empirically-measured lookup table (sampleRate accepted for API symmetry, not currently used by the table itself). */
   dampingToFeedbackCoefficient(damping: number, sampleRate: number): number;
 
-  /** Applies mode-specific feedback filtering to a single delay-line output sample. */
+  /**
+   * Applies mode-specific feedback filtering to a single delay-line output
+   * sample. MUTED mode requires persistent one-pole lowpass filter state
+   * (mutedFilterState in, reported back via onMutedState) since it isn't a
+   * stateless per-sample computation like STRING/STRETCHED.
+   */
   applyFeedbackFilter(
     mode: KarplusStrongMode,
     coefficient: number,
     prev1: number,
     prev2: number,
     rng: () => number,
+    mutedFilterState: number,
+    onMutedState: (nextState: number) => void,
   ): number;
 
   /** Generates one sample of tone-filtered noise-burst excitation. */

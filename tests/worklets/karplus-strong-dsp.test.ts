@@ -14,6 +14,7 @@ import {
   frequencyToDelayLineLength,
   applyStringFeedback,
   applyStretchedFeedback,
+  applyMutedFeedback,
   applyFeedbackFilter,
   createSeededRng,
   applyToneFilter,
@@ -221,41 +222,175 @@ describe('applyStringFeedback', () => {
 });
 
 describe('applyStretchedFeedback vs applyStringFeedback', () => {
-  it('produces measurably different output statistics than STRING given identical seed/damping', () => {
-    const rng = createSeededRng(12345);
-    const coefficient = 0.9;
-    let prev1 = 1.0;
-    let prev2 = 0.5;
-    let signFlips = 0;
-    const n = 2000;
+  it('passes prev1 through unchanged when the RNG selects the skip-damping branch', () => {
+    // rng() always returns 0, which is < STRETCH_SKIP_DAMPING_PROBABILITY,
+    // so damping is skipped entirely this cycle: output === prev1 exactly.
+    const result = applyStretchedFeedback(0.9, 1.0, 0.5, () => 0);
+    expect(result).toBe(1.0);
+  });
 
-    for (let i = 0; i < n; i++) {
-      const stringResult = applyStringFeedback(coefficient, prev1, prev2);
-      const stretchedResult = applyStretchedFeedback(coefficient, prev1, prev2, rng);
-      if (Math.sign(stretchedResult) !== Math.sign(stringResult) && stringResult !== 0) {
-        signFlips++;
+  it('applies normal String-mode damping when the RNG selects the damping branch', () => {
+    // rng() always returns a value >= STRETCH_SKIP_DAMPING_PROBABILITY (0.4),
+    // so every cycle applies normal averaging — identical to applyStringFeedback.
+    const result = applyStretchedFeedback(0.9, 1.0, 0.5, () => 0.99);
+    expect(result).toBe(applyStringFeedback(0.9, 1.0, 0.5));
+  });
+
+  it('produces measurably longer sustain than STRING given identical seed/damping (the actual audible effect)', () => {
+    // Regression test for the original bug: an earlier implementation randomly
+    // inverted the SIGN of the already-damped output, which made STRETCHED
+    // decay to silence FASTER than STRING — the opposite of "extends sustain."
+    // This simulates the real feedback loop (matching karplus-strong.worklet.ts)
+    // for both modes and asserts STRETCHED rings out for measurably longer.
+    function simulateDecayPeriods(mode: KarplusStrongMode, seed: number): number {
+      const activeLength = 44; // ~1kHz, short enough to simulate quickly
+      const coefficient = dampingToFeedbackCoefficient(0.5, 44100);
+      const rng = createSeededRng(seed);
+      const delayLine = new Float32Array(activeLength);
+
+      let toneFilterState = 0;
+      for (let i = 0; i < activeLength; i++) {
+        const noiseSample = rng() * 2 - 1;
+        toneFilterState = applyToneFilter(0.5, noiseSample, toneFilterState);
+        delayLine[i] = toneFilterState;
       }
-      prev2 = prev1;
-      prev1 = stretchedResult;
+
+      const maxPeriods = 2000;
+      const periodPeaks: number[] = [];
+      let writeIndex = 0;
+      let currentPeriodPeak = 0;
+      let samplesInPeriod = 0;
+      let mutedState = 0;
+
+      while (periodPeaks.length < maxPeriods) {
+        const idx1 = writeIndex;
+        const idx2 = (writeIndex - 1 + activeLength) % activeLength;
+        const filtered = applyFeedbackFilter(
+          mode,
+          coefficient,
+          delayLine[idx1]!,
+          delayLine[idx2]!,
+          rng,
+          mutedState,
+          (next) => { mutedState = next; }
+        );
+        delayLine[idx1] = filtered;
+        currentPeriodPeak = Math.max(currentPeriodPeak, Math.abs(filtered));
+        samplesInPeriod++;
+        if (samplesInPeriod >= activeLength) {
+          periodPeaks.push(currentPeriodPeak);
+          currentPeriodPeak = 0;
+          samplesInPeriod = 0;
+        }
+        writeIndex = (writeIndex + 1) % activeLength;
+      }
+
+      const initialPeak = Math.max(...periodPeaks.slice(0, 5));
+      const threshold = initialPeak * Math.pow(10, -60 / 20);
+      for (let i = 0; i < periodPeaks.length; i++) {
+        if (periodPeaks[i]! < threshold) return i;
+      }
+      return maxPeriods;
     }
 
-    // Some (but not most) samples should have flipped sign relative to the
-    // deterministic STRING output, proving STRETCHED diverges statistically.
-    expect(signFlips).toBeGreaterThan(0);
-    expect(signFlips).toBeLessThan(n * 0.5);
+    const stringDecay = simulateDecayPeriods(KarplusStrongMode.STRING, 3);
+    const stretchedDecay = simulateDecayPeriods(KarplusStrongMode.STRETCHED, 3);
+
+    expect(stretchedDecay).toBeGreaterThan(stringDecay);
+  });
+});
+
+describe('applyMutedFeedback', () => {
+  it('smooths the averaged signal toward its own filter state (lowpass behavior)', () => {
+    const { output, nextFilterState } = applyMutedFeedback(0.9, 1.0, 1.0, 0);
+    // Starting from filter state 0, the output should move toward the
+    // averaged value but not reach it in a single step (that's the lowpass).
+    const averaged = applyStringFeedback(0.9, 1.0, 1.0);
+    expect(output).toBeGreaterThan(0);
+    expect(output).toBeLessThan(averaged);
+    expect(nextFilterState).toBe(output);
+  });
+
+  it('produces a measurably duller (fewer zero-crossings) waveform than STRING', () => {
+    function simulateWaveform(mode: KarplusStrongMode, seed: number): number[] {
+      const activeLength = 44;
+      const coefficient = dampingToFeedbackCoefficient(0.5, 44100);
+      const rng = createSeededRng(seed);
+      const delayLine = new Float32Array(activeLength);
+
+      let toneFilterState = 0;
+      for (let i = 0; i < activeLength; i++) {
+        const noiseSample = rng() * 2 - 1;
+        toneFilterState = applyToneFilter(0.5, noiseSample, toneFilterState);
+        delayLine[i] = toneFilterState;
+      }
+
+      const output: number[] = [];
+      let writeIndex = 0;
+      let mutedState = 0;
+      for (let i = 0; i < 4410; i++) {
+        // 100ms
+        const idx1 = writeIndex;
+        const idx2 = (writeIndex - 1 + activeLength) % activeLength;
+        const filtered = applyFeedbackFilter(
+          mode,
+          coefficient,
+          delayLine[idx1]!,
+          delayLine[idx2]!,
+          rng,
+          mutedState,
+          (next) => { mutedState = next; }
+        );
+        delayLine[idx1] = filtered;
+        output.push(filtered);
+        writeIndex = (writeIndex + 1) % activeLength;
+      }
+      return output;
+    }
+
+    function zeroCrossings(sig: number[]): number {
+      let count = 0;
+      for (let i = 1; i < sig.length; i++) {
+        if (sig[i - 1]! >= 0 !== sig[i]! >= 0) count++;
+      }
+      return count;
+    }
+
+    const stringZc = zeroCrossings(simulateWaveform(KarplusStrongMode.STRING, 5));
+    const mutedZc = zeroCrossings(simulateWaveform(KarplusStrongMode.MUTED, 5));
+
+    expect(mutedZc).toBeLessThan(stringZc * 0.5);
   });
 });
 
 describe('applyFeedbackFilter dispatch', () => {
+  const noopSetState = () => {};
+
   it('dispatches to applyStringFeedback for STRING mode', () => {
-    const result = applyFeedbackFilter(KarplusStrongMode.STRING, 0.9, 1.0, 0.5, () => 0.5);
+    const result = applyFeedbackFilter(KarplusStrongMode.STRING, 0.9, 1.0, 0.5, () => 0.5, 0, noopSetState);
     expect(result).toBe(applyStringFeedback(0.9, 1.0, 0.5));
   });
 
   it('dispatches to applyStretchedFeedback for STRETCHED mode', () => {
-    const rng = () => 0.01; // forces the sign-inversion branch
-    const result = applyFeedbackFilter(KarplusStrongMode.STRETCHED, 0.9, 1.0, 0.5, rng);
+    const rng = () => 0.01; // forces the skip-damping branch
+    const result = applyFeedbackFilter(KarplusStrongMode.STRETCHED, 0.9, 1.0, 0.5, rng, 0, noopSetState);
     expect(result).toBe(applyStretchedFeedback(0.9, 1.0, 0.5, rng));
+  });
+
+  it('dispatches to applyMutedFeedback for MUTED mode and reports the new filter state', () => {
+    let reportedState: number | null = null;
+    const result = applyFeedbackFilter(
+      KarplusStrongMode.MUTED,
+      0.9,
+      1.0,
+      0.5,
+      () => 0.5,
+      0,
+      (next) => { reportedState = next; }
+    );
+    const expected = applyMutedFeedback(0.9, 1.0, 0.5, 0);
+    expect(result).toBe(expected.output);
+    expect(reportedState).toBe(expected.nextFilterState);
   });
 });
 
@@ -332,7 +467,7 @@ describe('rapid re-trigger numerical stability (SC-007)', () => {
       const idx2 = (writeIndex - 1 + activeLength) % activeLength;
       const prev1 = delayLine[idx1] ?? 0;
       const prev2 = delayLine[idx2] ?? 0;
-      const filtered = applyFeedbackFilter(mode, coefficient, prev1, prev2, rng);
+      const filtered = applyFeedbackFilter(mode, coefficient, prev1, prev2, rng, 0, () => {});
       delayLine[idx1] = filtered;
       samples.push(filtered);
       writeIndex = (writeIndex + 1) % activeLength;

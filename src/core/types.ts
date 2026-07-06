@@ -58,11 +58,12 @@ export enum ComponentType {
 
 /**
  * Karplus-Strong decay-algorithm variant.
- * Persisted as a numeric enum index (0/1) in ComponentData.parameters.
+ * Persisted as a numeric enum index (0-2) in ComponentData.parameters.
  */
 export enum KarplusStrongMode {
   STRING = 0,
   STRETCHED = 1,
+  MUTED = 2,
 }
 
 /**

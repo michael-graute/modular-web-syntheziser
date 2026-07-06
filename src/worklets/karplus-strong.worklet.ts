@@ -91,6 +91,7 @@ class KarplusStrongProcessor extends AudioWorkletProcessor {
   private mode: KarplusStrongMode = KarplusStrongMode.STRING;
   private tone: number = KARPLUS_STRONG.DEFAULT_TONE;
   private toneFilterState = 0;
+  private mutedFilterState = 0;
   private readonly rng: () => number;
   private hasBeenPlucked = false;
   private pluckPending = false;
@@ -145,6 +146,7 @@ class KarplusStrongProcessor extends AudioWorkletProcessor {
     }
 
     this.writeIndex = 0;
+    this.mutedFilterState = 0;
     this.hasBeenPlucked = true;
   }
 
@@ -198,7 +200,15 @@ class KarplusStrongProcessor extends AudioWorkletProcessor {
       const prev1 = this.delayLine[idx1] ?? 0;
       const prev2 = this.delayLine[idx2] ?? 0;
 
-      const filtered = applyFeedbackFilter(this.mode, coefficient, prev1, prev2, this.rng);
+      const filtered = applyFeedbackFilter(
+        this.mode,
+        coefficient,
+        prev1,
+        prev2,
+        this.rng,
+        this.mutedFilterState,
+        (nextState) => { this.mutedFilterState = nextState; }
+      );
       this.delayLine[idx1] = filtered;
       output[i] = filtered;
 

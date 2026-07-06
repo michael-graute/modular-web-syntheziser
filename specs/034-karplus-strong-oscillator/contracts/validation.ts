@@ -64,6 +64,7 @@ export function dampingToFeedbackCoefficient(damping: number, _sampleRate: numbe
 /** Validates and normalizes a Mode value loaded from persisted patch data (FR-010). */
 export function normalizeMode(rawMode: unknown): KarplusStrongMode {
   if (rawMode === KarplusStrongMode.STRETCHED) return KarplusStrongMode.STRETCHED;
+  if (rawMode === KarplusStrongMode.MUTED) return KarplusStrongMode.MUTED;
   return KarplusStrongMode.STRING; // backward-compatible default for missing/invalid values
 }
 

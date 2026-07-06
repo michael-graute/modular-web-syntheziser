@@ -1764,6 +1764,7 @@ export class CanvasComponent {
         const options: DropdownOption[] = [
           { value: 0, label: 'String' },
           { value: 1, label: 'Stretched' },
+          { value: 2, label: 'Muted' },
         ];
         this.controls.push(new Dropdown(
           this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,
