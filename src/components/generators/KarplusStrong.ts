@@ -137,15 +137,23 @@ export class KarplusStrong extends SynthComponent {
   }
 
   updateAudioParameter(parameterId: string, value: number): void {
+    if (!this.workletNode) return;
+    const ctx = audioEngine.getContext();
+    const now = ctx.currentTime;
+
     switch (parameterId) {
+      case 'frequency':
+        this.workletNode.parameters.get('frequency')?.setValueAtTime(value, now);
+        break;
+      case 'damping':
+        this.workletNode.parameters.get('damping')?.setValueAtTime(value, now);
+        break;
       case 'tone':
         this.sendTone(value);
         break;
       case 'mode':
         this.sendMode(normalizeMode(value));
         break;
-      // frequency/damping are driven via AudioParam automation (see createAudioNodes);
-      // no direct action needed here — Parameter.setValue already updated the linked AudioParam value.
     }
   }
 

@@ -318,6 +318,35 @@ describe('KarplusStrong tone and mode wiring', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Frequency and Damping knobs must actually drive the worklet's AudioParams
+// (regression test: linkAudioParam() only wires the Parameter -> AudioParam
+// direction for read-back/CV-visualization, not for pushing knob changes
+// out to the worklet — updateAudioParameter() must do that explicitly, the
+// same way Oscillator.ts does for its frequency/detune AudioParams).
+// ---------------------------------------------------------------------------
+
+describe('KarplusStrong frequency and damping knob wiring', () => {
+  it('turning the Frequency knob updates the worklet AudioParam value', async () => {
+    const { ks, worklet } = await makeActiveKS();
+    ks.setParameterValue('frequency', 880);
+    expect(worklet.parameters.get('frequency')!.value).toBe(880);
+  });
+
+  it('turning the Damping knob updates the worklet AudioParam value', async () => {
+    const { ks, worklet } = await makeActiveKS();
+    ks.setParameterValue('damping', 0.9);
+    expect(worklet.parameters.get('damping')!.value).toBeCloseTo(0.9, 5);
+  });
+
+  it('does not throw when frequency/damping are set before the module is ready', () => {
+    const ks = makeKS();
+    ks.activate();
+    expect(() => ks.setParameterValue('frequency', 660)).not.toThrow();
+    expect(() => ks.setParameterValue('damping', 0.2)).not.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
 // destroyAudioNodes
 // ---------------------------------------------------------------------------
 
