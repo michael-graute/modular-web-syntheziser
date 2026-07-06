@@ -598,16 +598,14 @@ export class StepSequencer extends SynthComponent implements TempoAware {
     this.gateNode.offset.setValueAtTime(1, time);
     this.lastGateOnTime = time;
 
-    // Trigger connected ADSR envelopes
+    // Trigger connected gate targets (ADSR envelopes, Karplus-Strong, etc.)
     this.connectedGateTargets.forEach((target) => {
-      if (target.type === ComponentType.ADSR_ENVELOPE) {
-        const adsrComponent = target as any;
-        if (adsrComponent.triggerGateOn) {
-          // Schedule trigger at the step time
-          setTimeout(() => {
-            adsrComponent.triggerGateOn();
-          }, (time - audioEngine.getContext().currentTime) * 1000);
-        }
+      const t = target as any;
+      if (typeof t.triggerGateOn === 'function') {
+        // Schedule trigger at the step time
+        setTimeout(() => {
+          t.triggerGateOn();
+        }, (time - audioEngine.getContext().currentTime) * 1000);
       }
     });
 
@@ -629,15 +627,13 @@ export class StepSequencer extends SynthComponent implements TempoAware {
   }
 
   /**
-   * Trigger gate off for all connected ADSR targets
+   * Trigger gate off for all connected gate targets
    */
   private triggerGateOffForTargets(): void {
     this.connectedGateTargets.forEach((target) => {
-      if (target.type === ComponentType.ADSR_ENVELOPE) {
-        const adsrComponent = target as any;
-        if (adsrComponent.triggerGateOff) {
-          adsrComponent.triggerGateOff();
-        }
+      const t = target as any;
+      if (typeof t.triggerGateOff === 'function') {
+        t.triggerGateOff();
       }
     });
   }

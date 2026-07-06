@@ -1,0 +1,105 @@
+/**
+ * Type contracts for the Karplus-Strong String Synthesizer component.
+ * Feature: 034-karplus-strong-oscillator
+ *
+ * These are design-time contracts consumed by /speckit.tasks and implementation;
+ * final types live in src/core/types.ts, src/components/generators/KarplusStrong.ts,
+ * and src/worklets/karplus-strong.worklet.ts.
+ */
+
+/** Discrete decay-algorithm variant. Persisted as a numeric enum index (0-3). */
+export enum KarplusStrongMode {
+  STRING = 0,
+  STRETCHED = 1,
+  MUTED = 2,
+  METALLIC = 3,
+}
+
+/** Supported fundamental frequency range, in Hz. Per spec clarification (2026-07-04). */
+export const KARPLUS_STRONG_MIN_FREQUENCY_HZ = 40;
+export const KARPLUS_STRONG_MAX_FREQUENCY_HZ = 4000;
+export const KARPLUS_STRONG_DEFAULT_FREQUENCY_HZ = 440;
+
+/** Normalized (0-1) control ranges. */
+export const KARPLUS_STRONG_DEFAULT_DAMPING = 0.5;
+export const KARPLUS_STRONG_DEFAULT_TONE = 0.5;
+
+/**
+ * Damping maps to a feedback coefficient via an empirically-measured lookup
+ * table (see DAMPING_COEFFICIENT_TABLE in karplus-strong-dsp.ts), not a
+ * closed-form formula. This filter's amplitude envelope does not decay as a
+ * simple per-sample exponential — an earlier coeff^n-over-n-samples formula
+ * produced decay times off by roughly two orders of magnitude when checked
+ * against live in-browser measurement, and separately produced audibly
+ * indistinguishable decay curves at Damping=0 vs. Damping=1.
+ */
+export const KARPLUS_STRONG_MIN_FEEDBACK_COEFFICIENT = 0.929602; // damping = 0
+export const KARPLUS_STRONG_MAX_FEEDBACK_COEFFICIENT = 0.996483; // damping = 1
+
+/**
+ * Parameters that live on the main-thread component and are persisted via
+ * ComponentData.parameters (packed as a flat Record<string, number>).
+ */
+export interface KarplusStrongParameters {
+  frequency: number; // Hz, clamped [KARPLUS_STRONG_MIN_FREQUENCY_HZ, KARPLUS_STRONG_MAX_FREQUENCY_HZ]
+  damping: number; // 0-1, clamped
+  tone: number; // 0-1, clamped
+  mode: KarplusStrongMode;
+}
+
+/** Messages sent from the main-thread component to the AudioWorkletProcessor via port.postMessage. */
+export type KarplusStrongWorkletMessage =
+  | { type: 'pluck' }
+  | { type: 'setMode'; mode: KarplusStrongMode }
+  | { type: 'setTone'; value: number };
+
+/**
+ * Custom AudioParam names exposed by the AudioWorkletNode/Processor.
+ * `frequency` accepts 1V/octave-style CV connections via getAudioParamForInput();
+ * `damping` is k-rate (changes take effect per-render-quantum, not per-sample).
+ */
+export interface KarplusStrongWorkletParameterDescriptor {
+  name: 'frequency' | 'damping';
+  automationRate: 'a-rate' | 'k-rate';
+  defaultValue: number;
+  minValue: number;
+  maxValue: number;
+}
+
+/**
+ * Pure DSP helper contract — extracted so it is unit-testable via Vitest without
+ * an AudioWorklet runtime (Constitution: Test Coverage requires ≥80% on critical logic;
+ * jsdom/Vitest cannot execute an actual AudioWorkletGlobalScope).
+ */
+export interface KarplusStrongDspHelpers {
+  /** Converts a frequency in Hz + sample rate into an integer delay-line length (samples). */
+  frequencyToDelayLineLength(frequencyHz: number, sampleRate: number): number;
+
+  /** Converts the normalized 0-1 Damping control into a feedback coefficient < 1.0, via linear interpolation over an empirically-measured lookup table (sampleRate accepted for API symmetry, not currently used by the table itself). */
+  dampingToFeedbackCoefficient(damping: number, sampleRate: number): number;
+
+  /**
+   * Applies mode-specific feedback filtering to a single delay-line output
+   * sample. MUTED requires persistent one-pole lowpass filter state
+   * (mutedFilterState in, reported back via onMutedState) since it isn't a
+   * stateless per-sample computation like STRING/STRETCHED. METALLIC requires
+   * a third, detuned delay-line sample (prev3, from metallicDetuneOffset)
+   * that breaks the harmonic series; ignored by all other modes.
+   */
+  applyFeedbackFilter(
+    mode: KarplusStrongMode,
+    coefficient: number,
+    prev1: number,
+    prev2: number,
+    rng: () => number,
+    mutedFilterState: number,
+    onMutedState: (nextState: number) => void,
+    prev3?: number,
+  ): number;
+
+  /** Computes the sample offset for METALLIC mode's detuned second tap, as a fixed fraction of the active delay-line length. */
+  metallicDetuneOffset(activeLength: number): number;
+
+  /** Generates one sample of tone-filtered noise-burst excitation. */
+  generateExcitationSample(tone: number, rng: () => number, prevExcitation: number): number;
+}

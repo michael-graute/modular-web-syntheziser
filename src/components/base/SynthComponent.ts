@@ -245,9 +245,10 @@ export abstract class SynthComponent {
 
       // Check if this is a CV/Gate connection to an AudioParam
       if (outputPort.type === 'cv' || outputPort.type === 'gate') {
-        // Special handling for gate connections to ADSR
-        if (outputPort.type === 'gate' && target.type === 'adsr-envelope') {
-          // Register the ADSR with the source component for triggering
+        // Special handling for gate connections to any trigger-driven target
+        // (ADSR envelope, Karplus-Strong, etc.) that exposes triggerGateOn/Off
+        if (outputPort.type === 'gate' && typeof (target as any).triggerGateOn === 'function') {
+          // Register the target with the source component for triggering
           const registerMethod = (this as any).registerGateTarget;
           if (registerMethod && typeof registerMethod === 'function') {
             registerMethod.call(this, target);
@@ -275,8 +276,8 @@ export abstract class SynthComponent {
           if (cvInputNode) {
             outputNode.connect(cvInputNode);
             console.log(`✓ Connected ${this.name}:${outputPort.name} (CV) -> ${target.name}:${inputPort.name} (AudioNode)`);
-          } else if (outputPort.type !== 'gate' || target.type !== 'adsr-envelope') {
-            // Only warn if it's not a gate->ADSR connection (which doesn't use AudioParam)
+          } else if (outputPort.type !== 'gate' || typeof (target as any).triggerGateOn !== 'function') {
+            // Only warn if it's not a gate->trigger connection (which doesn't use AudioParam)
             console.warn(`Cannot connect CV: no AudioParam found for input ${inputId}`);
             return;
           }
@@ -411,8 +412,8 @@ export abstract class SynthComponent {
             }
           }
 
-          // If this was a gate connection to ADSR, unregister
-          if (outputPort.type === 'gate' && target.type === 'adsr-envelope') {
+          // If this was a gate connection to a trigger-driven target, unregister
+          if (outputPort.type === 'gate' && typeof (target as any).triggerGateOn === 'function') {
             const unregisterMethod = (this as any).unregisterGateTarget;
             if (unregisterMethod && typeof unregisterMethod === 'function') {
               unregisterMethod.call(this, target);

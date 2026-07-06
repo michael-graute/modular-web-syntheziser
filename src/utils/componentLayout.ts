@@ -184,6 +184,14 @@ function getControlLayout(type: ComponentType): ControlLayout {
         displayHeight: 80,
       };
 
+    case ComponentType.KARPLUS_STRONG:
+      return {
+        hasDropdown: true, // Mode: String / Stretched
+        numKnobs: 3, // frequency, damping, tone
+        hasDisplayArea: true,
+        displayHeight: 100,
+      };
+
     case ComponentType.RING_MODULATOR:
       return {}; // No user-adjustable parameters; bypass button rendered automatically
 
@@ -299,6 +307,9 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
 
     case ComponentType.SLEW_LIMITER:
       return { inputs: 1, outputs: 1 }; // CV in / CV out
+
+    case ComponentType.KARPLUS_STRONG:
+      return { inputs: 2, outputs: 1 }; // trigger (gate), pitch cv / audio out
 
     case ComponentType.RING_MODULATOR:
       return { inputs: 2, outputs: 1 }; // audio-in, modulator / audio-out

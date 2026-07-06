@@ -520,7 +520,7 @@ export class HelpSidebar {
         Browse and drag components onto the canvas. Components are organized into categories:
       </p>
       <ul style="color: var(--text-secondary, #cccccc);">
-        <li><strong style="color: var(--text-primary, #ffffff);">Generators:</strong> Oscillator, FM Oscillator, LFO, Noise</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">Generators:</strong> Oscillator, FM Oscillator, LFO, Noise, Karplus-Strong</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Processors:</strong> Filters, VCA, Envelopes</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Effects:</strong> Delay, Reverb, Distortion, Chorus, Bitcrusher, Flanger, Phaser, Tremolo, Ring Modulator</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Utilities:</strong> Keyboard, Mixer, Sequencer, Arpeggiator, Slew Limiter</li>
@@ -617,6 +617,39 @@ export class HelpSidebar {
         <li><strong>Amplitude:</strong> Output level</li>
         <li><strong>Output:</strong> Audio signal</li>
       </ul>
+
+      <h4 style="color: var(--text-primary, #ffffff);">Karplus-Strong</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Algorithmic plucked-string / percussive synthesizer using the classic Karplus-Strong
+        delay-line-with-feedback-filter technique. Triggered like an envelope (Gate In re-excites
+        the string) and tracks pitch via 1V/octave CV, producing a naturally decaying tone without
+        needing a separate ADSR to shape amplitude.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>Trigger:</strong> Gate input — each rising edge re-excites ("plucks") the string</li>
+        <li><strong>Pitch CV:</strong> 1V/octave pitch input — connect a Keyboard, Quantizer, or Sequencer CV output</li>
+        <li><strong>Frequency:</strong> Manual base pitch (0–4000 Hz). Acts as the pitch when no CV is connected, or as a transpose offset on top of the CV note when CV is connected — set to 0 for the CV to drive pitch directly with no offset</li>
+        <li><strong>Damping:</strong> Decay/sustain length — short percussive pluck at low values, several seconds of ring at high values</li>
+        <li><strong>Tone:</strong> Pick-position brightness of the initial pluck — dull/warm at low values, bright/metallic at high values</li>
+        <li><strong>Mode:</strong> Decay-algorithm character —
+          <strong>String</strong> (clean natural harmonic decay),
+          <strong>Stretched</strong> (longer sustain, rougher/percussive, good for toms/drums),
+          <strong>Muted</strong> (dull, quickly-damped harmonics — palm-mute character),
+          or <strong>Metallic</strong> (inharmonic partials — bell/kalimba-like timbre)
+        </li>
+        <li><strong>Output:</strong> Audio signal</li>
+      </ul>
+      <div style="background: var(--bg-secondary, #1a1a1a); padding: 12px 16px; border-radius: 8px; border-left: 4px solid var(--accent-color, #0066cc); margin: 8px 0 16px;">
+        <p style="color: var(--text-secondary, #cccccc); margin: 0 0 6px;">
+          <strong style="color: var(--text-primary, #ffffff);">Typical patch:</strong>
+        </p>
+        <ol style="color: var(--text-secondary, #cccccc); margin: 0; padding-left: 18px;">
+          <li>Keyboard <strong>Gate → Karplus-Strong Trigger</strong></li>
+          <li>Keyboard <strong>Frequency → Karplus-Strong Pitch CV</strong>, and set the Frequency knob to 0</li>
+          <li>Karplus-Strong <strong>Audio Out → Master Output</strong></li>
+          <li>Play notes on the keyboard — each press plucks a decaying string tone</li>
+        </ol>
+      </div>
 
       <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Processors</h3>
 

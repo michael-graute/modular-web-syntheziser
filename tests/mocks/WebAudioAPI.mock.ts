@@ -300,6 +300,44 @@ export class MockStereoPannerNode extends MockAudioNode implements Partial<Stere
 }
 
 /**
+ * Mock AudioParamMap (the Map-like object returned by AudioWorkletNode.parameters)
+ */
+export class MockAudioParamMap {
+  private params: Map<string, MockAudioParam> = new Map();
+
+  set(name: string, param: MockAudioParam): void {
+    this.params.set(name, param);
+  }
+
+  get(name: string): MockAudioParam | undefined {
+    return this.params.get(name);
+  }
+}
+
+/**
+ * Mock AudioWorkletNode — supports the subset used by KarplusStrong:
+ * .parameters (frequency, damping) and .port.postMessage (pluck/setMode/setTone).
+ */
+export class MockAudioWorkletNode extends MockAudioNode implements Partial<AudioWorkletNode> {
+  parameters: MockAudioParamMap;
+  port: { postMessage: (msg: unknown) => void; onmessage: ((ev: MessageEvent) => void) | null };
+  postedMessages: unknown[] = [];
+
+  constructor(_context?: unknown, _name?: string) {
+    super(1, 1);
+    this.parameters = new MockAudioParamMap();
+    this.parameters.set('frequency', new MockAudioParam(440, 40, 4000));
+    this.parameters.set('damping', new MockAudioParam(0.5, 0, 1));
+    this.port = {
+      postMessage: (msg: unknown) => {
+        this.postedMessages.push(msg);
+      },
+      onmessage: null,
+    };
+  }
+}
+
+/**
  * Mock AudioContext
  */
 export class MockAudioContext implements Partial<BaseAudioContext> {
@@ -307,6 +345,9 @@ export class MockAudioContext implements Partial<BaseAudioContext> {
   sampleRate: number = 44100;
   currentTime: number = 0;
   destination: MockAudioDestinationNode;
+  audioWorklet = {
+    addModule: async (_url: string | URL) => Promise.resolve(),
+  };
   baseLatency: number = 0.01;
   private nodes: Map<string, AudioNode> = new Map();
   private eventListeners: Map<string, Function[]> = new Map();

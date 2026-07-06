@@ -79,6 +79,23 @@ export const AUDIO = {
 } as const;
 
 /**
+ * Karplus-Strong string synthesizer constants
+ */
+export const KARPLUS_STRONG = {
+  MIN_FREQUENCY: 40,
+  MAX_FREQUENCY: 4000,
+  DEFAULT_FREQUENCY: 440,
+  DEFAULT_DAMPING: 0.5,
+  DEFAULT_TONE: 0.5,
+  // Damping maps to a feedback coefficient via an empirically-measured
+  // lookup table (see DAMPING_COEFFICIENT_TABLE in karplus-strong-dsp.ts),
+  // not a closed-form formula — this filter's amplitude envelope does not
+  // decay as a simple per-sample exponential, so a naive coeff^n-over-n-
+  // samples model produced decay times off by roughly two orders of
+  // magnitude when checked against live in-browser measurement.
+} as const;
+
+/**
  * Envelope constants
  */
 export const ENVELOPE = {
