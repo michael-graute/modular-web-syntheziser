@@ -15,7 +15,7 @@ import { ComponentType, Position, SignalType, KarplusStrongMode } from '../../co
 import type { ComponentData } from '../../core/types';
 import { audioEngine } from '../../core/AudioEngine';
 import { KARPLUS_STRONG } from '../../utils/constants';
-import { normalizeMode, clampFrequency, clampDamping, clampTone } from '../../worklets/karplus-strong-dsp';
+import { normalizeMode, clampDamping, clampTone } from '../../worklets/karplus-strong-dsp';
 
 export class KarplusStrong extends SynthComponent {
   private workletNode: AudioWorkletNode | null = null;
@@ -31,11 +31,17 @@ export class KarplusStrong extends SynthComponent {
     this.addInput('pitch', 'Pitch CV', SignalType.CV);
     this.addOutput('output', 'Audio Out', SignalType.AUDIO);
 
+    // Knob range starts at 0 (not KARPLUS_STRONG.MIN_FREQUENCY) so it can
+    // reach true "no offset" when Pitch CV is connected — matching
+    // Oscillator's frequency knob, which also ranges down to 0 for this
+    // exact reason (CV becomes the sole driver; the knob is an offset/
+    // transpose on top of it). The 40Hz musical floor is still enforced
+    // separately at the DSP level (frequencyToDelayLineLength -> clampFrequency).
     this.addParameter(
       'frequency',
       'Frequency',
       KARPLUS_STRONG.DEFAULT_FREQUENCY,
-      KARPLUS_STRONG.MIN_FREQUENCY,
+      0,
       KARPLUS_STRONG.MAX_FREQUENCY,
       1,
       'Hz'
@@ -264,7 +270,13 @@ export class KarplusStrong extends SynthComponent {
 
   override deserialize(data: ComponentData): void {
     this.position = { ...data.position };
-    const frequency = clampFrequency(data.parameters['frequency'] ?? KARPLUS_STRONG.DEFAULT_FREQUENCY);
+    // Frequency is clamped to the KNOB's own range (0-MAX_FREQUENCY) here, via
+    // setParameterValue -> Parameter.setValue, NOT via the stricter DSP-level
+    // clampFrequency (40-MAX_FREQUENCY) — a persisted value of 0 is legitimate
+    // (pure-CV-offset mode when Pitch CV is connected); the 40Hz musical floor
+    // is enforced separately, only at the point of actual synthesis.
+    const rawFrequency = data.parameters['frequency'] ?? KARPLUS_STRONG.DEFAULT_FREQUENCY;
+    const frequency = Number.isNaN(rawFrequency) ? KARPLUS_STRONG.DEFAULT_FREQUENCY : rawFrequency;
     const damping = clampDamping(data.parameters['damping'] ?? KARPLUS_STRONG.DEFAULT_DAMPING);
     const tone = clampTone(data.parameters['tone'] ?? KARPLUS_STRONG.DEFAULT_TONE);
     const mode = normalizeMode(data.parameters['mode']);

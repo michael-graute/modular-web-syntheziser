@@ -274,10 +274,19 @@ describe('KarplusStrong deserialize', () => {
       position: { x: 0, y: 0 },
       parameters: { frequency: -100, damping: 5, tone: -5, mode: 99 },
     });
-    expect(ks.getParameter('frequency')?.getValue()).toBe(KARPLUS_STRONG.MIN_FREQUENCY);
+    // Frequency clamps to the KNOB's own range (0-MAX_FREQUENCY), not the
+    // stricter DSP musical floor (40 Hz) — 0 is a legitimate persisted value
+    // (pure-CV-offset mode when Pitch CV is connected); see updateAudioParameter.
+    expect(ks.getParameter('frequency')?.getValue()).toBe(0);
     expect(ks.getParameter('damping')?.getValue()).toBe(1);
     expect(ks.getParameter('tone')?.getValue()).toBe(0);
     expect(ks.getParameter('mode')?.getValue()).toBe(KarplusStrongMode.STRING);
+  });
+
+  it('allows Frequency to be set to exactly 0 (pure-CV-offset mode)', () => {
+    const ks = makeKS();
+    ks.setParameterValue('frequency', 0);
+    expect(ks.getParameter('frequency')?.getValue()).toBe(0);
   });
 
   it('round-trips: serialize → deserialize preserves non-default values (SC-006)', () => {
