@@ -9,7 +9,7 @@
 
 | Category | Components |
 |----------|-----------|
-| Generators | Oscillator, FM Oscillator, LFO, Noise |
+| Generators | Oscillator, FM Oscillator, LFO, Noise, Karplus-Strong |
 | Processors | Filter, VCA, ADSR Envelope, Parametric EQ |
 | Effects | Delay, Reverb, Distortion, Chorus, Bitcrusher, Flanger, Phaser, Tremolo, Ring Modulator |
 | Utilities | Keyboard, Master Out, Mixer, Step Sequencer, Chord Finder, Collider, Looper |
@@ -22,7 +22,7 @@
 ### Synthesis Fundamentals
 
 - **Sample Player / Wavetable Oscillator** — no way to load audio files or user-defined waveforms; most modular systems have this. Would open up sampling, one-shot drums, and wavetable synthesis workflows.
-- **Karplus-Strong / Physical Modeling** — algorithmic plucked string synthesis. Would complement the physics-themed Collider well and introduce a new synthesis paradigm distinct from the existing oscillator-based approach.
+- ~~**Karplus-Strong / Physical Modeling**~~ ✅ *Implemented in `src/components/generators/KarplusStrong.ts` (branch `034-karplus-strong-oscillator`)* — algorithmic plucked-string/percussive synthesizer using the classic delay-line-with-feedback-filter technique, driven by a custom AudioWorkletNode (the project's first). Gate-triggered "pluck" excitation, 1V/octave pitch CV tracking with a manual Frequency/transpose knob, Damping (decay length) and Tone (pick-position brightness) controls, and four selectable decay-algorithm Modes: String (clean harmonic decay), Stretched (longer, rougher/percussive — good for toms/drums), Muted (dull, palm-mute character), and Metallic (inharmonic, bell/kalimba-like via a detuned second delay tap). Live waveform display and full patch persistence.
 - ~~**Ring Modulator**~~ ✅ *Implemented in `src/components/effects/RingModulator.ts` (branch `028-ring-modulator`)* — classic AM synthesis, absent despite an otherwise complete effects chain. Simple to implement; produces metallic, bell-like timbres by multiplying two audio signals.
 
 ### Modulation & Control
@@ -64,6 +64,7 @@
 | S&H (standalone) | Medium | Low | **P2** |
 | Sample Player / Wavetable | High | High | **P2** |
 | ~~Ring Modulator~~ | Medium | Low | ✅ **Implemented** |
+| ~~Karplus-Strong / Physical Modeling~~ | High | High | ✅ **Implemented** |
 | Wavefolder | Medium | Medium | **P3** |
 | ~~EQ / Parametric Filter~~ | Medium | Medium | ✅ **Implemented** |
 | ~~VU Meter~~ | Low | Low | ✅ **Implemented** |
