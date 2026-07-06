@@ -7,7 +7,8 @@
  */
 
 import {
-  KARPLUS_STRONG_MAX_FEEDBACK_COEFFICIENT,
+  KARPLUS_STRONG_MIN_DECAY_TIME_SEC,
+  KARPLUS_STRONG_MAX_DECAY_TIME_SEC,
   KARPLUS_STRONG_MAX_FREQUENCY_HZ,
   KARPLUS_STRONG_MIN_FREQUENCY_HZ,
   KarplusStrongMode,
@@ -33,13 +34,20 @@ export function clampTone(tone: number): number {
 }
 
 /**
- * Maps normalized Damping (0-1) to a feedback coefficient strictly below 1.0,
- * guaranteeing the string always eventually decays to silence (spec Edge Case:
- * "Damping at absolute maximum must not sustain indefinitely or self-oscillate").
+ * Maps normalized Damping (0-1) LINEARLY TO DECAY TIME (not directly to the
+ * feedback coefficient — coefficient-to-decay-time is exponential, so a
+ * linear coefficient mapping would concentrate nearly all audible change in
+ * the last ~10-20% of the knob's range), then derives the per-sample
+ * feedback coefficient (strictly below 1.0, guaranteeing eventual decay to
+ * silence — spec Edge Case: "Damping at absolute maximum must not sustain
+ * indefinitely or self-oscillate") that produces that decay time.
  */
-export function dampingToFeedbackCoefficient(damping: number): number {
+export function dampingToFeedbackCoefficient(damping: number, sampleRate: number): number {
+  const decayReferenceRatio = Math.pow(10, -60 / 20);
   const clamped = clampDamping(damping);
-  return clamped * KARPLUS_STRONG_MAX_FEEDBACK_COEFFICIENT;
+  const decayTimeSec =
+    KARPLUS_STRONG_MIN_DECAY_TIME_SEC + clamped * (KARPLUS_STRONG_MAX_DECAY_TIME_SEC - KARPLUS_STRONG_MIN_DECAY_TIME_SEC);
+  return Math.pow(decayReferenceRatio, 1 / (decayTimeSec * sampleRate));
 }
 
 /** Validates and normalizes a Mode value loaded from persisted patch data (FR-010). */

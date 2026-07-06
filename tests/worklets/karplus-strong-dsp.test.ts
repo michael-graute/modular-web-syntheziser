@@ -54,20 +54,57 @@ describe('clampDamping / clampTone', () => {
 });
 
 describe('dampingToFeedbackCoefficient', () => {
-  it('produces the fastest-decay coefficient (MIN_FEEDBACK_COEFFICIENT) at damping=0', () => {
-    expect(dampingToFeedbackCoefficient(0)).toBeCloseTo(KARPLUS_STRONG.MIN_FEEDBACK_COEFFICIENT, 10);
+  const SAMPLE_RATE = 44100;
+
+  it('produces a coefficient corresponding to MIN_DECAY_TIME_SEC at damping=0', () => {
+    const coeff = dampingToFeedbackCoefficient(0, SAMPLE_RATE);
+    const ratio = Math.pow(10, -60 / 20);
+    const impliedDecaySec = Math.log(ratio) / Math.log(coeff) / SAMPLE_RATE;
+    expect(impliedDecaySec).toBeCloseTo(KARPLUS_STRONG.MIN_DECAY_TIME_SEC, 1);
   });
 
-  it('approaches but never reaches 1.0 at damping=1 (MAX_FEEDBACK_COEFFICIENT)', () => {
-    const coeff = dampingToFeedbackCoefficient(1);
-    expect(coeff).toBeCloseTo(KARPLUS_STRONG.MAX_FEEDBACK_COEFFICIENT, 10);
+  it('approaches but never reaches 1.0 at damping=1, corresponding to MAX_DECAY_TIME_SEC', () => {
+    const coeff = dampingToFeedbackCoefficient(1, SAMPLE_RATE);
     expect(coeff).toBeLessThan(1.0);
+    const ratio = Math.pow(10, -60 / 20);
+    const impliedDecaySec = Math.log(ratio) / Math.log(coeff) / SAMPLE_RATE;
+    expect(impliedDecaySec).toBeCloseTo(KARPLUS_STRONG.MAX_DECAY_TIME_SEC, 1);
   });
 
   it('is monotonically increasing with damping', () => {
-    const low = dampingToFeedbackCoefficient(0.2);
-    const high = dampingToFeedbackCoefficient(0.8);
+    const low = dampingToFeedbackCoefficient(0.2, SAMPLE_RATE);
+    const high = dampingToFeedbackCoefficient(0.8, SAMPLE_RATE);
     expect(high).toBeGreaterThan(low);
+  });
+
+  it('maps damping linearly to DECAY TIME rather than to the raw coefficient, so the knob has an even perceptual effect', () => {
+    // Compute implied decay time (samples to -60dB) at each damping step —
+    // these should be evenly spaced, unlike the coefficient values themselves.
+    const ratio = Math.pow(10, -60 / 20);
+    const impliedDecay = (damping: number) => {
+      const coeff = dampingToFeedbackCoefficient(damping, SAMPLE_RATE);
+      return Math.log(ratio) / Math.log(coeff) / SAMPLE_RATE;
+    };
+
+    const d0 = impliedDecay(0);
+    const d25 = impliedDecay(0.25);
+    const d50 = impliedDecay(0.5);
+    const d75 = impliedDecay(0.75);
+    const d100 = impliedDecay(1);
+
+    const step1 = d25 - d0;
+    const step2 = d50 - d25;
+    const step3 = d75 - d50;
+    const step4 = d100 - d75;
+
+    // All quarter-steps of decay time should be roughly equal (linear in
+    // damping), not exponentially skewed toward the top of the range.
+    const steps = [step1, step2, step3, step4];
+    const avgStep = steps.reduce((a, b) => a + b, 0) / steps.length;
+    for (const step of steps) {
+      expect(step).toBeGreaterThan(avgStep * 0.5);
+      expect(step).toBeLessThan(avgStep * 1.5);
+    }
   });
 });
 
@@ -251,7 +288,7 @@ describe('rapid re-trigger numerical stability (SC-007)', () => {
     const activeLength = frequencyToDelayLineLength(frequency, sampleRate);
     const delayLine = new Float32Array(maxDelayLineLength(sampleRate));
     const rng = createSeededRng(12345);
-    const coefficient = dampingToFeedbackCoefficient(0.5);
+    const coefficient = dampingToFeedbackCoefficient(0.5, sampleRate);
     const tone = 0.5;
 
     let writeIndex = 0;
@@ -296,7 +333,7 @@ describe('rapid re-trigger numerical stability (SC-007)', () => {
     const activeLength = frequencyToDelayLineLength(frequency, sampleRate);
     const delayLine = new Float32Array(maxDelayLineLength(sampleRate));
     const rng = createSeededRng(999);
-    const coefficient = dampingToFeedbackCoefficient(1); // max sustain — worst case for runaway
+    const coefficient = dampingToFeedbackCoefficient(1, sampleRate); // max sustain — worst case for runaway
     const tone = 1;
 
     let writeIndex = 0;

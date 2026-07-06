@@ -22,8 +22,15 @@ export const KARPLUS_STRONG_DEFAULT_FREQUENCY_HZ = 440;
 export const KARPLUS_STRONG_DEFAULT_DAMPING = 0.5;
 export const KARPLUS_STRONG_DEFAULT_TONE = 0.5;
 
-/** Maximum feedback coefficient — strictly below 1.0 to guarantee eventual decay to silence. */
-export const KARPLUS_STRONG_MAX_FEEDBACK_COEFFICIENT = 0.995;
+/**
+ * Damping maps linearly to a target decay time (seconds to -60dB), not
+ * directly to the feedback coefficient — see dampingToFeedbackCoefficient.
+ * The coefficient-to-decay-time relationship is exponential, so a linear
+ * Damping-to-coefficient mapping would concentrate nearly all audible change
+ * in the last ~10-20% of the knob's range.
+ */
+export const KARPLUS_STRONG_MIN_DECAY_TIME_SEC = 0.3;
+export const KARPLUS_STRONG_MAX_DECAY_TIME_SEC = 5.0;
 
 /**
  * Parameters that live on the main-thread component and are persisted via
@@ -64,8 +71,8 @@ export interface KarplusStrongDspHelpers {
   /** Converts a frequency in Hz + sample rate into an integer delay-line length (samples). */
   frequencyToDelayLineLength(frequencyHz: number, sampleRate: number): number;
 
-  /** Converts the normalized 0-1 Damping control into a feedback coefficient < 1.0. */
-  dampingToFeedbackCoefficient(damping: number): number;
+  /** Converts the normalized 0-1 Damping control + sample rate into a feedback coefficient < 1.0, via a linear decay-time interpolation. */
+  dampingToFeedbackCoefficient(damping: number, sampleRate: number): number;
 
   /** Applies mode-specific feedback filtering to a single delay-line output sample. */
   applyFeedbackFilter(

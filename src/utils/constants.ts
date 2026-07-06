@@ -87,17 +87,18 @@ export const KARPLUS_STRONG = {
   DEFAULT_FREQUENCY: 440,
   DEFAULT_DAMPING: 0.5,
   DEFAULT_TONE: 0.5,
-  // The feedback coefficient scales the classic two-tap averaging filter
-  // (0.5 * (prev1 + prev2)), applied once per output SAMPLE (not once per
-  // delay-line period) — so decay time is coeff^n over n samples, and the
-  // musically useful range sits extremely close to 1.0. Values much below
-  // ~0.9995 decay to silence in well under 300ms. Chosen (empirically,
-  // confirmed against a live decay-curve measurement in-browser) so
-  // Damping=0 gives a short, clearly perceptible pluck (~300ms to -50dB)
-  // and Damping=1 gives several seconds of sustain (~5s to -50dB) at 44.1kHz.
-  MIN_FEEDBACK_COEFFICIENT: 0.999565,
-  // Strictly below 1.0 so a pluck always eventually decays to silence.
-  MAX_FEEDBACK_COEFFICIENT: 0.999974,
+  // Damping maps to a target decay time (seconds to -50dB), not directly to
+  // a feedback coefficient — the coefficient-to-decay-time relationship is
+  // exponential (coeff^n over n samples), so a linear Damping-to-coefficient
+  // mapping crams nearly all of the audible range into the last ~10-20% of
+  // knob travel. Interpolating the TARGET DECAY TIME linearly instead (see
+  // dampingToFeedbackCoefficient) makes the knob track perceived sustain
+  // length evenly across its full range. Chosen (empirically, confirmed
+  // against a live decay-curve measurement in-browser) so Damping=0 gives a
+  // short, clearly perceptible pluck (~300ms to -50dB) and Damping=1 gives
+  // several seconds of sustain (~5s to -50dB) at 44.1kHz.
+  MIN_DECAY_TIME_SEC: 0.3,
+  MAX_DECAY_TIME_SEC: 5.0,
 } as const;
 
 /**

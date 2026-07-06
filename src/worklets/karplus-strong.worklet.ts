@@ -172,7 +172,7 @@ class KarplusStrongProcessor extends AudioWorkletProcessor {
     const dampingValues = parameters.damping;
     const isDampingConstant = (dampingValues?.length ?? 1) === 1;
     const constantCoefficient = isDampingConstant
-      ? dampingToFeedbackCoefficient(dampingValues?.[0] ?? KARPLUS_STRONG.DEFAULT_DAMPING)
+      ? dampingToFeedbackCoefficient(dampingValues?.[0] ?? KARPLUS_STRONG.DEFAULT_DAMPING, sampleRate)
       : 0;
 
     const activeLength = Math.min(
@@ -183,7 +183,7 @@ class KarplusStrongProcessor extends AudioWorkletProcessor {
     for (let i = 0; i < output.length; i++) {
       const coefficient = isDampingConstant
         ? constantCoefficient
-        : dampingToFeedbackCoefficient(dampingValues?.[i] ?? KARPLUS_STRONG.DEFAULT_DAMPING);
+        : dampingToFeedbackCoefficient(dampingValues?.[i] ?? KARPLUS_STRONG.DEFAULT_DAMPING, sampleRate);
 
       // The feedback tap must come from one full period ago: `writeIndex` is
       // the oldest sample in the circular buffer (about to be overwritten),

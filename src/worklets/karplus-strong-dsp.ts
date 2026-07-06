@@ -29,17 +29,22 @@ export function clampTone(tone: number): number {
   return Math.min(1, Math.max(0, tone));
 }
 
+// -60dB is the "decayed to silence" reference point used to convert a
+// target decay time into a per-sample feedback coefficient.
+const DECAY_REFERENCE_RATIO = Math.pow(10, -60 / 20);
+
 /**
- * Maps normalized Damping (0-1) to a feedback coefficient in
- * [MIN_FEEDBACK_COEFFICIENT, MAX_FEEDBACK_COEFFICIENT] — strictly below 1.0
- * (guaranteeing eventual decay to silence) but never so low that the
- * averaging filter's inherent per-sample energy loss decays a pluck to
- * silence within a handful of samples (see MIN_FEEDBACK_COEFFICIENT).
+ * Maps normalized Damping (0-1) LINEARLY TO DECAY TIME (not to the raw
+ * feedback coefficient — see MIN_DECAY_TIME_SEC/MAX_DECAY_TIME_SEC), then
+ * derives the per-sample coefficient that produces that decay time at the
+ * given sample rate. This keeps the knob's perceived effect even across its
+ * whole range, since coefficient-to-decay-time is otherwise exponential.
  */
-export function dampingToFeedbackCoefficient(damping: number): number {
-  const { MIN_FEEDBACK_COEFFICIENT, MAX_FEEDBACK_COEFFICIENT } = KARPLUS_STRONG;
-  const range = MAX_FEEDBACK_COEFFICIENT - MIN_FEEDBACK_COEFFICIENT;
-  return MIN_FEEDBACK_COEFFICIENT + clampDamping(damping) * range;
+export function dampingToFeedbackCoefficient(damping: number, sampleRate: number): number {
+  const { MIN_DECAY_TIME_SEC, MAX_DECAY_TIME_SEC } = KARPLUS_STRONG;
+  const decayTimeSec = MIN_DECAY_TIME_SEC + clampDamping(damping) * (MAX_DECAY_TIME_SEC - MIN_DECAY_TIME_SEC);
+  const totalSamples = decayTimeSec * sampleRate;
+  return Math.pow(DECAY_REFERENCE_RATIO, 1 / totalSamples);
 }
 
 /** Validates and normalizes a Mode value loaded from persisted patch data (FR-010). */

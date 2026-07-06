@@ -28,10 +28,10 @@ Single project — `src/`, `tests/` at repository root (per plan.md).
 
 **Purpose**: Establish the new type/constant surface and worklet-loading build support that every subsequent phase depends on.
 
-- [ ] T001 Add `ComponentType.KARPLUS_STRONG` enum member and `KarplusStrongMode` enum (`STRING = 0`, `STRETCHED = 1`) to `src/core/types.ts`, following the existing enum patterns for other generator/mode types
-- [ ] T002 [P] Create `src/worklets/` directory with a placeholder `src/worklets/karplus-strong.worklet.ts` file containing only the `KarplusStrongMode`-free numeric constants needed by the processor (sample-rate-independent min/max frequency, default damping/tone) mirrored from `specs/034-karplus-strong-oscillator/contracts/types.ts`
-- [ ] T003 [P] Update `vite.config.ts` `assetsInclude` to also cover the new `.worklet.ts` source pattern (or confirm Vite's default `new URL(..., import.meta.url)` handling requires no config change) so `karplus-strong.worklet.ts` builds correctly in both dev and production
-- [ ] T004 [P] Configure linting for the new `src/worklets/` directory (confirm existing ESLint config already covers all of `src/**/*.ts`; add an override only if the AudioWorkletGlobalScope introduces globals — e.g. `sampleRate`, `registerProcessor` — that trigger `no-undef`)
+- [X] T001 Add `ComponentType.KARPLUS_STRONG` enum member and `KarplusStrongMode` enum (`STRING = 0`, `STRETCHED = 1`) to `src/core/types.ts`, following the existing enum patterns for other generator/mode types
+- [X] T002 [P] Create `src/worklets/` directory with a placeholder `src/worklets/karplus-strong.worklet.ts` file containing only the `KarplusStrongMode`-free numeric constants needed by the processor (sample-rate-independent min/max frequency, default damping/tone) mirrored from `specs/034-karplus-strong-oscillator/contracts/types.ts`
+- [X] T003 [P] Update `vite.config.ts` `assetsInclude` to also cover the new `.worklet.ts` source pattern (or confirm Vite's default `new URL(..., import.meta.url)` handling requires no config change) so `karplus-strong.worklet.ts` builds correctly in both dev and production
+- [X] T004 [P] Configure linting for the new `src/worklets/` directory (confirm existing ESLint config already covers all of `src/**/*.ts`; add an override only if the AudioWorkletGlobalScope introduces globals — e.g. `sampleRate`, `registerProcessor` — that trigger `no-undef`)
 
 **Checkpoint**: Type surface and build tooling exist; no functional code yet.
 
