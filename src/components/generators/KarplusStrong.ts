@@ -48,8 +48,8 @@ export class KarplusStrong extends SynthComponent {
     );
     this.addParameter('damping', 'Damping', KARPLUS_STRONG.DEFAULT_DAMPING, 0, 1, 0.01, '');
     this.addParameter('tone', 'Tone', KARPLUS_STRONG.DEFAULT_TONE, 0, 1, 0.01, '');
-    // Mode: 0 = String, 1 = Stretched, 2 = Muted
-    this.addParameter('mode', 'Mode', KarplusStrongMode.STRING, 0, 2, 1, '');
+    // Mode: 0 = String, 1 = Stretched, 2 = Muted, 3 = Metallic
+    this.addParameter('mode', 'Mode', KarplusStrongMode.STRING, 0, 3, 1, '');
   }
 
   createAudioNodes(): void {

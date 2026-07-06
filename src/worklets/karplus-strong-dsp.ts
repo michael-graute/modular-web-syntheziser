@@ -81,6 +81,7 @@ export function dampingToFeedbackCoefficient(damping: number, _sampleRate: numbe
 export function normalizeMode(rawMode: unknown): KarplusStrongMode {
   if (rawMode === KarplusStrongMode.STRETCHED) return KarplusStrongMode.STRETCHED;
   if (rawMode === KarplusStrongMode.MUTED) return KarplusStrongMode.MUTED;
+  if (rawMode === KarplusStrongMode.METALLIC) return KarplusStrongMode.METALLIC;
   return KarplusStrongMode.STRING;
 }
 
@@ -168,9 +169,48 @@ export function applyMutedFeedback(
 }
 
 /**
+ * Fraction of the delay-line length used as the offset for Metallic mode's
+ * second, detuned feedback tap (see applyMetallicFeedback). Expressed as a
+ * fraction (not a fixed sample count) so the detune interval scales
+ * correctly across the full 40Hz-4kHz frequency range — a fixed sample
+ * offset would be a huge proportion of a short (high-frequency) delay line
+ * and a tiny, ineffective proportion of a long (low-frequency) one.
+ */
+const METALLIC_DETUNE_FRACTION = 0.15;
+const METALLIC_MIX = 0.35;
+
+/**
+ * Applies the "Metallic" mode feedback filter: blends in a second delay-line
+ * tap read from a DETUNED offset (a fixed fraction of the period, not one or
+ * two samples back like the standard tap), which breaks the harmonic series
+ * — partials are no longer pure integer multiples of the fundamental —
+ * producing a bell/kalimba/electric-piano-like inharmonic timbre instead of
+ * a string's natural harmonic decay. Verified empirically (via DFT magnitude
+ * at exact vs. slightly-off harmonics) that this measurably spreads energy
+ * away from the pure harmonic series, unlike String/Stretched/Muted, which
+ * all preserve harmonicity and differ only in decay rate/brightness.
+ *
+ * `prev3` is the sample read from `activeLength * METALLIC_DETUNE_FRACTION`
+ * positions behind the current write index — computed by the caller (the
+ * AudioWorkletProcessor), which owns the delay line and activeLength.
+ */
+export function applyMetallicFeedback(coefficient: number, prev1: number, prev2: number, prev3: number): number {
+  const averaged = coefficient * 0.5 * (prev1 + prev2);
+  const detuned = coefficient * prev3;
+  return (1 - METALLIC_MIX) * averaged + METALLIC_MIX * detuned;
+}
+
+/** Computes the sample offset for Metallic mode's detuned second tap, given the active delay-line length. */
+export function metallicDetuneOffset(activeLength: number): number {
+  return Math.max(1, Math.round(activeLength * METALLIC_DETUNE_FRACTION));
+}
+
+/**
  * Applies the mode-appropriate feedback filter for a single delay-line sample.
- * Muted mode requires persistent filter state (mutedFilterState/onMutedState)
- * since it isn't a stateless per-sample computation like String/Stretched.
+ * MUTED requires persistent filter state (mutedFilterState/onMutedState)
+ * since it isn't a stateless per-sample computation like STRING/STRETCHED.
+ * METALLIC requires a third, detuned delay-line sample (prev3), computed by
+ * the caller via metallicDetuneOffset — ignored by all other modes.
  */
 export function applyFeedbackFilter(
   mode: KarplusStrongMode,
@@ -179,7 +219,8 @@ export function applyFeedbackFilter(
   prev2: number,
   rng: () => number,
   mutedFilterState: number,
-  onMutedState: (nextState: number) => void
+  onMutedState: (nextState: number) => void,
+  prev3: number = 0
 ): number {
   if (mode === KarplusStrongMode.STRETCHED) {
     return applyStretchedFeedback(coefficient, prev1, prev2, rng);
@@ -188,6 +229,9 @@ export function applyFeedbackFilter(
     const { output, nextFilterState } = applyMutedFeedback(coefficient, prev1, prev2, mutedFilterState);
     onMutedState(nextFilterState);
     return output;
+  }
+  if (mode === KarplusStrongMode.METALLIC) {
+    return applyMetallicFeedback(coefficient, prev1, prev2, prev3);
   }
   return applyStringFeedback(coefficient, prev1, prev2);
 }

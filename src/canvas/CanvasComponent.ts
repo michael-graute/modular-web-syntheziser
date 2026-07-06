@@ -1765,6 +1765,7 @@ export class CanvasComponent {
           { value: 0, label: 'String' },
           { value: 1, label: 'Stretched' },
           { value: 2, label: 'Muted' },
+          { value: 3, label: 'Metallic' },
         ];
         this.controls.push(new Dropdown(
           this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL,

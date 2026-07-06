@@ -7,11 +7,12 @@
  * and src/worklets/karplus-strong.worklet.ts.
  */
 
-/** Discrete decay-algorithm variant. Persisted as a numeric enum index (0-2). */
+/** Discrete decay-algorithm variant. Persisted as a numeric enum index (0-3). */
 export enum KarplusStrongMode {
   STRING = 0,
   STRETCHED = 1,
   MUTED = 2,
+  METALLIC = 3,
 }
 
 /** Supported fundamental frequency range, in Hz. Per spec clarification (2026-07-04). */
@@ -79,9 +80,11 @@ export interface KarplusStrongDspHelpers {
 
   /**
    * Applies mode-specific feedback filtering to a single delay-line output
-   * sample. MUTED mode requires persistent one-pole lowpass filter state
+   * sample. MUTED requires persistent one-pole lowpass filter state
    * (mutedFilterState in, reported back via onMutedState) since it isn't a
-   * stateless per-sample computation like STRING/STRETCHED.
+   * stateless per-sample computation like STRING/STRETCHED. METALLIC requires
+   * a third, detuned delay-line sample (prev3, from metallicDetuneOffset)
+   * that breaks the harmonic series; ignored by all other modes.
    */
   applyFeedbackFilter(
     mode: KarplusStrongMode,
@@ -91,7 +94,11 @@ export interface KarplusStrongDspHelpers {
     rng: () => number,
     mutedFilterState: number,
     onMutedState: (nextState: number) => void,
+    prev3?: number,
   ): number;
+
+  /** Computes the sample offset for METALLIC mode's detuned second tap, as a fixed fraction of the active delay-line length. */
+  metallicDetuneOffset(activeLength: number): number;
 
   /** Generates one sample of tone-filtered noise-burst excitation. */
   generateExcitationSample(tone: number, rng: () => number, prevExcitation: number): number;

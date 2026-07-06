@@ -21,6 +21,7 @@ import {
   applyToneFilter,
   createSeededRng,
   clampTone,
+  metallicDetuneOffset,
 } from './karplus-strong-dsp';
 import { KarplusStrongMode } from '../core/types';
 import { KARPLUS_STRONG } from '../utils/constants';
@@ -181,6 +182,7 @@ class KarplusStrongProcessor extends AudioWorkletProcessor {
       frequencyToDelayLineLength(frequency, sampleRate),
       this.delayLine.length
     );
+    const detuneOffset = metallicDetuneOffset(activeLength);
 
     for (let i = 0; i < output.length; i++) {
       const coefficient = isDampingConstant
@@ -196,9 +198,14 @@ class KarplusStrongProcessor extends AudioWorkletProcessor {
       // DC value rather than sustaining a decaying periodic waveform.
       const idx1 = this.writeIndex;
       const idx2 = (this.writeIndex - 1 + activeLength) % activeLength;
+      // Metallic mode's second, detuned tap — a fixed fraction of the period
+      // behind the standard tap, breaking the harmonic series. Only read/used
+      // when this.mode === METALLIC, but cheap to always compute.
+      const idx3 = (this.writeIndex - detuneOffset + activeLength) % activeLength;
 
       const prev1 = this.delayLine[idx1] ?? 0;
       const prev2 = this.delayLine[idx2] ?? 0;
+      const prev3 = this.delayLine[idx3] ?? 0;
 
       const filtered = applyFeedbackFilter(
         this.mode,
@@ -207,7 +214,8 @@ class KarplusStrongProcessor extends AudioWorkletProcessor {
         prev2,
         this.rng,
         this.mutedFilterState,
-        (nextState) => { this.mutedFilterState = nextState; }
+        (nextState) => { this.mutedFilterState = nextState; },
+        prev3
       );
       this.delayLine[idx1] = filtered;
       output[i] = filtered;

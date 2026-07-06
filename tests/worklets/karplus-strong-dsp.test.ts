@@ -15,6 +15,8 @@ import {
   applyStringFeedback,
   applyStretchedFeedback,
   applyMutedFeedback,
+  applyMetallicFeedback,
+  metallicDetuneOffset,
   applyFeedbackFilter,
   createSeededRng,
   applyToneFilter,
@@ -363,6 +365,103 @@ describe('applyMutedFeedback', () => {
   });
 });
 
+describe('metallicDetuneOffset', () => {
+  it('scales with the delay-line length (fixed fraction, not a fixed sample count)', () => {
+    const short = metallicDetuneOffset(44); // ~1kHz
+    const long = metallicDetuneOffset(1102); // 40Hz
+    expect(long).toBeGreaterThan(short * 10);
+  });
+
+  it('never returns 0 (would degenerate to the standard tap)', () => {
+    expect(metallicDetuneOffset(2)).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe('applyMetallicFeedback', () => {
+  it('blends the standard averaged tap with the detuned tap', () => {
+    const result = applyMetallicFeedback(0.9, 1.0, 1.0, 0.0);
+    // prev3=0 pulls the blended result below the pure String-mode average.
+    const stringResult = applyStringFeedback(0.9, 1.0, 1.0);
+    expect(result).toBeLessThan(stringResult);
+    expect(result).toBeGreaterThan(0);
+  });
+
+  it('produces measurably inharmonic partials (energy spread away from exact harmonics), unlike STRING', () => {
+    // Regression test for the actual intended effect: Metallic must break the
+    // harmonic series, not just add brightness/roughness like Stretched/Muted.
+    // Verified via a simple DFT magnitude comparison at exact harmonics vs.
+    // slightly-detuned (+3%) frequencies — String concentrates energy tightly
+    // at exact harmonics; Metallic measurably does not.
+    function simulateWaveform(mode: KarplusStrongMode, seed: number): number[] {
+      const activeLength = 100; // ~441 Hz
+      const sampleRate = 44100;
+      const coefficient = dampingToFeedbackCoefficient(0.5, sampleRate);
+      const rng = createSeededRng(seed);
+      const delayLine = new Float32Array(activeLength);
+      const detuneOffset = metallicDetuneOffset(activeLength);
+
+      let toneFilterState = 0;
+      for (let i = 0; i < activeLength; i++) {
+        const noiseSample = rng() * 2 - 1;
+        toneFilterState = applyToneFilter(0.5, noiseSample, toneFilterState);
+        delayLine[i] = toneFilterState;
+      }
+
+      const output: number[] = [];
+      let writeIndex = 0;
+      for (let i = 0; i < 2000; i++) {
+        const idx1 = writeIndex;
+        const idx2 = (writeIndex - 1 + activeLength) % activeLength;
+        const idx3 = (writeIndex - detuneOffset + activeLength) % activeLength;
+        const filtered = applyFeedbackFilter(
+          mode,
+          coefficient,
+          delayLine[idx1]!,
+          delayLine[idx2]!,
+          rng,
+          0,
+          () => {},
+          delayLine[idx3]!
+        );
+        delayLine[idx1] = filtered;
+        output.push(filtered);
+        writeIndex = (writeIndex + 1) % activeLength;
+      }
+      return output;
+    }
+
+    function dftMagnitude(sig: number[], freq: number, sampleRate: number): number {
+      let re = 0;
+      let im = 0;
+      for (let i = 0; i < sig.length; i++) {
+        const angle = (2 * Math.PI * freq * i) / sampleRate;
+        re += sig[i]! * Math.cos(angle);
+        im += sig[i]! * Math.sin(angle);
+      }
+      return Math.sqrt(re * re + im * im);
+    }
+
+    const sampleRate = 44100;
+    const fundamental = sampleRate / 100;
+    const stringOut = simulateWaveform(KarplusStrongMode.STRING, 5);
+    const metallicOut = simulateWaveform(KarplusStrongMode.METALLIC, 5);
+
+    // On-harmonic vs. 3%-sharp-of-harmonic energy ratio at the 2nd partial —
+    // String should concentrate energy tightly at the exact harmonic (low
+    // ratio); Metallic should show measurably more energy leaking into the
+    // off-harmonic bin (higher ratio), proving it breaks the harmonic series.
+    const stringOnHarmonic = dftMagnitude(stringOut, fundamental * 2, sampleRate);
+    const stringOffHarmonic = dftMagnitude(stringOut, fundamental * 2 * 1.03, sampleRate);
+    const metallicOnHarmonic = dftMagnitude(metallicOut, fundamental * 2, sampleRate);
+    const metallicOffHarmonic = dftMagnitude(metallicOut, fundamental * 2 * 1.03, sampleRate);
+
+    const stringRatio = stringOffHarmonic / stringOnHarmonic;
+    const metallicRatio = metallicOffHarmonic / metallicOnHarmonic;
+
+    expect(metallicRatio).toBeGreaterThan(stringRatio);
+  });
+});
+
 describe('applyFeedbackFilter dispatch', () => {
   const noopSetState = () => {};
 
@@ -391,6 +490,20 @@ describe('applyFeedbackFilter dispatch', () => {
     const expected = applyMutedFeedback(0.9, 1.0, 0.5, 0);
     expect(result).toBe(expected.output);
     expect(reportedState).toBe(expected.nextFilterState);
+  });
+
+  it('dispatches to applyMetallicFeedback for METALLIC mode, using the prev3 argument', () => {
+    const result = applyFeedbackFilter(
+      KarplusStrongMode.METALLIC,
+      0.9,
+      1.0,
+      0.5,
+      () => 0.5,
+      0,
+      noopSetState,
+      0.25
+    );
+    expect(result).toBe(applyMetallicFeedback(0.9, 1.0, 0.5, 0.25));
   });
 });
 
