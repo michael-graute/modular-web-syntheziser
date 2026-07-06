@@ -70,7 +70,18 @@ export class KarplusStrong extends SynthComponent {
 
   private async loadWorkletModule(ctx: AudioContext): Promise<void> {
     try {
-      const workletUrl = new URL('../../worklets/karplus-strong.worklet.ts', import.meta.url);
+      // In dev, Vite's dev server transpiles any .ts file on request, so the
+      // raw source URL works directly. In a production build, AudioWorklet
+      // files must be their own genuine Rollup build entry (see
+      // vite.config.ts) — a plain new URL(..., import.meta.url) to the raw
+      // .ts source only gets Vite's generic static-asset-copy treatment
+      // (untranspiled, imports unresolved), since Vite's special bundling
+      // for new URL() only applies to new Worker()/SharedWorker(), not
+      // AudioWorklet. The built file's stable filename (no content hash) is
+      // configured in vite.config.ts's rollupOptions.output.entryFileNames.
+      const workletUrl = import.meta.env.DEV
+        ? new URL('../../worklets/karplus-strong.worklet.ts', import.meta.url)
+        : /* @vite-ignore */ new URL('../../../assets/karplus-strong.worklet.js', import.meta.url);
       await ctx.audioWorklet.addModule(workletUrl);
 
       this.workletNode = new AudioWorkletNode(ctx, 'karplus-strong');
