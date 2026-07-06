@@ -204,12 +204,32 @@ describe('KarplusStrong pitch CV (US2)', () => {
     expect(freqParam.value).toBe(0);
   });
 
-  it('restores the base frequency when pitch CV is disconnected', async () => {
+  it('also visually snaps the Frequency knob/Parameter to 0 when pitch CV is connected', async () => {
+    const { ks } = await makeActiveKS();
+    ks.setParameterValue('frequency', 660);
+    ks.onInputConnected('pitch');
+    expect(ks.getParameter('frequency')?.getValue()).toBe(0);
+  });
+
+  it('restores the AudioParam to whatever the knob currently shows when pitch CV is disconnected', async () => {
     const { ks, worklet } = await makeActiveKS();
     ks.setParameterValue('frequency', 660);
     ks.onInputConnected('pitch');
     ks.onInputDisconnected('pitch');
-    expect(worklet.parameters.get('frequency')!.value).toBe(660);
+    // Knob was zeroed on connect (per the test above) and never turned again,
+    // so it's still 0 at disconnect time — the AudioParam must match that,
+    // NOT revert to the pre-connect value of 660.
+    expect(worklet.parameters.get('frequency')!.value).toBe(0);
+  });
+
+  it('keeps a deliberate transpose offset dialed in DURING CV connection after disconnecting', async () => {
+    const { ks, worklet } = await makeActiveKS();
+    ks.setParameterValue('frequency', 660); // pre-CV value, should NOT come back
+    ks.onInputConnected('pitch');
+    ks.setParameterValue('frequency', 200); // user dials in an offset while CV is connected
+    ks.onInputDisconnected('pitch');
+    expect(worklet.parameters.get('frequency')!.value).toBe(200);
+    expect(ks.getParameter('frequency')?.getValue()).toBe(200);
   });
 
   it('getParameterRangeForInput returns the supported frequency range for pitch', () => {

@@ -233,18 +233,32 @@ export class KarplusStrong extends SynthComponent {
 
   /**
    * When a CV source connects to the pitch input, zero the base frequency so
-   * the CV signal is the sole driver (matches Oscillator's frequency-CV behavior).
+   * the CV signal is the sole driver (matches Oscillator's frequency-CV
+   * behavior at the AudioParam level). Unlike Oscillator, the Frequency
+   * KNOB itself is also visually snapped to 0, so the UI honestly reflects
+   * that the knob is contributing no offset — avoiding the confusing "note
+   * pitch jumps around depending on knob position" experience of a knob
+   * that silently keeps its old displayed value while actually acting as a
+   * hidden transpose offset. Turning the knob afterward (while CV is still
+   * connected) intentionally dials in a deliberate transpose offset on top
+   * of the CV note, and that value is kept as-is on disconnect (see
+   * onInputDisconnected) rather than reverted to whatever it was before CV
+   * connected.
    */
   override onInputConnected(portId: string): void {
     if (portId === 'pitch' && this.workletNode) {
       const ctx = audioEngine.getContext();
       this.workletNode.parameters.get('frequency')?.setValueAtTime(0, ctx.currentTime);
+      this.getParameter('frequency')?.setValue(0);
     }
   }
 
   /**
-   * When the pitch CV connection is removed, restore the base frequency from
-   * the Frequency knob.
+   * When the pitch CV connection is removed, sync the AudioParam to
+   * whatever the Frequency knob currently shows — the knob's value is
+   * authoritative at all times; disconnecting just means the AudioParam
+   * needs to stop being additively driven by an external CV signal on top
+   * of it.
    */
   override onInputDisconnected(portId: string): void {
     if (portId === 'pitch' && this.workletNode) {
