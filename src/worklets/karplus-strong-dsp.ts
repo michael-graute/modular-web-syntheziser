@@ -29,22 +29,52 @@ export function clampTone(tone: number): number {
   return Math.min(1, Math.max(0, tone));
 }
 
-// -60dB is the "decayed to silence" reference point used to convert a
-// target decay time into a per-sample feedback coefficient.
-const DECAY_REFERENCE_RATIO = Math.pow(10, -60 / 20);
+/**
+ * Empirically-measured lookup table mapping Damping (0, 0.25, 0.5, 0.75, 1)
+ * to the feedback coefficient that produces an evenly-spaced number of
+ * delay-line PERIODS to decay to -60dB, for this specific two-tap averaging
+ * filter structure (`applyStringFeedback`).
+ *
+ * This table is NOT derived from a closed-form formula: an earlier attempt
+ * assumed decay followed a simple exponential coeff^n over n *samples*, but
+ * empirical measurement (simulating the actual feedback loop and directly
+ * measuring time-to-silence) showed that assumption was wrong by roughly two
+ * orders of magnitude — this filter's amplitude envelope does not decay as
+ * a simple per-sample exponential. Periods-to-decay (not seconds-to-decay)
+ * is the frequency-independent invariant for a fixed coefficient (verified
+ * empirically across the 40Hz-4kHz range, varying by <15%), so absolute
+ * decay TIME still scales with pitch (higher notes ring shorter, which is
+ * physically realistic for Karplus-Strong), but the coefficient-to-Damping
+ * mapping itself does not need to know the frequency.
+ *
+ * Measured with Tone=0.5, seed=1/3/5, at delay-line lengths of 11, 44, 300,
+ * and 1102 samples (4kHz, 1kHz, ~147Hz, 40Hz). Values at intermediate
+ * Damping positions are linearly interpolated between the nearest anchors.
+ */
+const DAMPING_COEFFICIENT_TABLE: readonly number[] = [
+  0.929602, // damping = 0.00 (~42 periods to -60dB)
+  0.988184, // damping = 0.25 (~225 periods to -60dB)
+  0.993554, // damping = 0.50 (~405 periods to -60dB)
+  0.995506, // damping = 0.75 (~575 periods to -60dB)
+  0.996483, // damping = 1.00 (~725 periods to -60dB)
+];
 
 /**
- * Maps normalized Damping (0-1) LINEARLY TO DECAY TIME (not to the raw
- * feedback coefficient — see MIN_DECAY_TIME_SEC/MAX_DECAY_TIME_SEC), then
- * derives the per-sample coefficient that produces that decay time at the
- * given sample rate. This keeps the knob's perceived effect even across its
- * whole range, since coefficient-to-decay-time is otherwise exponential.
+ * Maps normalized Damping (0-1) to a feedback coefficient via linear
+ * interpolation over DAMPING_COEFFICIENT_TABLE (see its docs for why this
+ * is a lookup table rather than a formula). `sampleRate` is accepted for
+ * API symmetry/future use but the table itself is sample-rate-independent.
  */
-export function dampingToFeedbackCoefficient(damping: number, sampleRate: number): number {
-  const { MIN_DECAY_TIME_SEC, MAX_DECAY_TIME_SEC } = KARPLUS_STRONG;
-  const decayTimeSec = MIN_DECAY_TIME_SEC + clampDamping(damping) * (MAX_DECAY_TIME_SEC - MIN_DECAY_TIME_SEC);
-  const totalSamples = decayTimeSec * sampleRate;
-  return Math.pow(DECAY_REFERENCE_RATIO, 1 / totalSamples);
+export function dampingToFeedbackCoefficient(damping: number, _sampleRate: number): number {
+  const clamped = clampDamping(damping);
+  const lastIndex = DAMPING_COEFFICIENT_TABLE.length - 1;
+  const position = clamped * lastIndex;
+  const lowerIndex = Math.floor(position);
+  const upperIndex = Math.min(lowerIndex + 1, lastIndex);
+  const frac = position - lowerIndex;
+  const lower = DAMPING_COEFFICIENT_TABLE[lowerIndex]!;
+  const upper = DAMPING_COEFFICIENT_TABLE[upperIndex]!;
+  return lower + frac * (upper - lower);
 }
 
 /** Validates and normalizes a Mode value loaded from persisted patch data (FR-010). */

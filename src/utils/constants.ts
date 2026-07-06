@@ -87,18 +87,12 @@ export const KARPLUS_STRONG = {
   DEFAULT_FREQUENCY: 440,
   DEFAULT_DAMPING: 0.5,
   DEFAULT_TONE: 0.5,
-  // Damping maps to a target decay time (seconds to -50dB), not directly to
-  // a feedback coefficient — the coefficient-to-decay-time relationship is
-  // exponential (coeff^n over n samples), so a linear Damping-to-coefficient
-  // mapping crams nearly all of the audible range into the last ~10-20% of
-  // knob travel. Interpolating the TARGET DECAY TIME linearly instead (see
-  // dampingToFeedbackCoefficient) makes the knob track perceived sustain
-  // length evenly across its full range. Chosen (empirically, confirmed
-  // against a live decay-curve measurement in-browser) so Damping=0 gives a
-  // short, clearly perceptible pluck (~300ms to -50dB) and Damping=1 gives
-  // several seconds of sustain (~5s to -50dB) at 44.1kHz.
-  MIN_DECAY_TIME_SEC: 0.3,
-  MAX_DECAY_TIME_SEC: 5.0,
+  // Damping maps to a feedback coefficient via an empirically-measured
+  // lookup table (see DAMPING_COEFFICIENT_TABLE in karplus-strong-dsp.ts),
+  // not a closed-form formula — this filter's amplitude envelope does not
+  // decay as a simple per-sample exponential, so a naive coeff^n-over-n-
+  // samples model produced decay times off by roughly two orders of
+  // magnitude when checked against live in-browser measurement.
 } as const;
 
 /**

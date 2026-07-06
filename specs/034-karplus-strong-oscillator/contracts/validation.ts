@@ -7,8 +7,6 @@
  */
 
 import {
-  KARPLUS_STRONG_MIN_DECAY_TIME_SEC,
-  KARPLUS_STRONG_MAX_DECAY_TIME_SEC,
   KARPLUS_STRONG_MAX_FREQUENCY_HZ,
   KARPLUS_STRONG_MIN_FREQUENCY_HZ,
   KarplusStrongMode,
@@ -34,20 +32,33 @@ export function clampTone(tone: number): number {
 }
 
 /**
- * Maps normalized Damping (0-1) LINEARLY TO DECAY TIME (not directly to the
- * feedback coefficient — coefficient-to-decay-time is exponential, so a
- * linear coefficient mapping would concentrate nearly all audible change in
- * the last ~10-20% of the knob's range), then derives the per-sample
- * feedback coefficient (strictly below 1.0, guaranteeing eventual decay to
- * silence — spec Edge Case: "Damping at absolute maximum must not sustain
- * indefinitely or self-oscillate") that produces that decay time.
+ * Empirically-measured lookup table mapping Damping (0, 0.25, 0.5, 0.75, 1)
+ * to the feedback coefficient that produces an evenly-spaced number of
+ * delay-line PERIODS to decay to -60dB, for the two-tap averaging feedback
+ * filter. See karplus-strong-dsp.ts's DAMPING_COEFFICIENT_TABLE for the full
+ * rationale — this is not a closed-form formula because this filter's
+ * amplitude envelope does not decay as a simple per-sample exponential.
  */
-export function dampingToFeedbackCoefficient(damping: number, sampleRate: number): number {
-  const decayReferenceRatio = Math.pow(10, -60 / 20);
+const DAMPING_COEFFICIENT_TABLE: readonly number[] = [
+  0.929602, 0.988184, 0.993554, 0.995506, 0.996483,
+];
+
+/**
+ * Maps normalized Damping (0-1) to a feedback coefficient (strictly below
+ * 1.0, guaranteeing eventual decay to silence — spec Edge Case: "Damping at
+ * absolute maximum must not sustain indefinitely or self-oscillate") via
+ * linear interpolation over DAMPING_COEFFICIENT_TABLE.
+ */
+export function dampingToFeedbackCoefficient(damping: number, _sampleRate: number): number {
   const clamped = clampDamping(damping);
-  const decayTimeSec =
-    KARPLUS_STRONG_MIN_DECAY_TIME_SEC + clamped * (KARPLUS_STRONG_MAX_DECAY_TIME_SEC - KARPLUS_STRONG_MIN_DECAY_TIME_SEC);
-  return Math.pow(decayReferenceRatio, 1 / (decayTimeSec * sampleRate));
+  const lastIndex = DAMPING_COEFFICIENT_TABLE.length - 1;
+  const position = clamped * lastIndex;
+  const lowerIndex = Math.floor(position);
+  const upperIndex = Math.min(lowerIndex + 1, lastIndex);
+  const frac = position - lowerIndex;
+  const lower = DAMPING_COEFFICIENT_TABLE[lowerIndex]!;
+  const upper = DAMPING_COEFFICIENT_TABLE[upperIndex]!;
+  return lower + frac * (upper - lower);
 }
 
 /** Validates and normalizes a Mode value loaded from persisted patch data (FR-010). */

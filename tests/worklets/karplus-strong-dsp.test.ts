@@ -56,19 +56,14 @@ describe('clampDamping / clampTone', () => {
 describe('dampingToFeedbackCoefficient', () => {
   const SAMPLE_RATE = 44100;
 
-  it('produces a coefficient corresponding to MIN_DECAY_TIME_SEC at damping=0', () => {
-    const coeff = dampingToFeedbackCoefficient(0, SAMPLE_RATE);
-    const ratio = Math.pow(10, -60 / 20);
-    const impliedDecaySec = Math.log(ratio) / Math.log(coeff) / SAMPLE_RATE;
-    expect(impliedDecaySec).toBeCloseTo(KARPLUS_STRONG.MIN_DECAY_TIME_SEC, 1);
+  it('matches the empirically-measured table endpoint at damping=0', () => {
+    expect(dampingToFeedbackCoefficient(0, SAMPLE_RATE)).toBeCloseTo(0.929602, 5);
   });
 
-  it('approaches but never reaches 1.0 at damping=1, corresponding to MAX_DECAY_TIME_SEC', () => {
+  it('matches the empirically-measured table endpoint at damping=1, strictly below 1.0', () => {
     const coeff = dampingToFeedbackCoefficient(1, SAMPLE_RATE);
+    expect(coeff).toBeCloseTo(0.996483, 5);
     expect(coeff).toBeLessThan(1.0);
-    const ratio = Math.pow(10, -60 / 20);
-    const impliedDecaySec = Math.log(ratio) / Math.log(coeff) / SAMPLE_RATE;
-    expect(impliedDecaySec).toBeCloseTo(KARPLUS_STRONG.MAX_DECAY_TIME_SEC, 1);
   });
 
   it('is monotonically increasing with damping', () => {
@@ -77,34 +72,97 @@ describe('dampingToFeedbackCoefficient', () => {
     expect(high).toBeGreaterThan(low);
   });
 
-  it('maps damping linearly to DECAY TIME rather than to the raw coefficient, so the knob has an even perceptual effect', () => {
-    // Compute implied decay time (samples to -60dB) at each damping step —
-    // these should be evenly spaced, unlike the coefficient values themselves.
-    const ratio = Math.pow(10, -60 / 20);
-    const impliedDecay = (damping: number) => {
-      const coeff = dampingToFeedbackCoefficient(damping, SAMPLE_RATE);
-      return Math.log(ratio) / Math.log(coeff) / SAMPLE_RATE;
-    };
+  it('interpolates linearly between adjacent table anchors', () => {
+    // damping=0.125 is exactly halfway between the damping=0 and damping=0.25 anchors
+    const at0 = dampingToFeedbackCoefficient(0, SAMPLE_RATE);
+    const at025 = dampingToFeedbackCoefficient(0.25, SAMPLE_RATE);
+    const atMid = dampingToFeedbackCoefficient(0.125, SAMPLE_RATE);
+    expect(atMid).toBeCloseTo((at0 + at025) / 2, 6);
+  });
 
-    const d0 = impliedDecay(0);
-    const d25 = impliedDecay(0.25);
-    const d50 = impliedDecay(0.5);
-    const d75 = impliedDecay(0.75);
-    const d100 = impliedDecay(1);
+  it('is sample-rate-independent (the lookup table itself does not vary with sampleRate)', () => {
+    const at44100 = dampingToFeedbackCoefficient(0.5, 44100);
+    const at48000 = dampingToFeedbackCoefficient(0.5, 48000);
+    expect(at44100).toBe(at48000);
+  });
+});
 
-    const step1 = d25 - d0;
-    const step2 = d50 - d25;
-    const step3 = d75 - d50;
-    const step4 = d100 - d75;
+// ---------------------------------------------------------------------------
+// Regression test for the "Damping has no audible effect" bug: an earlier
+// closed-form formula for dampingToFeedbackCoefficient produced coefficients
+// that, when run through the ACTUAL feedback loop (applyStringFeedback in a
+// circular delay-line, matching karplus-strong.worklet.ts's process()), gave
+// nearly IDENTICAL decay curves regardless of damping — the formula was
+// correct in isolation but did not model this filter's real decay behavior.
+// This test simulates the real feedback loop end-to-end and asserts that
+// different Damping settings produce MEASURABLY different decay times.
+// ---------------------------------------------------------------------------
 
-    // All quarter-steps of decay time should be roughly equal (linear in
-    // damping), not exponentially skewed toward the top of the range.
-    const steps = [step1, step2, step3, step4];
-    const avgStep = steps.reduce((a, b) => a + b, 0) / steps.length;
-    for (const step of steps) {
-      expect(step).toBeGreaterThan(avgStep * 0.5);
-      expect(step).toBeLessThan(avgStep * 1.5);
+describe('dampingToFeedbackCoefficient produces an audibly different decay in the real feedback loop', () => {
+  function simulateDecayPeriods(damping: number, activeLength: number, sampleRate: number, seed: number): number {
+    const coefficient = dampingToFeedbackCoefficient(damping, sampleRate);
+    const rng = createSeededRng(seed);
+    const delayLine = new Float32Array(activeLength);
+
+    let toneFilterState = 0;
+    for (let i = 0; i < activeLength; i++) {
+      const noiseSample = rng() * 2 - 1;
+      toneFilterState = applyToneFilter(0.5, noiseSample, toneFilterState);
+      delayLine[i] = toneFilterState;
     }
+
+    const maxPeriods = 3000;
+    const periodPeaks: number[] = [];
+    let writeIndex = 0;
+    let currentPeriodPeak = 0;
+    let samplesInPeriod = 0;
+
+    while (periodPeaks.length < maxPeriods) {
+      const idx1 = writeIndex;
+      const idx2 = (writeIndex - 1 + activeLength) % activeLength;
+      const filtered = applyStringFeedback(coefficient, delayLine[idx1]!, delayLine[idx2]!);
+      delayLine[idx1] = filtered;
+      currentPeriodPeak = Math.max(currentPeriodPeak, Math.abs(filtered));
+      samplesInPeriod++;
+      if (samplesInPeriod >= activeLength) {
+        periodPeaks.push(currentPeriodPeak);
+        currentPeriodPeak = 0;
+        samplesInPeriod = 0;
+      }
+      writeIndex = (writeIndex + 1) % activeLength;
+    }
+
+    const initialPeak = Math.max(...periodPeaks.slice(0, 5));
+    const threshold = initialPeak * Math.pow(10, -60 / 20);
+    for (let i = 0; i < periodPeaks.length; i++) {
+      if (periodPeaks[i]! < threshold) return i;
+    }
+    return maxPeriods; // did not decay within the simulation window
+  }
+
+  it('damping=1.0 rings out for measurably more periods than damping=0.0', () => {
+    const sampleRate = 44100;
+    const activeLength = 44; // ~1 kHz, short enough to simulate quickly
+
+    const shortDecay = simulateDecayPeriods(0, activeLength, sampleRate, 3);
+    const longDecay = simulateDecayPeriods(1, activeLength, sampleRate, 3);
+
+    // The bug this guards against showed damping=0 and damping=1 producing
+    // nearly IDENTICAL decay (within ~10%). A working implementation must
+    // show at least a 3x difference in periods-to-decay across the full range.
+    expect(longDecay).toBeGreaterThan(shortDecay * 3);
+  });
+
+  it('damping=0.5 rings out longer than damping=0.0 but shorter than damping=1.0', () => {
+    const sampleRate = 44100;
+    const activeLength = 44;
+
+    const shortDecay = simulateDecayPeriods(0, activeLength, sampleRate, 7);
+    const midDecay = simulateDecayPeriods(0.5, activeLength, sampleRate, 7);
+    const longDecay = simulateDecayPeriods(1, activeLength, sampleRate, 7);
+
+    expect(midDecay).toBeGreaterThan(shortDecay);
+    expect(midDecay).toBeLessThan(longDecay);
   });
 });
 
