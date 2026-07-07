@@ -915,6 +915,25 @@ export class HelpSidebar {
         <em>Example patch:</em> Step Sequencer (CV Out) → Slew Limiter (CV In) → Oscillator (Frequency CV). Set Rise to ~200 ms for classic portamento.
       </p>
 
+      <h4 style="color: var(--text-primary, #ffffff);">X-Y Pad</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        A two-axis controller: drag inside the square pad to drive two CV outputs
+        independently and in real time. Record a gesture and play it back on a
+        continuous loop to automate a modulation without holding the mouse.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>X / Y outputs:</strong> Independent CV outputs — connect each to a different target parameter (e.g. Filter Cutoff and Resonance)</li>
+        <li><strong>X Depth / Y Depth:</strong> 0–100% attenuation per axis — scales how much of the connected target's full range that axis can reach</li>
+        <li><strong>Handle:</strong> Drag anywhere inside the pad; position holds at its last value when released</li>
+        <li><strong>R (Record):</strong> Starts capturing the pad's movement immediately, even before you move — pressing Record again discards any previous recording</li>
+        <li><strong>■ (Stop):</strong> Ends recording or playback; the outputs hold their last value</li>
+        <li><strong>▶ (Play):</strong> Loops the recorded gesture continuously — disabled until a recording exists; dragging the pad during playback immediately hands control back to manual input</li>
+      </ul>
+      <p style="color: var(--text-secondary, #cccccc);">
+        <strong style="color: var(--text-primary, #ffffff);">Typical patch:</strong>
+        X-Y Pad (X → Filter Cutoff CV, Y → Filter Resonance CV) → set both Depth knobs to taste, then press Record, sweep the pad, press Stop, and press Play to loop the filter sweep hands-free.
+      </p>
+
       <h4 style="color: var(--text-primary, #ffffff);">Master Output</h4>
       <p style="color: var(--text-secondary, #cccccc);">
         Final output to speakers/headphones. Required for hearing audio.

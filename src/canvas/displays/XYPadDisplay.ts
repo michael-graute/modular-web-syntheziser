@@ -42,6 +42,7 @@ export class XYPadDisplay {
   private baseX: number;
   private baseY: number;
   private isDragging: boolean = false;
+  private hasRecording: boolean = false;
 
   constructor(x: number, y: number, _w: number, _h: number) {
     this.baseX = x;
@@ -96,6 +97,8 @@ export class XYPadDisplay {
   render(state: XYPadDisplayState): void {
     const ctx = this.canvas.getContext('2d');
     if (!ctx) return;
+
+    this.hasRecording = state.hasRecording;
 
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
@@ -169,6 +172,7 @@ export class XYPadDisplay {
   /** Returns a button action if a button was hit, or starts a pad drag. */
   handleMouseDown(x: number, y: number): XYPadHitResult {
     for (const btn of BTN_POSITIONS) {
+      if (btn.action === 'play' && !this.hasRecording) continue; // Play disabled (FR-012)
       const dx = x - btn.x;
       const dy = y - BTN_Y;
       if (Math.sqrt(dx * dx + dy * dy) <= BTN_RADIUS) {

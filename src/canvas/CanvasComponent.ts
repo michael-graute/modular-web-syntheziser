@@ -1565,9 +1565,15 @@ export class CanvasComponent {
 
         this.xyPadDisplay.getCanvas().addEventListener('mousedown', (e: MouseEvent) => {
           const { lx, ly } = toLocalCoords(e);
-          // Record/Stop/Play button hits are wired up in a later increment (US2);
-          // handleMouseDown still starts a pad drag when the hit is inside the pad area.
-          this.xyPadDisplay!.handleMouseDown(lx, ly);
+          const result = this.xyPadDisplay!.handleMouseDown(lx, ly);
+          if (result === 'record') {
+            xyPad.pressRecord();
+          } else if (result === 'stop') {
+            xyPad.pressStop();
+          } else if (result === 'play') {
+            xyPad.pressPlay();
+          }
+          // A null result inside the pad area still starts a drag via handleMouseDown.
         });
 
         // Drag continues even if the pointer leaves the small pad area, so

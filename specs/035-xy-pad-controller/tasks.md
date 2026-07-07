@@ -92,19 +92,19 @@ Single project (`src/`, `tests/` at repository root), per plan.md's Project Stru
 
 ### Tests for User Story 2
 
-- [ ] T020 [P] [US2] Unit tests for `isPlayableRecording`, `hasReachedRecordingLimit`, `wrapPlaybackTime` in `tests/contracts/xy-pad-validation.test.ts`
-- [ ] T021 [P] [US2] State machine unit tests in `tests/components/utilities/XYPad.test.ts` covering every transition in data-model.md's diagram: `pressRecord()` from IDLE, `pressStop()` during RECORDING (finalizes), auto-stop at `MAX_SAMPLES`, `pressPlay()` no-op when no recording exists (FR-012), `pressPlay()` transitions to PLAYING, `pressStop()` during PLAYING (holds last value, FR-006), `setPosition()` during PLAYING (interrupts playback, FR-014), `pressRecord()` during PLAYING (stops playback then starts new capture, discarding the old recording)
-- [ ] T022 [P] [US2] Unit test in `tests/components/utilities/XYPad.test.ts` verifying capture starts immediately on `pressRecord()` even with zero pointer movement (flat lead-in, per Clarifications session 2026-07-07 and FR-008)
-- [ ] T023 [P] [US2] Unit test in `tests/components/utilities/XYPad.test.ts` verifying playback loops continuously (wraps via `wrapPlaybackTime`) until Stop or manual drag (FR-011)
+- [X] T020 [P] [US2] Unit tests for `isPlayableRecording`, `hasReachedRecordingLimit`, `wrapPlaybackTime` in `tests/contracts/xy-pad-validation.test.ts`
+- [X] T021 [P] [US2] State machine unit tests in `tests/components/utilities/XYPad.test.ts` covering every transition in data-model.md's diagram: `pressRecord()` from IDLE, `pressStop()` during RECORDING (finalizes), auto-stop at `MAX_SAMPLES`, `pressPlay()` no-op when no recording exists (FR-012), `pressPlay()` transitions to PLAYING, `pressStop()` during PLAYING (holds last value, FR-006), `setPosition()` during PLAYING (interrupts playback, FR-014), `pressRecord()` during PLAYING (stops playback then starts new capture, discarding the old recording)
+- [X] T022 [P] [US2] Unit test in `tests/components/utilities/XYPad.test.ts` verifying capture starts immediately on `pressRecord()` even with zero pointer movement (flat lead-in, per Clarifications session 2026-07-07 and FR-008)
+- [X] T023 [P] [US2] Unit test in `tests/components/utilities/XYPad.test.ts` verifying playback loops continuously (wraps via `wrapPlaybackTime`) until Stop or manual drag (FR-011)
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Implement `pressRecord()`, `pressStop()`, `pressPlay()` state-machine methods in `src/components/utilities/XYPad.ts` per data-model.md's transition table (depends on T013)
-- [ ] T025 [US2] Implement the `requestAnimationFrame`-driven capture loop in `src/components/utilities/XYPad.ts`: on `pressRecord()`, starts sampling `(performance.now() - startTime, x, y)` into a pre-allocated `Float32Array` sized for `XY_PAD.MAX_SAMPLES`, auto-stopping via `hasReachedRecordingLimit` (depends on T024, T020)
-- [ ] T026 [US2] Implement the playback loop in `src/components/utilities/XYPad.ts`: on `pressPlay()`, a `requestAnimationFrame` loop computes elapsed time, wraps via `wrapPlaybackTime`, finds/interpolates the nearest captured sample, and routes through the same `setPosition`-adjacent output-update path used for live drag (depends on T024, T013)
-- [ ] T027 [US2] Add Record/Stop/Play button hit-testing and click dispatch to `src/canvas/displays/XYPadDisplay.ts`, following `LooperDisplay.handleMouseDown`'s button-region + action-string return pattern, and dispatch to `xyPad.pressRecord()`/`pressStop()`/`pressPlay()` from the `CanvasComponent.ts` XY_PAD block (depends on T018, T024)
-- [ ] T028 [US2] Add visible state indication (idle/recording/playing color or label) to `XYPadDisplay`'s render method in `src/canvas/displays/XYPadDisplay.ts`, matching the Looper's ring-color state feedback convention (depends on T016)
-- [ ] T029 [US2] Disable/grey out the Play button in `src/canvas/displays/XYPadDisplay.ts` when `xyPad.isPlayAvailable()` is false (FR-012) (depends on T027)
+- [X] T024 [US2] Implement `pressRecord()`, `pressStop()`, `pressPlay()` state-machine methods in `src/components/utilities/XYPad.ts` per data-model.md's transition table (depends on T013)
+- [X] T025 [US2] Implement the `requestAnimationFrame`-driven capture loop in `src/components/utilities/XYPad.ts`: on `pressRecord()`, starts sampling `(performance.now() - startTime, x, y)` into a pre-allocated `Float32Array` sized for `XY_PAD.MAX_SAMPLES`, auto-stopping via `hasReachedRecordingLimit` (depends on T024, T020)
+- [X] T026 [US2] Implement the playback loop in `src/components/utilities/XYPad.ts`: on `pressPlay()`, a `requestAnimationFrame` loop computes elapsed time, wraps via `wrapPlaybackTime`, finds/interpolates the nearest captured sample, and routes through the same `setPosition`-adjacent output-update path used for live drag (depends on T024, T013)
+- [X] T027 [US2] Add Record/Stop/Play button hit-testing and click dispatch to `src/canvas/displays/XYPadDisplay.ts`, following `LooperDisplay.handleMouseDown`'s button-region + action-string return pattern, and dispatch to `xyPad.pressRecord()`/`pressStop()`/`pressPlay()` from the `CanvasComponent.ts` XY_PAD block (depends on T018, T024)
+- [X] T028 [US2] Add visible state indication (idle/recording/playing color or label) to `XYPadDisplay`'s render method in `src/canvas/displays/XYPadDisplay.ts`, matching the Looper's ring-color state feedback convention (depends on T016)
+- [X] T029 [US2] Disable/grey out the Play button in `src/canvas/displays/XYPadDisplay.ts` when `xyPad.isPlayAvailable()` is false (FR-012) (depends on T027)
 
 **Checkpoint**: User Stories 1 AND 2 both work independently — recording and looped playback function on top of the working live-drag CV output from US1.
 
@@ -118,14 +118,14 @@ Single project (`src/`, `tests/` at repository root), per plan.md's Project Stru
 
 ### Tests for User Story 3
 
-- [ ] T030 [P] [US3] Round-trip unit test in `tests/components/utilities/XYPad.test.ts`: record a gesture, call `serialize()`, construct a new `XYPad`, call `deserialize()` with the result, verify the new instance's unpacked samples exactly match the original (SC-004)
-- [ ] T031 [P] [US3] Unit test in `tests/components/utilities/XYPad.test.ts` verifying `deserialize()` always restores `IDLE` state (never resumes `RECORDING`, per data-model.md's reload guard) and that `xDepth`/`yDepth` parameters round-trip correctly
-- [ ] T032 [P] [US3] Unit test in `tests/components/utilities/XYPad.test.ts` verifying a pad with no recording serializes without an `audioBlob` field and deserializes with the Play control unavailable (US3 acceptance scenario 3)
+- [X] T030 [P] [US3] Round-trip unit test in `tests/components/utilities/XYPad.test.ts`: record a gesture, call `serialize()`, construct a new `XYPad`, call `deserialize()` with the result, verify the new instance's unpacked samples exactly match the original (SC-004)
+- [X] T031 [P] [US3] Unit test in `tests/components/utilities/XYPad.test.ts` verifying `deserialize()` always restores `IDLE` state (never resumes `RECORDING`, per data-model.md's reload guard) and that `xDepth`/`yDepth` parameters round-trip correctly
+- [X] T032 [P] [US3] Unit test in `tests/components/utilities/XYPad.test.ts` verifying a pad with no recording serializes without an `audioBlob` field and deserializes with the Play control unavailable (US3 acceptance scenario 3)
 
 ### Implementation for User Story 3
 
-- [ ] T033 [US3] Implement `serialize()` override in `src/components/utilities/XYPad.ts`: call `super.serialize()`, then pack the interleaved `(t,x,y)` `Float32Array` and Base64-encode it into `audioBlob` only when a recording exists, reusing the Looper's `_float32ToBase64` approach (depends on T025)
-- [ ] T034 [US3] Implement `deserialize()` override in `src/components/utilities/XYPad.ts`: call `super.deserialize()`, decode `audioBlob` via a `_base64ToFloat32`-equivalent helper if present, reconstruct `_recording`, always set state to `IDLE` (depends on T033)
+- [X] T033 [US3] Implement `serialize()` override in `src/components/utilities/XYPad.ts`: call `super.serialize()`, then pack the interleaved `(t,x,y)` `Float32Array` and Base64-encode it into `audioBlob` only when a recording exists, reusing the Looper's `_float32ToBase64` approach (depends on T025)
+- [X] T034 [US3] Implement `deserialize()` override in `src/components/utilities/XYPad.ts`: call `super.deserialize()`, decode `audioBlob` via a `_base64ToFloat32`-equivalent helper if present, reconstruct `_recording`, always set state to `IDLE` (depends on T033)
 
 **Checkpoint**: All three user stories are independently functional; a saved patch with a recorded X-Y Pad reloads and plays back correctly.
 
@@ -135,10 +135,10 @@ Single project (`src/`, `tests/` at repository root), per plan.md's Project Stru
 
 **Purpose**: Final validation and cleanup after all user stories are complete.
 
-- [ ] T035 [P] Run `vitest run` for the full suite and confirm no regressions in existing component/canvas/contract tests
-- [ ] T036 [P] Run `npm run lint` and fix any warnings introduced by the new files
-- [ ] T037 Manually walk through quickstart.md's Interaction Lifecycle end-to-end in the running dev server (drag, record, play, save/reload) per this project's verification convention
-- [ ] T038 [P] Add X-Y Pad documentation entry to the Help sidebar, following the pattern used for prior features (e.g. Karplus-Strong, per `034-karplus-strong-oscillator`'s Help sidebar commit)
+- [X] T035 [P] Run `vitest run` for the full suite and confirm no regressions in existing component/canvas/contract tests
+- [X] T036 [P] Run `npm run lint` and fix any warnings introduced by the new files
+- [X] T037 Manually walk through quickstart.md's Interaction Lifecycle end-to-end in the running dev server (drag, record, play, save/reload) per this project's verification convention
+- [X] T038 [P] Add X-Y Pad documentation entry to the Help sidebar, following the pattern used for prior features (e.g. Karplus-Strong, per `034-karplus-strong-oscillator`'s Help sidebar commit)
 
 ---
 
