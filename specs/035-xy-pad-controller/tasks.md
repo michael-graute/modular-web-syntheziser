@@ -33,9 +33,9 @@ Single project (`src/`, `tests/` at repository root), per plan.md's Project Stru
 
 **Purpose**: Register the new component type so it exists in the type system and can be instantiated, before any behavior is built.
 
-- [ ] T001 Add `XY_PAD = 'xy-pad'` to the `ComponentType` enum in `src/core/types.ts`
-- [ ] T002 [P] Create `src/components/utilities/XYPadConstants.ts` with `XYPadState` enum (`IDLE`, `RECORDING`, `PLAYING`) and `XY_PAD` constants object (`SAMPLE_RATE_HZ: 60`, `MAX_DURATION_MS: 60_000`, `MAX_SAMPLES: 3_600`), per data-model.md and research.md capture-rate decision
-- [ ] T003 [P] Verify `specs/035-xy-pad-controller/contracts/types.ts` and `contracts/validation.ts` are ready to be imported directly as source (no changes needed if already correct) — this project imports its spec `contracts/` files straight from `src/` (e.g. `src/components/utilities/Looper.ts:25` imports `validateBarCount` from `../../../specs/015-bpm-looper/contracts/validation`), so `XYPad.ts` will import from `../../../specs/035-xy-pad-controller/contracts/validation` and `contracts/types` rather than duplicating these files under `src/`
+- [X] T001 Add `XY_PAD = 'xy-pad'` to the `ComponentType` enum in `src/core/types.ts`
+- [X] T002 [P] Create `src/components/utilities/XYPadConstants.ts` with `XYPadState` enum (`IDLE`, `RECORDING`, `PLAYING`) and `XY_PAD` constants object (`SAMPLE_RATE_HZ: 60`, `MAX_DURATION_MS: 60_000`, `MAX_SAMPLES: 3_600`), per data-model.md and research.md capture-rate decision
+- [X] T003 [P] Verify `specs/035-xy-pad-controller/contracts/types.ts` and `contracts/validation.ts` are ready to be imported directly as source (no changes needed if already correct) — this project imports its spec `contracts/` files straight from `src/` (e.g. `src/components/utilities/Looper.ts:25` imports `validateBarCount` from `../../../specs/015-bpm-looper/contracts/validation`), so `XYPad.ts` will import from `../../../specs/035-xy-pad-controller/contracts/validation` and `contracts/types` rather than duplicating these files under `src/`
 
 **Checkpoint**: `ComponentType.XY_PAD` exists and compiles; no behavior yet.
 
@@ -47,12 +47,12 @@ Single project (`src/`, `tests/` at repository root), per plan.md's Project Stru
 
 **⚠️ CRITICAL**: No user story work can be manually/visually verified until this phase is complete, though US1's core logic (T010-T013) has no hard dependency on T007-T009 and may be built in parallel.
 
-- [ ] T004 Create `XYPad` class skeleton in `src/components/utilities/XYPad.ts`: extends `SynthComponent`, constructor registers two CV outputs (`x`, `y`) via `addOutput` and two depth parameters (`xDepth`, `yDepth`, default 50, range 0-100, unit `%`) via `addParameter`, implements required abstract methods (`createAudioNodes`, `destroyAudioNodes`, `updateAudioParameter`, `getInputNode`, `getOutputNode`) per data-model.md
-- [ ] T005 Implement `getOutputNodeByPort(portId)` override in `src/components/utilities/XYPad.ts` to return the correct per-axis output node for `'x'` vs `'y'`, following the pattern `SynthComponent.getOutputNodeByPort` documents and Collider's dual-output (`frequency`/`gate`) precedent
-- [ ] T006 Register `XY_PAD` in `src/components/registerComponents.ts`: one `componentRegistry.register(ComponentType.XY_PAD, 'X-Y Pad', 'Two-axis controller with recordable movement, outputs X and Y as CV', 'Utilities', (id, position) => new XYPad(id, position), calculateComponentDimensions(ComponentType.XY_PAD))` call
-- [ ] T007 [P] Add `ComponentType.XY_PAD` case to `getControlLayout` in `src/utils/componentLayout.ts` (private function, line ~25) returning a `ControlLayout` (`numKnobs: 2`, `hasDropdown: false`, `hasDisplayArea: true`, `displayHeight` sized for a square-ish pad plus button row) — `calculateComponentDimensions` (line ~572) derives `{width, height}` from this automatically, no separate edit needed there
-- [ ] T008 [P] Add `ComponentType.XY_PAD` case to `getPortCounts` in `src/utils/componentLayout.ts` (private function, line ~228) returning `{ inputs: 0, outputs: 2 }`, matching the LFO/Looper cases already there
-- [ ] T009 [P] Add an icon glyph entry for `ComponentType.XY_PAD` in `getComponentIcon` in `src/ui/Sidebar.ts`
+- [X] T004 Create `XYPad` class skeleton in `src/components/utilities/XYPad.ts`: extends `SynthComponent`, constructor registers two CV outputs (`x`, `y`) via `addOutput` and two depth parameters (`xDepth`, `yDepth`, default 50, range 0-100, unit `%`) via `addParameter`, implements required abstract methods (`createAudioNodes`, `destroyAudioNodes`, `updateAudioParameter`, `getInputNode`, `getOutputNode`) per data-model.md
+- [X] T005 Implement `getOutputNodeByPort(portId)` override in `src/components/utilities/XYPad.ts` to return the correct per-axis output node for `'x'` vs `'y'`, following the pattern `SynthComponent.getOutputNodeByPort` documents and Collider's dual-output (`frequency`/`gate`) precedent
+- [X] T006 Register `XY_PAD` in `src/components/registerComponents.ts`: one `componentRegistry.register(ComponentType.XY_PAD, 'X-Y Pad', 'Two-axis controller with recordable movement, outputs X and Y as CV', 'Utilities', (id, position) => new XYPad(id, position), calculateComponentDimensions(ComponentType.XY_PAD))` call
+- [X] T007 [P] Add `ComponentType.XY_PAD` case to `getControlLayout` in `src/utils/componentLayout.ts` (private function, line ~25) returning a `ControlLayout` (`numKnobs: 2`, `hasDropdown: false`, `hasDisplayArea: true`, `displayHeight` sized for a square-ish pad plus button row) — `calculateComponentDimensions` (line ~572) derives `{width, height}` from this automatically, no separate edit needed there
+- [X] T008 [P] Add `ComponentType.XY_PAD` case to `getPortCounts` in `src/utils/componentLayout.ts` (private function, line ~228) returning `{ inputs: 0, outputs: 2 }`, matching the LFO/Looper cases already there
+- [X] T009 [P] Add an icon glyph entry for `ComponentType.XY_PAD` in `getComponentIcon` in `src/ui/Sidebar.ts`
 
 **Checkpoint**: `XY_PAD` can be dragged onto the canvas from the sidebar and renders with correct dimensions (no interactive pad/buttons yet — those are added by the `XYPadDisplay` work in US1).
 
@@ -66,19 +66,19 @@ Single project (`src/`, `tests/` at repository root), per plan.md's Project Stru
 
 ### Tests for User Story 1
 
-- [ ] T010 [P] [US1] Unit tests for `clampAxis`/`clampPosition` in `tests/contracts/xy-pad-validation.test.ts` — verify values below 0, above 1, and within range are handled correctly (FR-016)
-- [ ] T011 [P] [US1] Unit tests for `XYPad` position tracking and depth-scaled connection math in `tests/components/utilities/XYPad.test.ts` — verify `setPosition` updates `getPosition()`, verify `connectTo` creates a per-connection `GainNode` scaler sized from depth% and the target's declared range (mirrors how `tests/components/generators/LFO.cv.test.ts` tests LFO's scaler), verify X and Y scalers are independent
-- [ ] T012 [P] [US1] Unit test in `tests/components/utilities/XYPad.test.ts` verifying position holds at last value when pointer interaction stops (FR-006) and that a newly-connected output immediately reflects current resting position (US1 acceptance scenario 4)
+- [X] T010 [P] [US1] Unit tests for `clampAxis`/`clampPosition` in `tests/contracts/xy-pad-validation.test.ts` — verify values below 0, above 1, and within range are handled correctly (FR-016)
+- [X] T011 [P] [US1] Unit tests for `XYPad` position tracking and depth-scaled connection math in `tests/components/utilities/XYPad.test.ts` — verify `setPosition` updates `getPosition()`, verify `connectTo` creates a per-connection `GainNode` scaler sized from depth% and the target's declared range (mirrors how `tests/components/generators/LFO.cv.test.ts` tests LFO's scaler), verify X and Y scalers are independent
+- [X] T012 [P] [US1] Unit test in `tests/components/utilities/XYPad.test.ts` verifying position holds at last value when pointer interaction stops (FR-006) and that a newly-connected output immediately reflects current resting position (US1 acceptance scenario 4)
 
 ### Implementation for User Story 1
 
-- [ ] T013 [US1] Implement `_x`/`_y` state fields, `setPosition(x, y)` (clamping via `clampPosition` from T010), and `getPosition()` in `src/components/utilities/XYPad.ts` (depends on T004)
-- [ ] T014 [US1] Implement `connectTo` override in `src/components/utilities/XYPad.ts` mirroring `LFO.connectTo` (`src/components/generators/LFO.ts:181-233`): per-axis `Map<string, ConnectionScaler>`, builds a `GainNode` scaled from `xDepth`/`yDepth` and `target.getParameterRangeForInput(inputId)` (depends on T004, T005)
-- [ ] T015 [US1] Implement `updateAudioParameter` in `src/components/utilities/XYPad.ts` to re-scale existing connection `GainNode`s when `xDepth`/`yDepth` change (ramped via existing `CV.RAMP_SECONDS` convention, matching `LFO.ts:161-169`) (depends on T014)
-- [ ] T016 [US1] Create `XYPadDisplay` class in `src/canvas/displays/XYPadDisplay.ts`: renders the 2D pad surface and a handle at the current `x`/`y` position, following `LooperDisplay.ts`'s canvas-rendering structure
-- [ ] T017 [US1] Implement pointer drag handling in `src/canvas/displays/XYPadDisplay.ts` (mousedown/mousemove/mouseup translated to local/zoom-corrected pad coordinates, calling `xyPad.setPosition(x, y)`), following `LooperDisplay`'s coordinate-translation pattern
-- [ ] T018 [US1] Add the `ComponentType.XY_PAD` block to `createControls()` in `src/canvas/CanvasComponent.ts`: instantiate `XYPadDisplay` as a sibling overlay `<canvas>` with `pointerEvents: 'auto'`, wire native pointer events to the display's handlers, add two `Knob` controls for `xDepth`/`yDepth` — follow the Looper block (`CanvasComponent.ts:1437-1496`) as the direct template (depends on T016, T017)
-- [ ] T019 [US1] Add a `requestAnimationFrame` render loop for `XYPadDisplay` in `src/canvas/CanvasComponent.ts` (polling the pad's current position each frame), matching the Looper's render-loop scheduling (`CanvasComponent.ts:1487-1495`) (depends on T018)
+- [X] T013 [US1] Implement `_x`/`_y` state fields, `setPosition(x, y)` (clamping via `clampPosition` from T010), and `getPosition()` in `src/components/utilities/XYPad.ts` (depends on T004)
+- [X] T014 [US1] Implement `connectTo` override in `src/components/utilities/XYPad.ts` mirroring `LFO.connectTo` (`src/components/generators/LFO.ts:181-233`): per-axis `Map<string, ConnectionScaler>`, builds a `GainNode` scaled from `xDepth`/`yDepth` and `target.getParameterRangeForInput(inputId)` (depends on T004, T005)
+- [X] T015 [US1] Implement `updateAudioParameter` in `src/components/utilities/XYPad.ts` to re-scale existing connection `GainNode`s when `xDepth`/`yDepth` change (ramped via existing `CV.RAMP_SECONDS` convention, matching `LFO.ts:161-169`) (depends on T014)
+- [X] T016 [US1] Create `XYPadDisplay` class in `src/canvas/displays/XYPadDisplay.ts`: renders the 2D pad surface and a handle at the current `x`/`y` position, following `LooperDisplay.ts`'s canvas-rendering structure
+- [X] T017 [US1] Implement pointer drag handling in `src/canvas/displays/XYPadDisplay.ts` (mousedown/mousemove/mouseup translated to local/zoom-corrected pad coordinates, calling `xyPad.setPosition(x, y)`), following `LooperDisplay`'s coordinate-translation pattern
+- [X] T018 [US1] Add the `ComponentType.XY_PAD` block to `createControls()` in `src/canvas/CanvasComponent.ts`: instantiate `XYPadDisplay` as a sibling overlay `<canvas>` with `pointerEvents: 'auto'`, wire native pointer events to the display's handlers, add two `Knob` controls for `xDepth`/`yDepth` — follow the Looper block (`CanvasComponent.ts:1437-1496`) as the direct template (depends on T016, T017)
+- [X] T019 [US1] Add a `requestAnimationFrame` render loop for `XYPadDisplay` in `src/canvas/CanvasComponent.ts` (polling the pad's current position each frame), matching the Looper's render-loop scheduling (`CanvasComponent.ts:1487-1495`) (depends on T018)
 
 **Checkpoint**: User Story 1 is fully functional — an X-Y Pad can be added, dragged, connected to two targets with independent depth-scaled output, and this is independently testable/demoable without any Record/Play functionality existing yet.
 

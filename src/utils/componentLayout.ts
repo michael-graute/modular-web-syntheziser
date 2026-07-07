@@ -192,6 +192,13 @@ function getControlLayout(type: ComponentType): ControlLayout {
         displayHeight: 100,
       };
 
+    case ComponentType.XY_PAD:
+      return {
+        numKnobs: 2, // xDepth, yDepth
+        hasDisplayArea: true,
+        displayHeight: 260, // square-ish pad surface + Record/Stop/Play button row
+      };
+
     case ComponentType.RING_MODULATOR:
       return {}; // No user-adjustable parameters; bypass button rendered automatically
 
@@ -325,6 +332,9 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
 
     case ComponentType.POLY_VCA:
       return { inputs: 2, outputs: 1 }; // poly-audio + poly-env / audio out
+
+    case ComponentType.XY_PAD:
+      return { inputs: 0, outputs: 2 }; // X CV out, Y CV out
 
     default:
       return { inputs: 1, outputs: 1 };
@@ -526,6 +536,11 @@ export function calculateComponentWidth(type: ComponentType): number {
   // Looper: 240px canvas + 10px margin each side
   if (type === ComponentType.LOOPER) {
     width = 260;
+  }
+
+  // XY Pad: needs a roughly square drag surface + margin each side
+  if (type === ComponentType.XY_PAD) {
+    width = 220;
   }
 
   // ParametricEQ: 3 knobs in widest row (Mid), needs same width as 3-column Collider layout
