@@ -112,7 +112,7 @@ tests/components/utilities/
 **Files requiring a new case/entry for `ComponentType.XY_PAD`** (per existing registration conventions, confirmed in codebase research):
 - `src/core/types.ts` — add `XY_PAD` to the `ComponentType` enum
 - `src/components/registerComponents.ts` — one `componentRegistry.register(...)` call (category `'Utilities'`)
-- `src/utils/componentLayout.ts` — new case in both `calculateComponentDimensions` and the control-layout switch
+- `src/utils/componentLayout.ts` — new case in both `getControlLayout` (returns `ControlLayout`: `numKnobs`, `hasDropdown`, `hasDisplayArea`, `displayHeight`) and `getPortCounts`; `calculateComponentDimensions` itself needs no direct edit since it derives `{width, height}` from those two
 - `src/canvas/CanvasComponent.ts` — new `if (this.type === ComponentType.XY_PAD)` block in `createControls()`, following the Looper block's overlay-canvas + click-dispatch pattern
 - `src/ui/Sidebar.ts` — icon glyph entry in `getComponentIcon`
 

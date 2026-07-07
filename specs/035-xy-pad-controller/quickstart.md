@@ -67,7 +67,7 @@ Wire the new type into the existing registration points (no factory/switch to ke
      calculateComponentDimensions(ComponentType.XY_PAD)
    );
    ```
-2. **`src/utils/componentLayout.ts`**: add a `case ComponentType.XY_PAD` in both `calculateComponentDimensions` (return `{ numKnobs: 2, hasDropdown: false, hasDisplayArea: true, displayHeight: <pad height> }`) and the control-layout switch.
+2. **`src/utils/componentLayout.ts`**: add a `case ComponentType.XY_PAD` in `getControlLayout` (return `{ numKnobs: 2, hasDropdown: false, hasDisplayArea: true, displayHeight: <pad height> }`) and in `getPortCounts` (return `{ inputs: 0, outputs: 2 }`). `calculateComponentDimensions` needs no direct edit — it derives `{width, height}` from these two.
 3. **`src/canvas/CanvasComponent.ts`**: add an `if (this.type === ComponentType.XY_PAD)` block in `createControls()` that instantiates `XYPadDisplay` as a sibling overlay canvas (`pointerEvents: 'auto'`) and wires its click/drag handlers to `xyPad.pressRecord()` / `pressStop()` / `pressPlay()` / `setPosition()`, following the Looper block as the direct template.
 4. **`src/ui/Sidebar.ts`**: add an icon glyph for `ComponentType.XY_PAD` in `getComponentIcon` (no other sidebar change needed — the palette is driven entirely by the registry).
 

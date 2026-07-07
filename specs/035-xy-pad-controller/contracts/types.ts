@@ -46,9 +46,14 @@ export interface MovementRecording {
   durationMs: number;
 }
 
-/** Per-connection CV scaler, structurally identical to LFO's ConnectionScaler. */
+/**
+ * Per-connection CV scaler, matching LFO's ConnectionScaler shape exactly
+ * (src/components/generators/LFO.ts:29-33). Stored in a
+ * `Map<string, ConnectionScaler>` keyed by `${targetId}:${inputId}` — the
+ * target/input identity lives in the map key, not as fields here.
+ */
 export interface ConnectionScaler {
-  gainNode: GainNode;
-  targetId: string;
-  inputId: string;
+  node: GainNode;
+  /** (paramMax − paramMin) / 2 — the range-based part of the gain, independent of depth. */
+  fullDepthGain: number;
 }
