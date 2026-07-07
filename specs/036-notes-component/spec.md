@@ -5,6 +5,13 @@
 **Status**: Draft
 **Input**: User description: "please specify a new feature for a new component: Notes. Users should be able to add a simple texteditor to a patch to capture notes or explanations for that patch."
 
+## Clarifications
+
+### Session 2026-07-08
+
+- Q: User Story 3 assumed the Notes component could be resized like other components, but no component in this codebase currently supports runtime resizing (dimensions are fixed at creation and never mutated). Should resize be added as new scope, or dropped? → A: Drop resize from scope — Notes gets a fixed size (larger than typical, to fit more text) and relies on internal text-area scrolling for long notes, matching the existing architecture exactly.
+- Q: The spec assumed Notes text persists via "the existing patch save/load mechanism," but `ComponentData` has no free-text field (`parameters` is strictly numbers; `audioBlob` is documented/typed as audio-only). How should text storage be handled? → A: Add a new `ComponentData.text?: string` field, a small explicit schema addition alongside the existing `audioBlob?: string` — matches this project's pattern of adding an optional field for one component's special data.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Write Notes on the Patch Canvas (Priority: P1)
@@ -40,19 +47,18 @@ A musician writes notes explaining their patch, saves the patch, and later reloa
 
 ---
 
-### User Story 3 - Resize and Position Notes Like Any Other Component (Priority: P3)
+### User Story 3 - Position Notes Like Any Other Component (Priority: P3)
 
-A musician wants a Notes component to occupy more space on the canvas for a longer explanation, or to move it out of the way of other components. They resize and reposition it the same way they would any other canvas component.
+A musician wants to move a Notes component out of the way of other components, or place it near the part of the patch it documents. They reposition it the same way they would any other canvas component.
 
-**Why this priority**: Basic canvas ergonomics (move, resize) make the component usable in a busy patch layout, but the component is already useful for short notes without resizing — this refines rather than enables the core value.
+**Why this priority**: Basic canvas ergonomics (move) make the component usable in a busy patch layout, but the component is already useful for short notes without repositioning — this refines rather than enables the core value.
 
-**Independent Test**: Add a Notes component, drag it to a new position on the canvas, resize it larger, and verify the text area reflows to use the new size and the component stays at its new position after a save/reload.
+**Independent Test**: Add a Notes component, drag it to a new position on the canvas, save the patch, reload it, and verify the component stays at its new position.
 
 **Acceptance Scenarios**:
 
 1. **Given** a Notes component is on the canvas, **When** the user drags its header to a new location, **Then** the component moves the same way other canvas components do.
-2. **Given** a Notes component is on the canvas, **When** the user resizes it, **Then** the text area grows or shrinks to fill the available space.
-3. **Given** a Notes component has been resized, **When** the patch is saved and reloaded, **Then** the component reappears at its saved size and position.
+2. **Given** a Notes component has been moved, **When** the patch is saved and reloaded, **Then** the component reappears at its saved position.
 
 ### Edge Cases
 
@@ -74,7 +80,7 @@ A musician wants a Notes component to occupy more space on the canvas for a long
 - **FR-005**: The Notes component's text MUST update immediately as the user types (no explicit "save" action required within the editing session).
 - **FR-006**: The Notes component's text content MUST be persisted and restored using the project's existing patch save/load mechanism.
 - **FR-007**: The Notes component MUST support being repositioned on the canvas using the same interaction as other components.
-- **FR-008**: The Notes component MUST support being resized, with the text area adapting to the component's current size.
+- **FR-008**: The Notes component MUST render at a fixed size (larger than a typical control-only component, to comfortably fit a paragraph of text) — resizing is out of scope, consistent with every other component in this project, none of which support runtime resizing.
 - **FR-009**: The Notes component MUST support internal scrolling when its text content exceeds the visible area of the text region.
 - **FR-010**: The Notes component MUST be removable from the canvas using the same interaction as other components, and removing it MUST discard its text.
 - **FR-011**: The Notes component MUST NOT expose any audio, CV, or gate input/output ports — it carries no signal role in the patch.
@@ -82,7 +88,7 @@ A musician wants a Notes component to occupy more space on the canvas for a long
 
 ### Key Entities
 
-- **Notes Component**: A canvas component with no signal ports, holding a single block of plain-text content. Attributes: text content, canvas position, canvas size (width/height).
+- **Notes Component**: A canvas component with no signal ports, holding a single block of plain-text content. Attributes: text content, canvas position (fixed size, not user-adjustable).
 
 ## Success Criteria *(mandatory)*
 
@@ -92,13 +98,13 @@ A musician wants a Notes component to occupy more space on the canvas for a long
 - **SC-002**: Typed text appears with no perceptible delay as the user types.
 - **SC-003**: A saved patch containing Notes text, once reloaded, reproduces the exact same text with no loss or corruption of content.
 - **SC-004**: A first-time user can understand how to add and use the Notes component without external documentation, since it behaves like a familiar text box.
-- **SC-005**: Resizing a Notes component to fit a longer explanation takes a single drag interaction, consistent with resizing any other component.
+- **SC-005**: A Notes component's fixed default size comfortably fits a short paragraph without requiring the text area to scroll for typical patch-documentation use.
 
 ## Assumptions
 
 - "Simple texteditor" means plain-text only — no rich-text formatting toolbar, no markdown rendering, no embedded media. This keeps the component minimal and avoids scope creep into a full document editor.
 - The Notes component has no audio/CV/gate signal role and therefore no input or output ports, unlike every other existing component in this project.
-- Notes text is persisted via the existing `PatchSerializer` / `PatchStorage` pattern used by all other stateful components in this project, consistent with how component-specific data (e.g. recorded gestures, sequencer patterns) is already saved.
-- Default component size on creation is a reasonable small-to-medium canvas footprint (enough for a few lines of text), resizable larger as needed, consistent with how other components define default dimensions.
+- Notes text is persisted via a new dedicated text field on the underlying component data record (alongside the existing pattern of adding an optional field for one component's special data, as already done for other components' non-numeric state), restored through the project's existing patch save/load mechanism.
+- The Notes component renders at a fixed default size on creation (larger than a typical control-only component, to comfortably fit a paragraph of text); resizing is out of scope for this feature, consistent with every other component in this project.
 - There is no character limit beyond what's reasonably necessary to avoid unbounded patch file growth; standard patch-note lengths (a paragraph or two) are the expected use case.
 - Text editing uses the browser's native text input behavior (native text selection, copy/paste, undo/redo within the field) rather than a custom-built text editing engine.

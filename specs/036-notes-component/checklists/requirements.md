@@ -31,5 +31,6 @@
 
 ## Notes
 
-- All checklist items pass. No [NEEDS CLARIFICATION] markers were needed — the "simple texteditor" framing in the user's request clearly scopes this to plain-text only, and reasonable defaults (persistence via the existing PatchSerializer/PatchStorage pattern, no signal ports since this is a documentation-only component, standard canvas move/resize/delete behavior) are documented in the Assumptions section.
-- Ready for `/speckit-clarify` (optional) or `/speckit-plan`.
+- All checklist items pass. No [NEEDS CLARIFICATION] markers were needed — the "simple texteditor" framing in the user's request clearly scopes this to plain-text only, and reasonable defaults (persistence via the existing PatchSerializer/PatchStorage pattern, no signal ports since this is a documentation-only component, standard canvas move/delete behavior) are documented in the Assumptions section.
+- Clarification session (2026-07-08) corrected two initial assumptions that didn't match the actual codebase: resizing was dropped from scope (no component in this project supports runtime resizing), and persistence now specifies a new dedicated text field rather than the vague "existing mechanism" (the existing ComponentData record has no free-text field). See spec.md Clarifications section.
+- Ready for `/speckit-plan`.
