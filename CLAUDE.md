@@ -79,5 +79,5 @@ TypeScript 5.6+, ES2020 target: Follow standard conventions
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/035-xy-pad-controller/plan.md
+at specs/036-notes-component/plan.md
 <!-- SPECKIT END -->
