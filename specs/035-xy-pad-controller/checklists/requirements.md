@@ -32,4 +32,5 @@
 ## Notes
 
 - All checklist items pass. No [NEEDS CLARIFICATION] markers were needed — reasonable defaults were drawn from existing project conventions (LFO/Collider CV outputs, Looper record/play/persistence pattern) and documented in the Assumptions section.
-- Ready for `/speckit-clarify` (optional) or `/speckit-plan`.
+- Clarification session (2026-07-07) resolved 3 architecture-relevant ambiguities: per-axis depth control, immediate record-start behavior, and ~60 samples/sec capture rate. See spec.md Clarifications section.
+- Ready for `/speckit-plan`.

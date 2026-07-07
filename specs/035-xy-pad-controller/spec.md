@@ -5,6 +5,14 @@
 **Status**: Draft
 **Input**: User description: "specify a new controller component: X-Y pad. The controlle should have two outputs (for x and y) that can be connected to parameters of other components. It also should have a record function that records the movement of the x-y axises."
 
+## Clarifications
+
+### Session 2026-07-07
+
+- Q: Should the X-Y Pad have a per-axis attenuation/depth control (like the existing LFO's 0-100% depth knob), or always drive the full range of whatever it's connected to? → A: Add a depth control per axis, matching the existing LFO CV-source pattern (0-100% depth scaling against the target's declared range).
+- Q: When Record is pressed but the user hasn't touched the pad yet, does capturing start immediately (flat lead-in at resting position) or does Record arm and wait for first touch? → A: Capturing starts immediately when Record is pressed, matching the Looper precedent.
+- Q: What time resolution should the recording capture movement at? → A: ~60 samples/second (animation-frame cadence), giving smooth playback and a bounded sample count (~3600 samples for a 60s recording).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Modulate Two Parameters by Dragging the Pad (Priority: P1)
@@ -21,6 +29,7 @@ A musician adds an X-Y Pad component to the canvas and connects its X output to 
 2. **Given** an X-Y Pad is on the canvas with its Y output connected to a target parameter, **When** the user drags the pointer vertically across the pad, **Then** the connected parameter's value changes proportionally to the vertical position, independently of the X output.
 3. **Given** the pointer is released after dragging, **When** the user checks the pad, **Then** the X and Y outputs hold their last position's values (no automatic reset) until the user moves the pointer again.
 4. **Given** the pad has no active pointer interaction, **When** another component is connected to its X or Y output, **Then** the output immediately reflects the pad's current resting position.
+5. **Given** an X-Y Pad output is connected to a target parameter, **When** the user adjusts that axis's depth control, **Then** the range of movement the axis can produce on the target parameter scales proportionally (0% = no effect, 100% = full range of the target parameter), independently per axis.
 
 ---
 
@@ -34,7 +43,7 @@ A musician performs an expressive gesture across the pad (e.g. a sweep or circul
 
 **Acceptance Scenarios**:
 
-1. **Given** the X-Y Pad is idle, **When** the user presses Record, **Then** the pad enters recording state and begins capturing the pointer's X/Y position from the moment recording starts.
+1. **Given** the X-Y Pad is idle, **When** the user presses Record, **Then** the pad enters recording state and begins capturing the pointer's X/Y position immediately, even before any pointer movement occurs (capturing the resting position as a flat lead-in if the pointer has not yet moved).
 2. **Given** the pad is recording, **When** the user drags the pointer across the pad, **Then** the movement path (position over time) is captured continuously until the user presses Stop.
 3. **Given** a recording exists and the pad is idle, **When** the user presses Play, **Then** the pad replays the captured X/Y movement over time, driving the X and Y outputs exactly as they were during recording, and loops back to the start when the recording ends.
 4. **Given** a recording is currently playing back, **When** the user presses Stop, **Then** playback halts, the outputs hold their last replayed values, and the pad returns to idle.
@@ -75,6 +84,7 @@ A musician saves their patch after recording a movement gesture on the X-Y Pad. 
 - **FR-002**: The X-Y Pad MUST render a 2D touch/pointer-draggable surface representing the X (horizontal) and Y (vertical) axes.
 - **FR-003**: The X-Y Pad MUST expose two independent outputs, X and Y, each connectable to a parameter on another component using the project's existing connection mechanism.
 - **FR-004**: The X output MUST reflect the horizontal position of the last pointer interaction (or the current playback position when replaying a recording); the Y output MUST reflect the vertical position, independently of the X output.
+- **FR-004a**: The X-Y Pad MUST provide an independent depth (attenuation) control for each axis (0-100%), scaling how much of the connected target parameter's declared range that axis's output can reach — consistent with the existing depth-control pattern used by the LFO component.
 - **FR-005**: The X-Y Pad MUST update both outputs continuously (in real time) while the pointer is actively dragging on the pad surface.
 - **FR-006**: The X-Y Pad MUST hold its last X/Y position at its outputs when pointer interaction stops, rather than resetting to a default position.
 - **FR-007**: The X-Y Pad MUST provide a visible pointer/handle indicator on the pad showing the current X/Y position.
@@ -88,11 +98,12 @@ A musician saves their patch after recording a movement gesture on the X-Y Pad. 
 - **FR-015**: The X-Y Pad's configuration, including any recorded movement data, MUST be persisted and restored using the project's existing patch save/load mechanism.
 - **FR-016**: The X-Y Pad MUST clamp reported X/Y position to the pad's bounds (0-1 normalized range per axis) even if pointer movement occurs outside the visible pad area during a drag.
 - **FR-017**: Recording duration MUST be capped at a maximum length; recording MUST stop automatically if this maximum is reached.
+- **FR-018**: The X-Y Pad MUST sample and capture the X/Y position at approximately 60 samples per second while recording, so played-back movement appears smooth rather than stepped.
 
 ### Key Entities
 
-- **X-Y Pad Component**: A canvas component with a 2D interactive surface, two CV-style outputs (X, Y), and a recording/playback subsystem. Attributes: current X position, current Y position, current state (idle, recording, playing), the active recording (if any).
-- **Movement Recording**: The captured sequence of X/Y positions over time produced by a Record session. Attributes: ordered list of (time offset, X position, Y position) samples, total duration.
+- **X-Y Pad Component**: A canvas component with a 2D interactive surface, two CV-style outputs (X, Y), independent per-axis depth controls, and a recording/playback subsystem. Attributes: current X position, current Y position, X depth, Y depth, current state (idle, recording, playing), the active recording (if any).
+- **Movement Recording**: The captured sequence of X/Y positions over time produced by a Record session, sampled at ~60 samples/second. Attributes: ordered list of (time offset, X position, Y position) samples, total duration.
 
 ## Success Criteria *(mandatory)*
 
@@ -100,7 +111,7 @@ A musician saves their patch after recording a movement gesture on the X-Y Pad. 
 
 - **SC-001**: A user can connect the X-Y Pad's outputs to two different target parameters and hear/see both respond independently within one interaction, with no setup steps beyond the standard connection gesture used elsewhere in the app.
 - **SC-002**: Dragging the pointer across the pad updates connected parameters with no perceptible lag (position updates track pointer movement at normal interaction speeds without visible stepping or delay).
-- **SC-003**: A recorded gesture of up to the maximum supported duration plays back with the same relative timing and shape as it was performed, verified by ear/eye comparison of live vs. replayed parameter movement.
+- **SC-003**: A recorded gesture of up to the maximum supported duration plays back with the same relative timing and shape as it was performed, with movement captured at a resolution fine enough (~60 samples/second) that played-back parameter movement is perceived as smooth rather than stepped.
 - **SC-004**: A saved patch containing an X-Y Pad recording, once reloaded, reproduces the exact same recorded playback as before saving, with no loss of captured movement.
 - **SC-005**: A first-time user can understand how to record and play back a gesture without external documentation, using only the Record/Stop/Play controls visible on the component.
 
@@ -109,6 +120,7 @@ A musician saves their patch after recording a movement gesture on the X-Y Pad. 
 - The X-Y Pad's outputs behave as CV-style modulation sources, consistent with existing components (e.g. LFO, Collider) — normalized position is scaled to whatever range the connected target parameter expects, using the project's existing connection/scaling mechanism.
 - Position range is normalized per axis (0 to 1, left-to-right and bottom-to-top, matching the visual layout of the pad), consistent with how other CV outputs in this project are defined.
 - Maximum recording length is capped at 60 seconds, consistent with the project's general pattern of bounding captured-gesture/audio buffers (see Looper) to avoid unbounded memory growth; this can be adjusted during planning if a different bound is more appropriate.
+- Movement is captured at approximately 60 samples/second (animation-frame cadence), bounding a maximum-length recording to roughly 3600 samples of (time offset, X, Y) data — small enough to serialize with the patch without a noticeable save/load delay.
 - Recorded movement data is stored and restored via the existing `PatchSerializer` / `PatchStorage` pattern used by all other stateful components in this project.
 - Only one recording can be stored per X-Y Pad instance at a time (recording again overwrites the previous one), matching the single-buffer behavior of the existing Looper component.
 - The component supports both mouse and touch pointer input, consistent with other interactive canvas components in this project.
