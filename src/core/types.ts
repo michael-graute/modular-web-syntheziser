@@ -54,6 +54,7 @@ export enum ComponentType {
   POLY_ADSR = 'poly-adsr',
   POLY_VCA = 'poly-vca',
   KARPLUS_STRONG = 'karplus-strong',
+  XY_PAD = 'xy-pad',
 }
 
 /**

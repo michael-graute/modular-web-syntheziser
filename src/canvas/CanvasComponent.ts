@@ -18,11 +18,13 @@ import { StepSequencerDisplay, SEQUENCER_DISPLAY_HEIGHT } from './displays/StepS
 import { ColliderDisplay } from './displays/ColliderDisplay';
 import { ChordFinderDisplay } from './displays/ChordFinderDisplay';
 import { LooperDisplay, VALID_BAR_COUNTS } from './displays/LooperDisplay';
+import { XYPadDisplay } from './displays/XYPadDisplay';
 import type { Oscilloscope } from '../components/analyzers/Oscilloscope';
 import type { StepSequencer } from '../components/utilities/StepSequencer';
 import type { Collider } from '../components/utilities/Collider';
 import type { ChordFinder } from '../components/utilities/ChordFinder';
 import type { Looper } from '../components/utilities/Looper';
+import type { XYPad } from '../components/utilities/XYPad';
 import type { Quantizer } from '../components/utilities/Quantizer';
 import type { BarCount } from '../components/utilities/LooperConstants';
 import { eventBus } from '../core/EventBus';
@@ -53,7 +55,9 @@ export class CanvasComponent {
   private envelopeFollowerDisplay: EnvelopeFollowerDisplay | null = null;
   private slewLimiterDisplay: SlewLimiterDisplay | null = null;
   private karplusStrongDisplay: KarplusStrongDisplay | null = null;
+  private xyPadDisplay: XYPadDisplay | null = null;
   private _looperRafId: number | null = null;
+  private _xyPadRafId: number | null = null;
 
   constructor(
     id: string,
@@ -1495,6 +1499,113 @@ export class CanvasComponent {
       }
     }
 
+    // XY Pad: xDepth/yDepth knobs + 2D drag surface with Record/Stop/Play buttons
+    if (this.type === ComponentType.XY_PAD && this.synthComponent) {
+      const xyPad = this.synthComponent as XYPad;
+      const xDepthParam = this.synthComponent.getParameter('xDepth');
+      const yDepthParam = this.synthComponent.getParameter('yDepth');
+
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      // Two depth knobs in a single row
+      const knobY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const knobSize = COMPONENT.KNOB_SIZE;
+      const numKnobs = 2;
+      const totalSpacing = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const spacing = (totalSpacing - numKnobs * knobSize) / (numKnobs + 1);
+
+      if (xDepthParam) {
+        this.controls.push(new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing,
+          knobY,
+          knobSize,
+          xDepthParam
+        ));
+      }
+
+      if (yDepthParam) {
+        this.controls.push(new Knob(
+          this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL + spacing * 2 + knobSize,
+          knobY,
+          knobSize,
+          yDepthParam
+        ));
+      }
+
+      // Drag surface below the knobs
+      const knobAreaHeight = 12 + knobSize + 12;
+      const displayX = this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL;
+      const displayY = knobY + knobAreaHeight + COMPONENT.CONTROL_SPACING_VERTICAL;
+      const displayWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+
+      if (!this.xyPadDisplay) {
+        this.xyPadDisplay = new XYPadDisplay(displayX, displayY, displayWidth, 260);
+
+        // Attach canvas to DOM (same parent as #synth-canvas)
+        const synthCanvas = document.getElementById('synth-canvas');
+        if (synthCanvas?.parentElement) {
+          synthCanvas.parentElement.appendChild(this.xyPadDisplay.getCanvas());
+        }
+
+        // Enable pointer events so drag/clicks can be forwarded
+        this.xyPadDisplay.getCanvas().style.pointerEvents = 'auto';
+
+        const toLocalCoords = (e: MouseEvent): { lx: number; ly: number } => {
+          const rect = this.xyPadDisplay!.getCanvas().getBoundingClientRect();
+          const zoom = parseFloat(this.xyPadDisplay!.getCanvas().style.transform.replace('scale(', '') || '1');
+          const canvasZoom = isNaN(zoom) ? 1 : zoom;
+          return {
+            lx: (e.clientX - rect.left) / canvasZoom,
+            ly: (e.clientY - rect.top) / canvasZoom,
+          };
+        };
+
+        this.xyPadDisplay.getCanvas().addEventListener('mousedown', (e: MouseEvent) => {
+          const { lx, ly } = toLocalCoords(e);
+          const result = this.xyPadDisplay!.handleMouseDown(lx, ly);
+          if (result === 'record') {
+            xyPad.pressRecord();
+          } else if (result === 'stop') {
+            xyPad.pressStop();
+          } else if (result === 'play') {
+            xyPad.pressPlay();
+          }
+          // A null result inside the pad area still starts a drag via handleMouseDown.
+        });
+
+        // Drag continues even if the pointer leaves the small pad area, so
+        // mousemove/mouseup are attached at the document level.
+        document.addEventListener('mousemove', (e: MouseEvent) => {
+          if (!this.xyPadDisplay?.isPadDragging()) return;
+          const { lx, ly } = toLocalCoords(e);
+          const pos = this.xyPadDisplay.handleMouseMove(lx, ly);
+          if (pos) {
+            xyPad.setAxisPosition(pos.x, pos.y);
+          }
+        });
+
+        document.addEventListener('mouseup', () => {
+          this.xyPadDisplay?.handleMouseUp();
+        });
+      } else {
+        this.xyPadDisplay.updatePosition(displayX, displayY);
+      }
+
+      // Schedule render loop for the XY pad display
+      if (!this._xyPadRafId) {
+        const renderLoop = () => {
+          if (this.xyPadDisplay) {
+            this.xyPadDisplay.render(xyPad.getDisplayState());
+            this._xyPadRafId = requestAnimationFrame(renderLoop);
+          }
+        };
+        this._xyPadRafId = requestAnimationFrame(renderLoop);
+      }
+    }
+
     // ParametricEQ controls: 3 rows of knobs (Low: 2, Mid: 3, High: 2)
     if (this.type === ComponentType.PARAMETRIC_EQ && this.synthComponent) {
       const numInputPorts = this.synthComponent.inputs.size;
@@ -2380,6 +2491,14 @@ export class CanvasComponent {
       this.karplusStrongDisplay.destroy();
       this.karplusStrongDisplay = null;
     }
+    if (this._xyPadRafId !== null) {
+      cancelAnimationFrame(this._xyPadRafId);
+      this._xyPadRafId = null;
+    }
+    if (this.xyPadDisplay) {
+      this.xyPadDisplay.destroy();
+      this.xyPadDisplay = null;
+    }
   }
 
   /**
@@ -2392,6 +2511,9 @@ export class CanvasComponent {
     }
     if (this.looperDisplay) {
       this.looperDisplay.updateViewportTransform(zoom, panX, panY);
+    }
+    if (this.xyPadDisplay) {
+      this.xyPadDisplay.updateViewportTransform(zoom, panX, panY);
     }
     // chordFinderDisplay draws on the main canvas — no separate transform needed.
   }
@@ -2524,6 +2646,7 @@ export class CanvasComponent {
       [ComponentType.POLY_ADSR]: 'Poly ADSR',
       [ComponentType.POLY_VCA]: 'Poly VCA',
       [ComponentType.KARPLUS_STRONG]: 'Karplus-Strong',
+      [ComponentType.XY_PAD]: 'X-Y Pad',
     };
     return names[this.type] || 'Component';
   }

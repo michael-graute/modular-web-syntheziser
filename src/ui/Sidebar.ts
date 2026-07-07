@@ -167,6 +167,7 @@ export class Sidebar {
       [ComponentType.POLY_ADSR]: '⬡',
       [ComponentType.POLY_VCA]: '⬡',
       [ComponentType.KARPLUS_STRONG]: '♪',
+      [ComponentType.XY_PAD]: '⊞',
     };
     return icons[type] || '□';
   }

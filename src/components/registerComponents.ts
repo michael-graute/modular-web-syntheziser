@@ -20,6 +20,7 @@ import { ChordFinder } from './utilities/ChordFinder';
 import { Quantizer } from './utilities/Quantizer';
 import { ParametricEQ } from './processors/ParametricEQ';
 import { Looper } from './utilities/Looper';
+import { XYPad } from './utilities/XYPad';
 import { Delay } from './effects/Delay';
 import { Reverb } from './effects/Reverb';
 import { Distortion } from './effects/Distortion';
@@ -198,6 +199,15 @@ export function registerAllComponents(): void {
     'Utilities',
     (id, position) => new Looper(id, position),
     calculateComponentDimensions(ComponentType.LOOPER)
+  );
+
+  componentRegistry.register(
+    ComponentType.XY_PAD,
+    'X-Y Pad',
+    'Two-axis controller with recordable movement, outputs X and Y as CV',
+    'Utilities',
+    (id, position) => new XYPad(id, position),
+    calculateComponentDimensions(ComponentType.XY_PAD)
   );
 
   // Effects
