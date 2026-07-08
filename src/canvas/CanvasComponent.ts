@@ -2105,6 +2105,9 @@ export class CanvasComponent {
   moveTo(x: number, y: number): void {
     this.position.x = x;
     this.position.y = y;
+    if (this.synthComponent) {
+      this.synthComponent.setPosition({ ...this.position });
+    }
     this.updateControlPositions();
   }
 
@@ -2114,6 +2117,9 @@ export class CanvasComponent {
   moveBy(dx: number, dy: number): void {
     this.position.x += dx;
     this.position.y += dy;
+    if (this.synthComponent) {
+      this.synthComponent.setPosition({ ...this.position });
+    }
     this.updateControlPositions();
   }
 
@@ -2171,6 +2177,7 @@ export class CanvasComponent {
       this.position.y = result.position.y;
       this.width = result.size.width;
       this.height = result.size.height;
+      this.synthComponent.setPosition({ ...this.position });
     } else {
       const result = applyBottomRightResize({ width: this.width, height: this.height }, dx, dy);
       this.width = result.size.width;
