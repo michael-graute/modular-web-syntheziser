@@ -122,7 +122,7 @@ Single project (`src/`, `tests/` at repository root), per plan.md's Project Stru
 
 ### Implementation for User Story 3
 
-- [ ] T028 [US3] No implementation needed — component repositioning (drag-to-move) and position persistence are handled entirely by the existing `SynthComponent`/`CanvasComponent`/`PatchSerializer` machinery already exercised by every other component; this task is a manual confirmation step: drag a Notes component in the running dev server and verify `updatePosition()` (T018) keeps the textarea visually attached during the drag (depends on T018)
+- [X] T028 [US3] No implementation needed — component repositioning (drag-to-move) and position persistence are handled entirely by the existing `SynthComponent`/`CanvasComponent`/`PatchSerializer` machinery already exercised by every other component; this task is a manual confirmation step: drag a Notes component in the running dev server and verify `updatePosition()` (T018) keeps the textarea visually attached during the drag (depends on T018)
 
 **Checkpoint**: All three user stories are independently functional; a saved patch with a repositioned, text-filled Notes component reloads with both the text and position intact.
 
@@ -132,10 +132,10 @@ Single project (`src/`, `tests/` at repository root), per plan.md's Project Stru
 
 **Purpose**: Final validation and cleanup after all user stories are complete.
 
-- [ ] T029 [P] Run `vitest run` for the full suite and confirm no regressions in existing component/canvas/contract tests
-- [ ] T030 [P] Run `tsc --noEmit` (this project has no separate `lint` npm script — confirmed during feature 035) and fix any type errors introduced by the new files
-- [ ] T031 Manually walk through quickstart.md's Interaction Lifecycle end-to-end in the running dev server (add, type, defocus, re-edit, drag, save, reload, delete) per this project's verification convention
-- [ ] T032 [P] Add a Notes documentation entry to the Help sidebar in `src/ui/HelpSidebar.ts`, following the pattern used for prior features (e.g. the X-Y Pad entry added in `035-xy-pad-controller`, placed in the Utilities section)
+- [X] T029 [P] Run `vitest run` for the full suite and confirm no regressions in existing component/canvas/contract tests
+- [X] T030 [P] Run `tsc --noEmit` (this project has no separate `lint` npm script — confirmed during feature 035) and fix any type errors introduced by the new files
+- [X] T031 Manually walk through quickstart.md's Interaction Lifecycle end-to-end in the running dev server (add, type, defocus, re-edit, drag, save, reload, delete) per this project's verification convention
+- [X] T032 [P] Add a Notes documentation entry to the Help sidebar in `src/ui/HelpSidebar.ts`, following the pattern used for prior features (e.g. the X-Y Pad entry added in `035-xy-pad-controller`, placed in the Utilities section)
 
 ---
 

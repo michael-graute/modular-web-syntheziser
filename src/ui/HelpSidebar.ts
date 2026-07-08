@@ -934,6 +934,19 @@ export class HelpSidebar {
         X-Y Pad (X → Filter Cutoff CV, Y → Filter Resonance CV) → set both Depth knobs to taste, then press Record, sweep the pad, press Stop, and press Play to loop the filter sweep hands-free.
       </p>
 
+      <h4 style="color: var(--text-primary, #ffffff);">Notes</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        A free-text scratchpad for documenting a patch — no ports, no parameters, no audio role.
+        Click inside the text area to type; click elsewhere on the canvas (or press Escape) to defocus it and resume keyboard shortcuts and musical-key playback.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>Text area:</strong> Plain text only, up to 10,000 characters; saved and reloaded with the patch</li>
+      </ul>
+      <p style="color: var(--text-secondary, #cccccc);">
+        <strong style="color: var(--text-primary, #ffffff);">Typical use:</strong>
+        Drop a Notes component anywhere on the canvas to jot down signal-chain explanations, todo items, or performance cues for a patch.
+      </p>
+
       <h4 style="color: var(--text-primary, #ffffff);">Master Output</h4>
       <p style="color: var(--text-secondary, #cccccc);">
         Final output to speakers/headphones. Required for hearing audio.
