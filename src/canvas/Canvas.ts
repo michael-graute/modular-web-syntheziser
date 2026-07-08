@@ -4,6 +4,7 @@
 
 import { Viewport } from './Viewport';
 import { CanvasComponent } from './CanvasComponent';
+import type { ResizeCorner } from './CanvasComponent';
 import { CanvasConnection } from './Connection';
 import { SelectionManager } from './SelectionManager';
 import { ConnectionManager } from './ConnectionManager';
@@ -29,6 +30,12 @@ enum InteractionMode {
   PANNING = 'panning',
   DRAGGING = 'dragging',
   CONNECTING = 'connecting',
+  RESIZING = 'resizing',
+}
+
+/** CSS cursor for each resize corner's diagonal (feature 037). */
+function resizeCursorFor(corner: ResizeCorner): string {
+  return corner === 'bottom-left' ? 'sw-resize' : 'se-resize';
 }
 
 /**
@@ -51,6 +58,11 @@ export class Canvas {
   private dragStartPos: Position | null;
   private lastMousePos: Position | null;
   private draggedComponents: string[];
+
+  // Resize state (feature 037 — Notes bottom-corner resize)
+  private resizingComponentId: string | null;
+  private resizingCorner: ResizeCorner | null;
+  private resizeStartPos: Position | null;
 
   // Connection state
   private connectingFromComponent: string | null;
@@ -93,6 +105,10 @@ export class Canvas {
     this.dragStartPos = null;
     this.lastMousePos = null;
     this.draggedComponents = [];
+
+    this.resizingComponentId = null;
+    this.resizingCorner = null;
+    this.resizeStartPos = null;
 
     this.connectingFromComponent = null;
     this.connectingFromPort = null;
@@ -346,9 +362,12 @@ export class Canvas {
         if (id !== e.pointerId) this.cancelLongPressTimer(id, ptr);
       }
       this.prevPinchDistance = null;
-      // Clear single-finger drag state so two-finger gestures don't move components
+      // Clear single-finger drag/resize state so two-finger gestures don't move/resize components
       this.draggedComponents = [];
       this.dragStartPos = null;
+      this.resizingComponentId = null;
+      this.resizingCorner = null;
+      this.resizeStartPos = null;
       this.interactionMode = InteractionMode.NONE;
       return;
     }
@@ -467,6 +486,9 @@ export class Canvas {
     // Reset interaction state
     this.draggedComponents = [];
     this.dragStartPos = null;
+    this.resizingComponentId = null;
+    this.resizingCorner = null;
+    this.resizeStartPos = null;
     this.interactionMode = InteractionMode.NONE;
     this.canvas.style.cursor = 'grab';
   }
@@ -657,6 +679,16 @@ export class Canvas {
         return;
       }
 
+      // Check if clicking on a resize handle (Notes-only, feature 037)
+      const resizeCorner = clickedComponent.getResizeHandleAt(worldPos.x, worldPos.y);
+      if (resizeCorner) {
+        this.interactionMode = InteractionMode.RESIZING;
+        this.resizingComponentId = clickedComponent.id;
+        this.resizingCorner = resizeCorner;
+        this.resizeStartPos = { ...worldPos };
+        return;
+      }
+
       // Not clicking on a port, start dragging component
       this.interactionMode = InteractionMode.DRAGGING;
       this.dragStartPos = { ...worldPos };
@@ -764,6 +796,27 @@ export class Canvas {
       eventBus.emit(EventType.COMPONENT_MOVED, {
         componentIds: this.draggedComponents,
       });
+    } else if (
+      this.interactionMode === InteractionMode.RESIZING &&
+      this.resizingComponentId &&
+      this.resizingCorner &&
+      this.resizeStartPos
+    ) {
+      // Resize the component being dragged from a bottom corner (feature 037)
+      const dx = worldPos.x - this.resizeStartPos.x;
+      const dy = worldPos.y - this.resizeStartPos.y;
+
+      const component = this.components.find((c) => c.id === this.resizingComponentId);
+      if (component) {
+        component.resizeBy(this.resizingCorner, dx, dy);
+        this.connectionManager.updateConnectionPositions(component.id);
+      }
+
+      this.resizeStartPos = { ...worldPos };
+      this.canvas.style.cursor = resizeCursorFor(this.resizingCorner);
+
+      // Update viewport transform so the Notes textarea overlay stays visually attached
+      this.updateComponentViewportTransforms();
     } else if (this.interactionMode === InteractionMode.CONNECTING) {
       // Update connection preview while dragging cable
       this.connectingPreview = { ...worldPos };
@@ -774,8 +827,13 @@ export class Canvas {
       // Update cursor
       const component = this.findComponentAt(worldPos.x, worldPos.y);
       if (component) {
+        const resizeCorner = component.getResizeHandleAt(worldPos.x, worldPos.y);
         const portInfo = component.getPortAt(worldPos.x, worldPos.y);
-        this.canvas.style.cursor = portInfo ? 'crosshair' : 'pointer';
+        if (resizeCorner) {
+          this.canvas.style.cursor = resizeCursorFor(resizeCorner);
+        } else {
+          this.canvas.style.cursor = portInfo ? 'crosshair' : 'pointer';
+        }
       } else {
         this.canvas.style.cursor = 'grab';
       }
@@ -825,6 +883,15 @@ export class Canvas {
       this.dragStartPos = null;
 
       // Reset mode after dragging
+      this.interactionMode = InteractionMode.NONE;
+      this.canvas.style.cursor = 'grab';
+    }
+
+    if (this.interactionMode === InteractionMode.RESIZING) {
+      // Finished resizing (feature 037) — lock in the current size
+      this.resizingComponentId = null;
+      this.resizingCorner = null;
+      this.resizeStartPos = null;
       this.interactionMode = InteractionMode.NONE;
       this.canvas.style.cursor = 'grab';
     }

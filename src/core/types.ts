@@ -123,6 +123,8 @@ export interface ComponentData {
   isBypassed?: boolean;
   audioBlob?: string; // Base64-encoded Float32 PCM — used by Looper; ignored by all other components
   text?: string; // Free-text content — used by Notes; ignored by all other components
+  width?: number; // Custom component width in canvas units — used by Notes; ignored by all other components
+  height?: number; // Custom component height in canvas units — used by Notes; ignored by all other components
 }
 
 /**

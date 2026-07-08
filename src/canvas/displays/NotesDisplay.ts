@@ -52,6 +52,11 @@ export class NotesDisplay {
     this.textarea.style.top = `${y}px`;
   }
 
+  updateSize(width: number, height: number): void {
+    this.textarea.style.width = `${width}px`;
+    this.textarea.style.height = `${height}px`;
+  }
+
   updateViewportTransform(zoom: number, panX: number, panY: number): void {
     const screenX = this.baseX * zoom + panX;
     const screenY = this.baseY * zoom + panY;

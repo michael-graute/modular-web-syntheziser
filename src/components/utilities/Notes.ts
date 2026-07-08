@@ -12,6 +12,8 @@ import { clampText, shouldSerializeText } from '../../../specs/036-notes-compone
 
 export class Notes extends SynthComponent {
   private _text: string = '';
+  private _width: number | undefined;
+  private _height: number | undefined;
 
   constructor(id: string, position: Position) {
     super(id, ComponentType.NOTES, 'Notes', position);
@@ -55,6 +57,20 @@ export class Notes extends SynthComponent {
   }
 
   // ---------------------------------------------------------------------------
+  // Size state (feature 037)
+  // ---------------------------------------------------------------------------
+
+  setSize(width: number, height: number): void {
+    this._width = width;
+    this._height = height;
+  }
+
+  getSize(): { width: number; height: number } | null {
+    if (this._width === undefined || this._height === undefined) return null;
+    return { width: this._width, height: this._height };
+  }
+
+  // ---------------------------------------------------------------------------
   // Serialization
   // ---------------------------------------------------------------------------
 
@@ -63,11 +79,18 @@ export class Notes extends SynthComponent {
     if (shouldSerializeText(this._text)) {
       base.text = this._text;
     }
+    if (this._width !== undefined && this._height !== undefined) {
+      base.width = this._width;
+      base.height = this._height;
+    }
     return base;
   }
 
   override deserialize(data: ComponentData): void {
     super.deserialize(data);
     this._text = data.text ?? '';
+    if (data.width !== undefined && data.height !== undefined) {
+      this.setSize(data.width, data.height);
+    }
   }
 }
