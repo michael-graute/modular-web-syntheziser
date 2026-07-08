@@ -2089,6 +2089,13 @@ export class CanvasComponent {
     if (this.stepSequencerDisplay?.hasOpenMenuAt(x, y)) {
       return true;
     }
+    // Resize handles (feature 037) straddle the bottom corners, extending
+    // slightly outside the strict AABB — include their hit areas so hover/
+    // mousedown can reach getResizeHandleAt() even when the cursor is just
+    // outside the component's edge.
+    if (this.getResizeHandleAt(x, y)) {
+      return true;
+    }
     return false;
   }
 

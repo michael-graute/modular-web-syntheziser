@@ -94,8 +94,8 @@ Single project (`src/`, `tests/` at repository root), per plan.md's Project Stru
 
 ### Implementation for User Story 2
 
-- [ ] T017 [US2] In `handleMouseMove` in `src/canvas/Canvas.ts`'s existing hover branch (active when `interactionMode === NONE`): add a `getResizeHandleAt` check before the existing `getPortAt` check; set `this.canvas.style.cursor = 'sw-resize'` when hit, otherwise fall through to the existing `getPortAt`/`'pointer'`/`'grab'` logic unchanged (depends on T008; FR-006, FR-007)
-- [ ] T018 [US2] In the `RESIZING` branch added to `handleMouseMove` in `src/canvas/Canvas.ts` (T014): explicitly keep `this.canvas.style.cursor = 'sw-resize'` set for the duration of the drag, so a fast drag that briefly leaves the corner's hit area doesn't lose the resize cursor mid-gesture (depends on T014; spec Acceptance Scenario US2-3)
+- [X] T017 [US2] In `handleMouseMove` in `src/canvas/Canvas.ts`'s existing hover branch (active when `interactionMode === NONE`): add a `getResizeHandleAt` check before the existing `getPortAt` check; set the cursor to the corner-appropriate resize cursor when hit (implemented as `resizeCursorFor(corner)`, covering both bottom-left `'sw-resize'` and bottom-right `'se-resize'` per the spec's Amendments), otherwise fall through to the existing `getPortAt`/`'pointer'`/`'grab'` logic unchanged (depends on T008; FR-006, FR-007)
+- [X] T018 [US2] In the `RESIZING` branch added to `handleMouseMove` in `src/canvas/Canvas.ts` (T014): explicitly keep the corner-appropriate resize cursor set for the duration of the drag via `resizeCursorFor(this.resizingCorner)`, so a fast drag that briefly leaves the corner's hit area doesn't lose the resize cursor mid-gesture (depends on T014; spec Acceptance Scenario US2-4)
 
 **Checkpoint**: Both user stories are independently functional — resizing works (US1) and is discoverable via cursor feedback (US2).
 
@@ -105,9 +105,9 @@ Single project (`src/`, `tests/` at repository root), per plan.md's Project Stru
 
 **Purpose**: Final validation and cleanup after both user stories are complete.
 
-- [ ] T019 [P] Run `vitest run` for the full suite and confirm no regressions in existing component/canvas/contract tests
-- [ ] T020 [P] Run `tsc --noEmit` (this project has no separate `lint` npm script — confirmed during feature 035) and fix any type errors introduced by the changed files
-- [ ] T021 Manually walk through quickstart.md's Interaction Lifecycle end-to-end in the running dev server (hover corner → cursor changes, drag down-left → grows, drag up-right → shrinks to minimum, release → locks size, type in resized text area → text preserved, save/reload → size persists, zoom/pan mid-resize → stays consistent) per this project's verification convention
+- [X] T019 [P] Run `vitest run` for the full suite and confirm no regressions in existing component/canvas/contract tests
+- [X] T020 [P] Run `tsc --noEmit` (this project has no separate `lint` npm script — confirmed during feature 035) and fix any type errors introduced by the changed files
+- [X] T021 Manually walk through quickstart.md's Interaction Lifecycle end-to-end in the running dev server (hover corner → cursor changes, drag down-left → grows, drag up-right → shrinks to minimum, release → locks size, type in resized text area → text preserved, save/reload → size persists, zoom/pan mid-resize → stays consistent) per this project's verification convention — confirmed by user for both bottom corners
 
 ---
 

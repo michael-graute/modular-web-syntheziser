@@ -383,13 +383,12 @@ export class Canvas {
   private handlePointerMove(e: PointerEvent): void {
     const ptr = this.activePointers.get(e.pointerId);
 
-    // No active pointer, but if we're in CONNECTING mode we still need to update
-    // the preview cable to follow the cursor (click-to-start, click-to-end flow).
+    // No active pointer (a genuine hover, no button pressed) — still delegate
+    // to handleMouseMove so hover-only feedback (cursor changes for ports,
+    // resize handles, connection preview while CONNECTING, etc.) keeps working.
     if (!ptr) {
-      if (this.interactionMode === InteractionMode.CONNECTING) {
-        const { screenX, screenY } = getEventPosition(e, this.canvas);
-        this.handleMouseMove(this.syntheticMouseEvent(e, screenX, screenY));
-      }
+      const { screenX, screenY } = getEventPosition(e, this.canvas);
+      this.handleMouseMove(this.syntheticMouseEvent(e, screenX, screenY));
       return;
     }
 
