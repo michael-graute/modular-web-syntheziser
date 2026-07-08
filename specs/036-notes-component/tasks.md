@@ -36,9 +36,9 @@ Single project (`src/`, `tests/` at repository root), per plan.md's Project Stru
 
 **Purpose**: Register the new component type and schema field so they exist in the type system before any behavior is built.
 
-- [ ] T001 Add `NOTES = 'notes'` to the `ComponentType` enum in `src/core/types.ts`
-- [ ] T002 Add `text?: string` to the `ComponentData` interface in `src/core/types.ts`, with a comment mirroring the existing `audioBlob` comment style (e.g. "Free-text content — used by Notes; ignored by all other components")
-- [ ] T003 [P] Verify `specs/036-notes-component/contracts/types.ts` and `contracts/validation.ts` are ready to be imported directly as source (no changes needed if already correct) — `Notes.ts` will import `NOTES` constants and `clampText`/`shouldSerializeText` from `../../../specs/036-notes-component/contracts/`
+- [X] T001 Add `NOTES = 'notes'` to the `ComponentType` enum in `src/core/types.ts`
+- [X] T002 Add `text?: string` to the `ComponentData` interface in `src/core/types.ts`, with a comment mirroring the existing `audioBlob` comment style (e.g. "Free-text content — used by Notes; ignored by all other components")
+- [X] T003 [P] Verify `specs/036-notes-component/contracts/types.ts` and `contracts/validation.ts` are ready to be imported directly as source (no changes needed if already correct) — `Notes.ts` will import `NOTES` constants and `clampText`/`shouldSerializeText` from `../../../specs/036-notes-component/contracts/`
 
 **Checkpoint**: `ComponentType.NOTES` and `ComponentData.text` exist and compile; no behavior yet.
 
@@ -50,13 +50,13 @@ Single project (`src/`, `tests/` at repository root), per plan.md's Project Stru
 
 **⚠️ CRITICAL**: No user story work can be manually/visually verified until this phase is complete, though US1's core logic (T009-T010) has no hard dependency on T006-T008 and may be built in parallel.
 
-- [ ] T004 Create `Notes` class skeleton in `src/components/utilities/Notes.ts`: extends `SynthComponent`, constructor calls `super(id, ComponentType.NOTES, 'Notes', position)` with NO `addInput`/`addOutput`/`addParameter` calls (first zero-port, zero-parameter component), implements all abstract methods as no-ops per data-model.md (`createAudioNodes`/`destroyAudioNodes`/`updateAudioParameter` do nothing — critically, do NOT check `audioEngine.isReady()` or throw; `getInputNode`/`getOutputNode` return `null`)
-- [ ] T005 Register `NOTES` in `src/components/registerComponents.ts`: one `componentRegistry.register(ComponentType.NOTES, 'Notes', 'Free-text notes attached to the patch', 'Utilities', (id, position) => new Notes(id, position), calculateComponentDimensions(ComponentType.NOTES))` call
-- [ ] T006 [P] Add `ComponentType.NOTES` case to `getControlLayout` in `src/utils/componentLayout.ts` (line ~25) returning `{ hasDisplayArea: true, displayHeight: 180 }` (no knobs/dropdowns)
-- [ ] T007 [P] Add `ComponentType.NOTES` case to `getPortCounts` in `src/utils/componentLayout.ts` (line ~235) returning `{ inputs: 0, outputs: 0 }` — the first zero-port component; verify the height formula degrades gracefully with `maxPorts = 0` (port area shrinks to just `PORT_PADDING`, no crash)
-- [ ] T008 [P] Add a width override for `ComponentType.NOTES` in `calculateComponentWidth` in `src/utils/componentLayout.ts` (line ~490), e.g. `width = 240` for comfortable line length, following the pattern of existing per-type width overrides (Looper, XY Pad, etc.)
-- [ ] T009 [P] Add an icon glyph entry for `ComponentType.NOTES` in `getComponentIcon` in `src/ui/Sidebar.ts` (e.g. `'✎'`) — TypeScript's exhaustive `Record<ComponentType, string>` forces this or the build fails
-- [ ] T010 [P] Add a `[ComponentType.NOTES]: 'Notes'` entry to the `getDisplayName` exhaustive map in `src/canvas/CanvasComponent.ts` — TypeScript's exhaustive `Record<ComponentType, string>` forces this or the build fails (found as a real compile-time gate during feature 035's implementation)
+- [X] T004 Create `Notes` class skeleton in `src/components/utilities/Notes.ts`: extends `SynthComponent`, constructor calls `super(id, ComponentType.NOTES, 'Notes', position)` with NO `addInput`/`addOutput`/`addParameter` calls (first zero-port, zero-parameter component), implements all abstract methods as no-ops per data-model.md (`createAudioNodes`/`destroyAudioNodes`/`updateAudioParameter` do nothing — critically, do NOT check `audioEngine.isReady()` or throw; `getInputNode`/`getOutputNode` return `null`)
+- [X] T005 Register `NOTES` in `src/components/registerComponents.ts`: one `componentRegistry.register(ComponentType.NOTES, 'Notes', 'Free-text notes attached to the patch', 'Utilities', (id, position) => new Notes(id, position), calculateComponentDimensions(ComponentType.NOTES))` call
+- [X] T006 [P] Add `ComponentType.NOTES` case to `getControlLayout` in `src/utils/componentLayout.ts` (line ~25) returning `{ hasDisplayArea: true, displayHeight: 180 }` (no knobs/dropdowns)
+- [X] T007 [P] Add `ComponentType.NOTES` case to `getPortCounts` in `src/utils/componentLayout.ts` (line ~235) returning `{ inputs: 0, outputs: 0 }` — the first zero-port component; verify the height formula degrades gracefully with `maxPorts = 0` (port area shrinks to just `PORT_PADDING`, no crash)
+- [X] T008 [P] Add a width override for `ComponentType.NOTES` in `calculateComponentWidth` in `src/utils/componentLayout.ts` (line ~490), e.g. `width = 240` for comfortable line length, following the pattern of existing per-type width overrides (Looper, XY Pad, etc.)
+- [X] T009 [P] Add an icon glyph entry for `ComponentType.NOTES` in `getComponentIcon` in `src/ui/Sidebar.ts` (e.g. `'✎'`) — TypeScript's exhaustive `Record<ComponentType, string>` forces this or the build fails
+- [X] T010 [P] Add a `[ComponentType.NOTES]: 'Notes'` entry to the `getDisplayName` exhaustive map in `src/canvas/CanvasComponent.ts` — TypeScript's exhaustive `Record<ComponentType, string>` forces this or the build fails (found as a real compile-time gate during feature 035's implementation)
 
 **Checkpoint**: `NOTES` can be dragged onto the canvas from the sidebar and renders with correct dimensions (no visible textarea yet — that's added by the `NotesDisplay` work in US1).
 
@@ -70,19 +70,19 @@ Single project (`src/`, `tests/` at repository root), per plan.md's Project Stru
 
 ### Tests for User Story 1
 
-- [ ] T011 [P] [US1] Unit tests for `clampText` in `tests/components/utilities/Notes.test.ts` — verify text at/below `NOTES.MAX_TEXT_LENGTH` passes through unchanged, text above the limit is truncated to exactly `MAX_TEXT_LENGTH` characters, and empty string passes through (FR-002, FR-003)
-- [ ] T012 [P] [US1] Unit tests for `Notes` in `tests/components/utilities/Notes.test.ts` verifying `setText`/`getText` round-trip plain values, and that `activate()` (which calls `createAudioNodes()`) succeeds with NO audio engine mock configured, proving the no-throw no-op contract (research.md's "Audio lifecycle" decision)
-- [ ] T013 [P] [US1] Unit test in `tests/components/utilities/Notes.test.ts` verifying two independent `Notes` instances hold separate text — editing one does not affect the other (FR-012, edge case: "two Notes components exist in the same patch")
+- [X] T011 [P] [US1] Unit tests for `clampText` in `tests/components/utilities/Notes.test.ts` — verify text at/below `NOTES.MAX_TEXT_LENGTH` passes through unchanged, text above the limit is truncated to exactly `MAX_TEXT_LENGTH` characters, and empty string passes through (FR-002, FR-003)
+- [X] T012 [P] [US1] Unit tests for `Notes` in `tests/components/utilities/Notes.test.ts` verifying `setText`/`getText` round-trip plain values, and that `activate()` (which calls `createAudioNodes()`) succeeds with NO audio engine mock configured, proving the no-throw no-op contract (research.md's "Audio lifecycle" decision)
+- [X] T013 [P] [US1] Unit test in `tests/components/utilities/Notes.test.ts` verifying two independent `Notes` instances hold separate text — editing one does not affect the other (FR-012, edge case: "two Notes components exist in the same patch")
 
 ### Implementation for User Story 1
 
-- [ ] T014 [US1] Implement `_text` field, `setText(text)` (clamping via `clampText` from T011), and `getText()` in `src/components/utilities/Notes.ts` (depends on T004)
-- [ ] T015 [US1] Create `NotesDisplay` class in `src/canvas/displays/NotesDisplay.ts`: constructs a single `HTMLTextAreaElement` (absolute position, dark-theme inline styling matching the app's existing color scheme, `z-index: 100`, `transformOrigin: '0 0'`, `pointerEvents: 'auto'`, `placeholder` from `NOTES.PLACEHOLDER`, `maxLength` attribute from `NOTES.MAX_TEXT_LENGTH`), exposing `getElement()`, `updatePosition(x, y)`, `updateViewportTransform(zoom, panX, panY)` — copy `LooperDisplay`'s position/transform math (`src/canvas/displays/LooperDisplay.ts:71-92`) verbatim, with NO render loop and NO canvas 2D context (this display has no `render()` method)
-- [ ] T016 [US1] Add `setValue(text: string)` and `onInput(callback: (text: string) => void)` methods to `NotesDisplay` in `src/canvas/displays/NotesDisplay.ts` — `setValue` pushes text into the textarea (for initial load), `onInput` subscribes to the textarea's native `input` event
-- [ ] T017 [US1] Add a `destroy()` method to `NotesDisplay` in `src/canvas/displays/NotesDisplay.ts` that removes the textarea from the DOM (mirrors `LooperDisplay.destroy()`)
-- [ ] T018 [US1] Add the `ComponentType.NOTES` block to `createControls()` in `src/canvas/CanvasComponent.ts`: compute `displayX/Y` the same way the Looper/XY Pad blocks do, instantiate `NotesDisplay` once, append `getElement()` to `#synth-canvas`'s parent, call `setValue(notes.getText())` on creation, wire `onInput(text => notes.setText(text))` — on re-run (component moved), call only `updatePosition()`, do NOT recreate the element or re-wire listeners (depends on T015, T016)
-- [ ] T019 [US1] Add `notesDisplay` cleanup to `cleanup()` in `src/canvas/CanvasComponent.ts` (calls `destroy()`, mirrors the `looperDisplay`/`xyPadDisplay` cleanup blocks) (depends on T017)
-- [ ] T020 [US1] Add `notesDisplay.updateViewportTransform()` forwarding to `updateViewportTransform()` in `src/canvas/CanvasComponent.ts` (mirrors the `looperDisplay`/`xyPadDisplay` forwarding) (depends on T015)
+- [X] T014 [US1] Implement `_text` field, `setText(text)` (clamping via `clampText` from T011), and `getText()` in `src/components/utilities/Notes.ts` (depends on T004)
+- [X] T015 [US1] Create `NotesDisplay` class in `src/canvas/displays/NotesDisplay.ts`: constructs a single `HTMLTextAreaElement` (absolute position, dark-theme inline styling matching the app's existing color scheme, `z-index: 100`, `transformOrigin: '0 0'`, `pointerEvents: 'auto'`, `placeholder` from `NOTES.PLACEHOLDER`, `maxLength` attribute from `NOTES.MAX_TEXT_LENGTH`), exposing `getElement()`, `updatePosition(x, y)`, `updateViewportTransform(zoom, panX, panY)` — copy `LooperDisplay`'s position/transform math (`src/canvas/displays/LooperDisplay.ts:71-92`) verbatim, with NO render loop and NO canvas 2D context (this display has no `render()` method)
+- [X] T016 [US1] Add `setValue(text: string)` and `onInput(callback: (text: string) => void)` methods to `NotesDisplay` in `src/canvas/displays/NotesDisplay.ts` — `setValue` pushes text into the textarea (for initial load), `onInput` subscribes to the textarea's native `input` event
+- [X] T017 [US1] Add a `destroy()` method to `NotesDisplay` in `src/canvas/displays/NotesDisplay.ts` that removes the textarea from the DOM (mirrors `LooperDisplay.destroy()`)
+- [X] T018 [US1] Add the `ComponentType.NOTES` block to `createControls()` in `src/canvas/CanvasComponent.ts`: compute `displayX/Y` the same way the Looper/XY Pad blocks do, instantiate `NotesDisplay` once, append `getElement()` to `#synth-canvas`'s parent, call `setValue(notes.getText())` on creation, wire `onInput(text => notes.setText(text))` — on re-run (component moved), call only `updatePosition()`, do NOT recreate the element or re-wire listeners (depends on T015, T016)
+- [X] T019 [US1] Add `notesDisplay` cleanup to `cleanup()` in `src/canvas/CanvasComponent.ts` (calls `destroy()`, mirrors the `looperDisplay`/`xyPadDisplay` cleanup blocks) (depends on T017)
+- [X] T020 [US1] Add `notesDisplay.updateViewportTransform()` forwarding to `updateViewportTransform()` in `src/canvas/CanvasComponent.ts` (mirrors the `looperDisplay`/`xyPadDisplay` forwarding) (depends on T015)
 
 **Checkpoint**: User Story 1 is fully functional — a Notes component can be added, typed into, defocused, and re-edited; this is independently testable/demoable without persistence or repositioning verification.
 
@@ -96,15 +96,15 @@ Single project (`src/`, `tests/` at repository root), per plan.md's Project Stru
 
 ### Tests for User Story 2
 
-- [ ] T021 [P] [US2] Unit test for `shouldSerializeText` in `tests/components/utilities/Notes.test.ts` — verify it returns `false` for an empty string and `true` for any non-empty string
-- [ ] T022 [P] [US2] Unit test in `tests/components/utilities/Notes.test.ts` verifying `serialize()` round-trips text exactly through a new `Notes` instance's `deserialize()`, including special characters, quotes, newlines, and emoji (spec edge case, SC-003)
-- [ ] T023 [P] [US2] Unit test in `tests/components/utilities/Notes.test.ts` verifying a `Notes` instance with empty text serializes WITHOUT a `text` field on the returned `ComponentData` (US2 acceptance scenario 3), and that `deserialize()` on data with no `text` field yields an empty string (legacy-patch compatibility)
+- [X] T021 [P] [US2] Unit test for `shouldSerializeText` in `tests/components/utilities/Notes.test.ts` — verify it returns `false` for an empty string and `true` for any non-empty string
+- [X] T022 [P] [US2] Unit test in `tests/components/utilities/Notes.test.ts` verifying `serialize()` round-trips text exactly through a new `Notes` instance's `deserialize()`, including special characters, quotes, newlines, and emoji (spec edge case, SC-003)
+- [X] T023 [P] [US2] Unit test in `tests/components/utilities/Notes.test.ts` verifying a `Notes` instance with empty text serializes WITHOUT a `text` field on the returned `ComponentData` (US2 acceptance scenario 3), and that `deserialize()` on data with no `text` field yields an empty string (legacy-patch compatibility)
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Implement `serialize()` override in `src/components/utilities/Notes.ts`: call `super.serialize()`, then set `text` on the returned `ComponentData` only when `shouldSerializeText(this._text)` is true (depends on T014)
-- [ ] T025 [US2] Implement `deserialize(data)` override in `src/components/utilities/Notes.ts`: call `super.deserialize(data)`, then set `this._text = data.text ?? ''` (depends on T024)
-- [ ] T026 [US2] Wire `NotesDisplay.setValue(notes.getText())` into the load path in `src/canvas/CanvasComponent.ts`'s `ComponentType.NOTES` block so a freshly-deserialized component's textarea is populated on canvas render, not just on first creation (depends on T018, T025)
+- [X] T024 [US2] Implement `serialize()` override in `src/components/utilities/Notes.ts`: call `super.serialize()`, then set `text` on the returned `ComponentData` only when `shouldSerializeText(this._text)` is true (depends on T014)
+- [X] T025 [US2] Implement `deserialize(data)` override in `src/components/utilities/Notes.ts`: call `super.deserialize(data)`, then set `this._text = data.text ?? ''` (depends on T024)
+- [X] T026 [US2] Wire `NotesDisplay.setValue(notes.getText())` into the load path in `src/canvas/CanvasComponent.ts`'s `ComponentType.NOTES` block so a freshly-deserialized component's textarea is populated on canvas render, not just on first creation (depends on T018, T025)
 
 **Checkpoint**: User Stories 1 AND 2 both work independently — typed notes survive save/reload on top of the working live-editing from US1.
 
@@ -118,7 +118,7 @@ Single project (`src/`, `tests/` at repository root), per plan.md's Project Stru
 
 ### Tests for User Story 3
 
-- [ ] T027 [P] [US3] Unit test in `tests/components/utilities/Notes.test.ts` verifying `serialize()` includes the component's current `position` (inherited from `SynthComponent.serialize()`) and `deserialize()` restores it, confirming no Notes-specific position handling is needed (US3 acceptance scenarios 1-2)
+- [X] T027 [P] [US3] Unit test in `tests/components/utilities/Notes.test.ts` verifying `serialize()` includes the component's current `position` (inherited from `SynthComponent.serialize()`) and `deserialize()` restores it, confirming no Notes-specific position handling is needed (US3 acceptance scenarios 1-2)
 
 ### Implementation for User Story 3
 

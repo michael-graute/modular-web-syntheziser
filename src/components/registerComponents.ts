@@ -21,6 +21,7 @@ import { Quantizer } from './utilities/Quantizer';
 import { ParametricEQ } from './processors/ParametricEQ';
 import { Looper } from './utilities/Looper';
 import { XYPad } from './utilities/XYPad';
+import { Notes } from './utilities/Notes';
 import { Delay } from './effects/Delay';
 import { Reverb } from './effects/Reverb';
 import { Distortion } from './effects/Distortion';
@@ -208,6 +209,15 @@ export function registerAllComponents(): void {
     'Utilities',
     (id, position) => new XYPad(id, position),
     calculateComponentDimensions(ComponentType.XY_PAD)
+  );
+
+  componentRegistry.register(
+    ComponentType.NOTES,
+    'Notes',
+    'Free-text notes attached to the patch',
+    'Utilities',
+    (id, position) => new Notes(id, position),
+    calculateComponentDimensions(ComponentType.NOTES)
   );
 
   // Effects
