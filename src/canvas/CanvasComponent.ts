@@ -19,12 +19,14 @@ import { ColliderDisplay } from './displays/ColliderDisplay';
 import { ChordFinderDisplay } from './displays/ChordFinderDisplay';
 import { LooperDisplay, VALID_BAR_COUNTS } from './displays/LooperDisplay';
 import { XYPadDisplay } from './displays/XYPadDisplay';
+import { NotesDisplay } from './displays/NotesDisplay';
 import type { Oscilloscope } from '../components/analyzers/Oscilloscope';
 import type { StepSequencer } from '../components/utilities/StepSequencer';
 import type { Collider } from '../components/utilities/Collider';
 import type { ChordFinder } from '../components/utilities/ChordFinder';
 import type { Looper } from '../components/utilities/Looper';
 import type { XYPad } from '../components/utilities/XYPad';
+import type { Notes } from '../components/utilities/Notes';
 import type { Quantizer } from '../components/utilities/Quantizer';
 import type { BarCount } from '../components/utilities/LooperConstants';
 import { eventBus } from '../core/EventBus';
@@ -56,6 +58,7 @@ export class CanvasComponent {
   private slewLimiterDisplay: SlewLimiterDisplay | null = null;
   private karplusStrongDisplay: KarplusStrongDisplay | null = null;
   private xyPadDisplay: XYPadDisplay | null = null;
+  private notesDisplay: NotesDisplay | null = null;
   private _looperRafId: number | null = null;
   private _xyPadRafId: number | null = null;
 
@@ -1606,6 +1609,36 @@ export class CanvasComponent {
       }
     }
 
+    // Notes: plain-text overlay textarea — no ports, no knobs, no render loop
+    if (this.type === ComponentType.NOTES && this.synthComponent) {
+      const notes = this.synthComponent as Notes;
+
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      const displayX = this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL;
+      const displayY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+      const displayWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+
+      if (!this.notesDisplay) {
+        this.notesDisplay = new NotesDisplay(displayX, displayY, displayWidth, 180);
+
+        // Attach textarea to DOM (same parent as #synth-canvas)
+        const synthCanvas = document.getElementById('synth-canvas');
+        if (synthCanvas?.parentElement) {
+          synthCanvas.parentElement.appendChild(this.notesDisplay.getElement());
+        }
+
+        this.notesDisplay.setValue(notes.getText());
+        this.notesDisplay.onInput((text) => notes.setText(text));
+      } else {
+        this.notesDisplay.updatePosition(displayX, displayY);
+        this.notesDisplay.setValue(notes.getText());
+      }
+    }
+
     // ParametricEQ controls: 3 rows of knobs (Low: 2, Mid: 3, High: 2)
     if (this.type === ComponentType.PARAMETRIC_EQ && this.synthComponent) {
       const numInputPorts = this.synthComponent.inputs.size;
@@ -2499,6 +2532,10 @@ export class CanvasComponent {
       this.xyPadDisplay.destroy();
       this.xyPadDisplay = null;
     }
+    if (this.notesDisplay) {
+      this.notesDisplay.destroy();
+      this.notesDisplay = null;
+    }
   }
 
   /**
@@ -2514,6 +2551,9 @@ export class CanvasComponent {
     }
     if (this.xyPadDisplay) {
       this.xyPadDisplay.updateViewportTransform(zoom, panX, panY);
+    }
+    if (this.notesDisplay) {
+      this.notesDisplay.updateViewportTransform(zoom, panX, panY);
     }
     // chordFinderDisplay draws on the main canvas — no separate transform needed.
   }
@@ -2647,6 +2687,7 @@ export class CanvasComponent {
       [ComponentType.POLY_VCA]: 'Poly VCA',
       [ComponentType.KARPLUS_STRONG]: 'Karplus-Strong',
       [ComponentType.XY_PAD]: 'X-Y Pad',
+      [ComponentType.NOTES]: 'Notes',
     };
     return names[this.type] || 'Component';
   }

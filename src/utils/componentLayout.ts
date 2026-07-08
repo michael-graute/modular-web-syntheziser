@@ -199,6 +199,12 @@ function getControlLayout(type: ComponentType): ControlLayout {
         displayHeight: 260, // square-ish pad surface + Record/Stop/Play button row
       };
 
+    case ComponentType.NOTES:
+      return {
+        hasDisplayArea: true,
+        displayHeight: 180, // textarea overlay; no knobs/dropdowns
+      };
+
     case ComponentType.RING_MODULATOR:
       return {}; // No user-adjustable parameters; bypass button rendered automatically
 
@@ -335,6 +341,9 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
 
     case ComponentType.XY_PAD:
       return { inputs: 0, outputs: 2 }; // X CV out, Y CV out
+
+    case ComponentType.NOTES:
+      return { inputs: 0, outputs: 0 }; // first zero-port component — pure documentation
 
     default:
       return { inputs: 1, outputs: 1 };
@@ -576,6 +585,11 @@ export function calculateComponentWidth(type: ComponentType): number {
   // PolyVCA: narrow — no controls, many ports
   if (type === ComponentType.POLY_VCA) {
     width = 120;
+  }
+
+  // Notes: comfortable line length for a plain-text textarea
+  if (type === ComponentType.NOTES) {
+    width = 240;
   }
 
   return width;

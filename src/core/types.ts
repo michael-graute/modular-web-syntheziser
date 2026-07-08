@@ -55,6 +55,7 @@ export enum ComponentType {
   POLY_VCA = 'poly-vca',
   KARPLUS_STRONG = 'karplus-strong',
   XY_PAD = 'xy-pad',
+  NOTES = 'notes',
 }
 
 /**
@@ -121,6 +122,7 @@ export interface ComponentData {
   parameters: Record<string, number>;
   isBypassed?: boolean;
   audioBlob?: string; // Base64-encoded Float32 PCM — used by Looper; ignored by all other components
+  text?: string; // Free-text content — used by Notes; ignored by all other components
 }
 
 /**

@@ -267,6 +267,14 @@ export class Canvas {
    * Handle keyboard shortcuts
    */
   private handleKeyDown(e: KeyboardEvent): void {
+    // Escape blurs an active overlay textarea (e.g. Notes) so its keystrokes
+    // stop being captured there — checked before the input-field guard below,
+    // which would otherwise ignore this event entirely.
+    if (e.key === 'Escape' && e.target instanceof HTMLTextAreaElement) {
+      e.target.blur();
+      return;
+    }
+
     // Ignore if typing in an input field
     if (
       e.target instanceof HTMLInputElement ||
@@ -304,6 +312,15 @@ export class Canvas {
    */
   private handlePointerDown(e: PointerEvent): void {
     e.preventDefault();
+
+    // Clicking the canvas (e.g. to select/drag/delete a component or play the
+    // keyboard) should defocus an active overlay textarea (e.g. Notes) so its
+    // keystrokes stop being captured there.
+    const active = document.activeElement;
+    if (active instanceof HTMLTextAreaElement) {
+      active.blur();
+    }
+
     this.canvas.setPointerCapture(e.pointerId);
 
     const { screenX, screenY } = getEventPosition(e, this.canvas);
