@@ -154,3 +154,75 @@ EOF
 check_file() { [[ -f "$1" ]] && echo "  ✓ $2" || echo "  ✗ $2"; }
 check_dir() { [[ -d "$1" && -n $(ls -A "$1" 2>/dev/null) ]] && echo "  ✓ $2" || echo "  ✗ $2"; }
 
+# Check whether the jq binary is available (used for JSON output formatting)
+has_jq() {
+    command -v jq >/dev/null 2>&1
+}
+
+# Minimal JSON string escaping for environments without jq: backslash,
+# double-quote, and control characters (newline, tab, carriage return).
+json_escape() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    s="${s//$'\n'/\\n}"
+    s="${s//$'\t'/\\t}"
+    s="${s//$'\r'/\\r}"
+    printf '%s' "$s"
+}
+
+# Whether .specify/feature.json pins FEATURE_DIR as the active feature
+# directory. When it does, branch-naming validation can be skipped, since
+# the feature directory was resolved explicitly (e.g. by /speckit-specify)
+# rather than derived from the current branch name.
+feature_json_matches_feature_dir() {
+    local repo_root="$1"
+    local feature_dir="$2"
+    local feature_json="$repo_root/.specify/feature.json"
+
+    [[ -f "$feature_json" ]] || return 1
+
+    local pinned_dir=""
+    if has_jq; then
+        pinned_dir=$(jq -r '.feature_directory // empty' "$feature_json" 2>/dev/null)
+    else
+        # Minimal fallback extraction without jq: pull the string value of
+        # "feature_directory" from a flat JSON object.
+        pinned_dir=$(grep -o '"feature_directory"[[:space:]]*:[[:space:]]*"[^"]*"' "$feature_json" \
+            | sed -E 's/.*:[[:space:]]*"([^"]*)"/\1/')
+    fi
+
+    [[ -z "$pinned_dir" ]] && return 1
+
+    # Normalize both sides to absolute paths before comparing, since
+    # feature.json stores a repo-relative path (e.g. "specs/037-foo").
+    local pinned_abs="$repo_root/${pinned_dir#/}"
+    [[ "$pinned_abs" == "$feature_dir" ]]
+}
+
+# Resolve a named template through the override stack:
+#   1. .specify/templates/overrides/<name>.md   (project-local override)
+#   2. .specify/templates/<name>.md              (shared core template)
+# Presets/extensions are not implemented in this installation; the two
+# locations above cover every template currently shipped or overridable.
+# Prints the resolved absolute path, or nothing (with a non-zero exit) if
+# no match was found in any location.
+resolve_template() {
+    local name="$1"
+    local repo_root="$2"
+
+    local override_path="$repo_root/.specify/templates/overrides/$name.md"
+    if [[ -f "$override_path" ]]; then
+        echo "$override_path"
+        return 0
+    fi
+
+    local core_path="$repo_root/.specify/templates/$name.md"
+    if [[ -f "$core_path" ]]; then
+        echo "$core_path"
+        return 0
+    fi
+
+    return 1
+}
+
