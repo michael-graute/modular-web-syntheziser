@@ -23,6 +23,7 @@ export class Sidebar {
   private generatorsList: HTMLElement | null;
   private processorsList: HTMLElement | null;
   private effectsList: HTMLElement | null;
+  private controllersList: HTMLElement | null;
   private utilitiesList: HTMLElement | null;
   private analyzersList: HTMLElement | null;
 
@@ -30,6 +31,7 @@ export class Sidebar {
     this.generatorsList = document.getElementById('generators-list');
     this.processorsList = document.getElementById('processors-list');
     this.effectsList = document.getElementById('effects-list');
+    this.controllersList = document.getElementById('controllers-list');
     this.utilitiesList = document.getElementById('utilities-list');
     this.analyzersList = document.getElementById('analyzers-list');
   }
@@ -58,6 +60,9 @@ export class Sidebar {
           break;
         case 'Effects':
           this.effectsList?.appendChild(item);
+          break;
+        case 'Controllers':
+          this.controllersList?.appendChild(item);
           break;
         case 'Utilities':
           this.utilitiesList?.appendChild(item);

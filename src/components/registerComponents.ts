@@ -129,16 +129,62 @@ export function registerAllComponents(): void {
     calculateComponentDimensions(ComponentType.PARAMETRIC_EQ)
   );
 
-  // Utilities
+  // Controllers
   componentRegistry.register(
     ComponentType.KEYBOARD_INPUT,
     'Keyboard',
     'QWERTY keyboard input with CV/Gate outputs',
-    'Utilities',
+    'Controllers',
     (id, position) => new KeyboardInput(id, position),
     calculateComponentDimensions(ComponentType.KEYBOARD_INPUT)
   );
 
+  componentRegistry.register(
+    ComponentType.STEP_SEQUENCER,
+    'Sequencer',
+    '16-step sequencer with CV/Gate outputs',
+    'Controllers',
+    (id, position) => new StepSequencer(id, position),
+    calculateComponentDimensions(ComponentType.STEP_SEQUENCER)
+  );
+
+  componentRegistry.register(
+    ComponentType.COLLIDER,
+    'Collider',
+    'Musical physics simulation with CV/Gate outputs',
+    'Controllers',
+    (id, position) => new Collider(id, 'Collider', position),
+    calculateComponentDimensions(ComponentType.COLLIDER)
+  );
+
+  componentRegistry.register(
+    ComponentType.CHORD_FINDER,
+    'Chord Finder',
+    'Diatonic chord explorer with CV/Gate outputs',
+    'Controllers',
+    (id, position) => new ChordFinder(id, position),
+    calculateComponentDimensions(ComponentType.CHORD_FINDER)
+  );
+
+  componentRegistry.register(
+    ComponentType.LOOPER,
+    'Looper',
+    'BPM-synced audio looper with doughnut ring display',
+    'Controllers',
+    (id, position) => new Looper(id, position),
+    calculateComponentDimensions(ComponentType.LOOPER)
+  );
+
+  componentRegistry.register(
+    ComponentType.XY_PAD,
+    'X-Y Pad',
+    'Two-axis controller with recordable movement, outputs X and Y as CV',
+    'Controllers',
+    (id, position) => new XYPad(id, position),
+    calculateComponentDimensions(ComponentType.XY_PAD)
+  );
+
+  // Utilities
   componentRegistry.register(
     ComponentType.MASTER_OUTPUT,
     'Master Output',
@@ -158,57 +204,12 @@ export function registerAllComponents(): void {
   );
 
   componentRegistry.register(
-    ComponentType.STEP_SEQUENCER,
-    'Sequencer',
-    '16-step sequencer with CV/Gate outputs',
-    'Utilities',
-    (id, position) => new StepSequencer(id, position),
-    calculateComponentDimensions(ComponentType.STEP_SEQUENCER)
-  );
-
-  componentRegistry.register(
-    ComponentType.COLLIDER,
-    'Collider',
-    'Musical physics simulation with CV/Gate outputs',
-    'Utilities',
-    (id, position) => new Collider(id, 'Collider', position),
-    calculateComponentDimensions(ComponentType.COLLIDER)
-  );
-
-  componentRegistry.register(
     ComponentType.QUANTIZER,
     'Quantizer',
     'Snaps CV to the nearest note in a musical scale',
     'Utilities',
     (id, position) => new Quantizer(id, position),
     calculateComponentDimensions(ComponentType.QUANTIZER)
-  );
-
-  componentRegistry.register(
-    ComponentType.CHORD_FINDER,
-    'Chord Finder',
-    'Diatonic chord explorer with CV/Gate outputs',
-    'Utilities',
-    (id, position) => new ChordFinder(id, position),
-    calculateComponentDimensions(ComponentType.CHORD_FINDER)
-  );
-
-  componentRegistry.register(
-    ComponentType.LOOPER,
-    'Looper',
-    'BPM-synced audio looper with doughnut ring display',
-    'Utilities',
-    (id, position) => new Looper(id, position),
-    calculateComponentDimensions(ComponentType.LOOPER)
-  );
-
-  componentRegistry.register(
-    ComponentType.XY_PAD,
-    'X-Y Pad',
-    'Two-axis controller with recordable movement, outputs X and Y as CV',
-    'Utilities',
-    (id, position) => new XYPad(id, position),
-    calculateComponentDimensions(ComponentType.XY_PAD)
   );
 
   componentRegistry.register(
@@ -306,7 +307,7 @@ export function registerAllComponents(): void {
     ComponentType.ARPEGGIATOR,
     'Arpeggiator',
     'Steps through held notes at a BPM-synced rate',
-    'Utilities',
+    'Controllers',
     (id, position) => new Arpeggiator(id, position),
     calculateComponentDimensions(ComponentType.ARPEGGIATOR)
   );

@@ -523,7 +523,8 @@ export class HelpSidebar {
         <li><strong style="color: var(--text-primary, #ffffff);">Generators:</strong> Oscillator, FM Oscillator, LFO, Noise, Karplus-Strong</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Processors:</strong> Filters, VCA, Envelopes</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Effects:</strong> Delay, Reverb, Distortion, Chorus, Bitcrusher, Flanger, Phaser, Tremolo, Ring Modulator</li>
-        <li><strong style="color: var(--text-primary, #ffffff);">Utilities:</strong> Keyboard, Mixer, Sequencer, Arpeggiator, Slew Limiter</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">Controllers:</strong> Keyboard, Sequencer, Chord Finder, Arpeggiator, X-Y Pad</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">Utilities:</strong> Mixer, Quantizer, Slew Limiter, Notes, Master Output</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Analyzers:</strong> Oscilloscope, VU Meter, Env Follower</li>
       </ul>
 
@@ -558,7 +559,30 @@ export class HelpSidebar {
     return `
       <h2 style="margin-top: 0; color: var(--text-primary, #ffffff);">Component Reference</h2>
 
-      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Generators</h3>
+      <nav style="display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 20px;">
+        ${[
+          ['components-generators', 'Generators'],
+          ['components-processors', 'Processors'],
+          ['components-effects', 'Effects'],
+          ['components-controllers', 'Controllers'],
+          ['components-utilities', 'Utilities'],
+          ['components-analyzers', 'Analyzers'],
+        ]
+          .map(
+            ([anchorId, label]) => `
+        <a href="#${anchorId}" style="
+          padding: 4px 10px;
+          border: 1px solid var(--border-color, #444);
+          border-radius: 4px;
+          color: var(--text-secondary, #cccccc);
+          text-decoration: none;
+          font-size: 0.8125rem;
+        ">${label}</a>`
+          )
+          .join('')}
+      </nav>
+
+      <h3 id="components-generators" style="color: var(--text-primary, #ffffff); margin-top: 24px;">Generators</h3>
 
       <h4 style="color: var(--text-primary, #ffffff);">Oscillator</h4>
       <p style="color: var(--text-secondary, #cccccc);">
@@ -651,7 +675,7 @@ export class HelpSidebar {
         </ol>
       </div>
 
-      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Processors</h3>
+      <h3 id="components-processors" style="color: var(--text-primary, #ffffff); margin-top: 24px;">Processors</h3>
 
       <h4 style="color: var(--text-primary, #ffffff);">Filter</h4>
       <p style="color: var(--text-secondary, #cccccc);">
@@ -713,7 +737,7 @@ export class HelpSidebar {
         Connect an LFO to Low Gain CV for a rhythmic bass-pump effect.
       </p>
 
-      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Effects</h3>
+      <h3 id="components-effects" style="color: var(--text-primary, #ffffff); margin-top: 24px;">Effects</h3>
 
       <h4 style="color: var(--text-primary, #ffffff);">Delay</h4>
       <p style="color: var(--text-secondary, #cccccc);">
@@ -809,7 +833,7 @@ export class HelpSidebar {
         <li><strong>Bypass:</strong> Routes carrier directly to output, bypassing multiplication</li>
       </ul>
 
-      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Utilities</h3>
+      <h3 id="components-controllers" style="color: var(--text-primary, #ffffff); margin-top: 24px;">Controllers</h3>
 
       <h4 style="color: var(--text-primary, #ffffff);">Keyboard Input</h4>
       <p style="color: var(--text-secondary, #cccccc);">
@@ -824,16 +848,6 @@ export class HelpSidebar {
       <p style="color: var(--text-secondary, #cccccc);">
         See the <strong>Polyphony</strong> section for a full wiring guide.
       </p>
-
-      <h4 style="color: var(--text-primary, #ffffff);">Mixer</h4>
-      <p style="color: var(--text-secondary, #cccccc);">
-        Combines multiple audio signals with individual level control.
-      </p>
-      <ul style="color: var(--text-secondary, #cccccc);">
-        <li><strong>Channels:</strong> 4 input channels</li>
-        <li><strong>Gain 1-4:</strong> Individual channel levels</li>
-        <li><strong>Master:</strong> Overall output level</li>
-      </ul>
 
       <h4 style="color: var(--text-primary, #ffffff);">Step Sequencer</h4>
       <p style="color: var(--text-secondary, #cccccc);">
@@ -858,25 +872,6 @@ export class HelpSidebar {
         <li><strong>Outputs:</strong> Note 1 CV, Note 2 CV, Note 3 CV (1V/oct), Gate</li>
       </ul>
 
-      <h4 style="color: var(--text-primary, #ffffff);">Quantizer</h4>
-      <p style="color: var(--text-secondary, #cccccc);">
-        Snaps a continuously varying CV signal to the nearest note in a musical scale.
-        Connect an LFO, Collider, or any CV source to create in-tune melodies from free-running modulation.
-      </p>
-      <ul style="color: var(--text-secondary, #cccccc);">
-        <li><strong>CV In:</strong> Incoming CV signal to quantize (1V/octave)</li>
-        <li><strong>Trig:</strong> Optional gate/trigger input — when connected, output only updates on a rising edge (rhythmically locked pitch steps)</li>
-        <li><strong>CV Out:</strong> Quantized CV output (Hz, connects directly to oscillator Frequency CV)</li>
-        <li><strong>Root:</strong> Root note of the scale (C – B)</li>
-        <li><strong>Scale:</strong> Scale type — Major, Natural Minor, Harmonic Minor, Lydian, Mixolydian, Pentatonic Major, Pentatonic Minor, Chromatic</li>
-        <li><strong>Note display:</strong> Shows the currently output pitch (e.g. "A#4")</li>
-      </ul>
-      <p style="color: var(--text-secondary, #cccccc);">
-        <strong style="color: var(--text-primary, #ffffff);">Typical patch:</strong>
-        LFO → Quantizer CV In → Oscillator Frequency CV → Filter → Master Out.
-        For trigger-locked stepping: Step Sequencer Gate → Quantizer Trig.
-      </p>
-
       <h4 style="color: var(--text-primary, #ffffff);">Arpeggiator</h4>
       <p style="color: var(--text-secondary, #cccccc);">
         Steps through held notes at a BPM-synced rate, emitting CV pitch and Gate pulses. Connect a Keyboard or Step Sequencer to its inputs, then wire CV Out to an Oscillator and Gate Out to an ADSR.
@@ -897,24 +892,6 @@ export class HelpSidebar {
         Hold multiple keys to build up the arpeggio sequence; release all keys to stop.
       </p>
 
-      <h4 style="color: var(--text-primary, #ffffff);">Slew Limiter</h4>
-      <p style="color: var(--text-secondary, #cccccc);">
-        Smooths abrupt CV jumps — produces portamento/glide between pitches.
-        Sits between any CV source and any CV destination.
-        Rise sets how long the output takes to reach a higher CV value; Fall sets how long it takes to reach a lower one.
-        Both controls use an exponential scale for fine resolution at short times.
-      </p>
-      <ul style="color: var(--text-secondary, #cccccc);">
-        <li><strong>CV In:</strong> Any CV source (Sequencer, LFO, Collider, Keyboard, etc.)</li>
-        <li><strong>CV Out:</strong> Smoothed CV to any CV-accepting input</li>
-        <li><strong>Rise:</strong> 0–5000 ms upward slew time</li>
-        <li><strong>Fall:</strong> 0–5000 ms downward slew time</li>
-        <li><strong>Bypass:</strong> Passes CV through unmodified with no smoothing</li>
-      </ul>
-      <p style="color: var(--text-secondary, #cccccc);">
-        <em>Example patch:</em> Step Sequencer (CV Out) → Slew Limiter (CV In) → Oscillator (Frequency CV). Set Rise to ~200 ms for classic portamento.
-      </p>
-
       <h4 style="color: var(--text-primary, #ffffff);">X-Y Pad</h4>
       <p style="color: var(--text-secondary, #cccccc);">
         A two-axis controller: drag inside the square pad to drive two CV outputs
@@ -932,6 +909,55 @@ export class HelpSidebar {
       <p style="color: var(--text-secondary, #cccccc);">
         <strong style="color: var(--text-primary, #ffffff);">Typical patch:</strong>
         X-Y Pad (X → Filter Cutoff CV, Y → Filter Resonance CV) → set both Depth knobs to taste, then press Record, sweep the pad, press Stop, and press Play to loop the filter sweep hands-free.
+      </p>
+
+      <h3 id="components-utilities" style="color: var(--text-primary, #ffffff); margin-top: 24px;">Utilities</h3>
+
+      <h4 style="color: var(--text-primary, #ffffff);">Mixer</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Combines multiple audio signals with individual level control.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>Channels:</strong> 4 input channels</li>
+        <li><strong>Gain 1-4:</strong> Individual channel levels</li>
+        <li><strong>Master:</strong> Overall output level</li>
+      </ul>
+
+      <h4 style="color: var(--text-primary, #ffffff);">Quantizer</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Snaps a continuously varying CV signal to the nearest note in a musical scale.
+        Connect an LFO, Collider, or any CV source to create in-tune melodies from free-running modulation.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>CV In:</strong> Incoming CV signal to quantize (1V/octave)</li>
+        <li><strong>Trig:</strong> Optional gate/trigger input — when connected, output only updates on a rising edge (rhythmically locked pitch steps)</li>
+        <li><strong>CV Out:</strong> Quantized CV output (Hz, connects directly to oscillator Frequency CV)</li>
+        <li><strong>Root:</strong> Root note of the scale (C – B)</li>
+        <li><strong>Scale:</strong> Scale type — Major, Natural Minor, Harmonic Minor, Lydian, Mixolydian, Pentatonic Major, Pentatonic Minor, Chromatic</li>
+        <li><strong>Note display:</strong> Shows the currently output pitch (e.g. "A#4")</li>
+      </ul>
+      <p style="color: var(--text-secondary, #cccccc);">
+        <strong style="color: var(--text-primary, #ffffff);">Typical patch:</strong>
+        LFO → Quantizer CV In → Oscillator Frequency CV → Filter → Master Out.
+        For trigger-locked stepping: Step Sequencer Gate → Quantizer Trig.
+      </p>
+
+      <h4 style="color: var(--text-primary, #ffffff);">Slew Limiter</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Smooths abrupt CV jumps — produces portamento/glide between pitches.
+        Sits between any CV source and any CV destination.
+        Rise sets how long the output takes to reach a higher CV value; Fall sets how long it takes to reach a lower one.
+        Both controls use an exponential scale for fine resolution at short times.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>CV In:</strong> Any CV source (Sequencer, LFO, Collider, Keyboard, etc.)</li>
+        <li><strong>CV Out:</strong> Smoothed CV to any CV-accepting input</li>
+        <li><strong>Rise:</strong> 0–5000 ms upward slew time</li>
+        <li><strong>Fall:</strong> 0–5000 ms downward slew time</li>
+        <li><strong>Bypass:</strong> Passes CV through unmodified with no smoothing</li>
+      </ul>
+      <p style="color: var(--text-secondary, #cccccc);">
+        <em>Example patch:</em> Step Sequencer (CV Out) → Slew Limiter (CV In) → Oscillator (Frequency CV). Set Rise to ~200 ms for classic portamento.
       </p>
 
       <h4 style="color: var(--text-primary, #ffffff);">Notes</h4>
@@ -956,7 +982,7 @@ export class HelpSidebar {
         <li><strong>Limiter:</strong> Prevents clipping</li>
       </ul>
 
-      <h3 style="color: var(--text-primary, #ffffff); margin-top: 24px;">Analyzers</h3>
+      <h3 id="components-analyzers" style="color: var(--text-primary, #ffffff); margin-top: 24px;">Analyzers</h3>
 
       <h4 style="color: var(--text-primary, #ffffff);">Oscilloscope</h4>
       <p style="color: var(--text-secondary, #cccccc);">
