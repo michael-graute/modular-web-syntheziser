@@ -32,6 +32,9 @@ import type { BarCount } from '../components/utilities/LooperConstants';
 import { eventBus } from '../core/EventBus';
 import { EventType } from '../core/types';
 import { midiEngine } from '../midi/MidiEngine';
+import { applyBottomLeftResize, applyBottomRightResize } from '../../specs/037-notes-resizable/contracts/validation';
+
+export type ResizeCorner = 'bottom-left' | 'bottom-right';
 
 type Control = Knob | Dropdown | Slider | Button;
 
@@ -1621,9 +1624,10 @@ export class CanvasComponent {
       const displayX = this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL;
       const displayY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
       const displayWidth = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const displayHeight = this.height - (displayY - this.position.y) - COMPONENT.CONTROL_MARGIN_TOP;
 
       if (!this.notesDisplay) {
-        this.notesDisplay = new NotesDisplay(displayX, displayY, displayWidth, 180);
+        this.notesDisplay = new NotesDisplay(displayX, displayY, displayWidth, displayHeight);
 
         // Attach textarea to DOM (same parent as #synth-canvas)
         const synthCanvas = document.getElementById('synth-canvas');
@@ -1635,6 +1639,7 @@ export class CanvasComponent {
         this.notesDisplay.onInput((text) => notes.setText(text));
       } else {
         this.notesDisplay.updatePosition(displayX, displayY);
+        this.notesDisplay.updateSize(displayWidth, displayHeight);
         this.notesDisplay.setValue(notes.getText());
       }
     }
@@ -2084,6 +2089,13 @@ export class CanvasComponent {
     if (this.stepSequencerDisplay?.hasOpenMenuAt(x, y)) {
       return true;
     }
+    // Resize handles (feature 037) straddle the bottom corners, extending
+    // slightly outside the strict AABB — include their hit areas so hover/
+    // mousedown can reach getResizeHandleAt() even when the cursor is just
+    // outside the component's edge.
+    if (this.getResizeHandleAt(x, y)) {
+      return true;
+    }
     return false;
   }
 
@@ -2093,6 +2105,9 @@ export class CanvasComponent {
   moveTo(x: number, y: number): void {
     this.position.x = x;
     this.position.y = y;
+    if (this.synthComponent) {
+      this.synthComponent.setPosition({ ...this.position });
+    }
     this.updateControlPositions();
   }
 
@@ -2102,7 +2117,75 @@ export class CanvasComponent {
   moveBy(dx: number, dy: number): void {
     this.position.x += dx;
     this.position.y += dy;
+    if (this.synthComponent) {
+      this.synthComponent.setPosition({ ...this.position });
+    }
     this.updateControlPositions();
+  }
+
+  /**
+   * Hit-test both bottom corners' resize handles (feature 037, extended to
+   * bottom-right). Notes-only — no other component type currently supports
+   * resizing. Returns which corner was hit, or null.
+   */
+  getResizeHandleAt(x: number, y: number): ResizeCorner | null {
+    if (this.type !== ComponentType.NOTES) return null;
+
+    const handleSize = COMPONENT.PORT_SIZE * 2;
+    const bottomY = this.position.y + this.height;
+
+    const bottomLeftX = this.position.x;
+    if (
+      x >= bottomLeftX - handleSize &&
+      x <= bottomLeftX + handleSize &&
+      y >= bottomY - handleSize &&
+      y <= bottomY + handleSize
+    ) {
+      return 'bottom-left';
+    }
+
+    const bottomRightX = this.position.x + this.width;
+    if (
+      x >= bottomRightX - handleSize &&
+      x <= bottomRightX + handleSize &&
+      y >= bottomY - handleSize &&
+      y <= bottomY + handleSize
+    ) {
+      return 'bottom-right';
+    }
+
+    return null;
+  }
+
+  /**
+   * Resize by dragging one of the bottom corners (feature 037). Bottom-left
+   * keeps the top-right corner fixed (position.x tracks the delta);
+   * bottom-right keeps the top-left corner fixed (position never moves).
+   * Clamped to a minimum size with no maximum. Notes-only.
+   */
+  resizeBy(corner: ResizeCorner, dx: number, dy: number): void {
+    if (this.type !== ComponentType.NOTES || !this.synthComponent) return;
+
+    if (corner === 'bottom-left') {
+      const result = applyBottomLeftResize(
+        this.position,
+        { width: this.width, height: this.height },
+        dx,
+        dy
+      );
+      this.position.x = result.position.x;
+      this.position.y = result.position.y;
+      this.width = result.size.width;
+      this.height = result.size.height;
+      this.synthComponent.setPosition({ ...this.position });
+    } else {
+      const result = applyBottomRightResize({ width: this.width, height: this.height }, dx, dy);
+      this.width = result.size.width;
+      this.height = result.size.height;
+    }
+    this.updateControlPositions();
+
+    (this.synthComponent as Notes).setSize(this.width, this.height);
   }
 
   /**

@@ -2,7 +2,7 @@
  * PatchManager - Manages patch lifecycle including save/load/export
  */
 
-import { PatchData, ComponentData, EventType } from '../core/types';
+import { PatchData, ComponentData, EventType, ComponentType } from '../core/types';
 import { PatchSerializer } from './PatchSerializer';
 import { PatchStorage } from './PatchStorage';
 import { componentRegistry } from '../components/ComponentRegistry';
@@ -11,6 +11,7 @@ import type { Canvas } from '../canvas/Canvas';
 import { CanvasComponent } from '../canvas/CanvasComponent';
 import { calculateComponentDimensions } from '../utils/componentLayout';
 import { globalBpmController } from '../core/GlobalBpmController';
+import type { Notes } from '../components/utilities/Notes';
 
 /**
  * Manages the complete patch lifecycle
@@ -305,8 +306,14 @@ export class PatchManager {
       // Create audio nodes
       synthComponent.activate();
 
-      // Get component dimensions
-      const dimensions = calculateComponentDimensions(componentData.type);
+      // Get component dimensions — Notes may have a custom saved size (feature 037)
+      let dimensions = calculateComponentDimensions(componentData.type);
+      if (componentData.type === ComponentType.NOTES) {
+        const customSize = (synthComponent as Notes).getSize();
+        if (customSize) {
+          dimensions = customSize;
+        }
+      }
 
       // Create visual component
       const canvasComponent = new CanvasComponent(
