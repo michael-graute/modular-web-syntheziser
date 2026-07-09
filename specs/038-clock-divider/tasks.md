@@ -108,12 +108,12 @@ Single project (`src/`, `tests/` at repository root), per plan.md's Project Stru
 
 ### Tests for User Story 2
 
-- [ ] T023 [P] [US2] Unit test in `tests/components/utilities/ClockDivider.test.ts` verifying `ratePeriodMs(bpm, ClockDividerRate.X2)` returns exactly half the period of `ratePeriodMs(bpm, ClockDividerRate.Div2)` at the same BPM (i.e. x2 is exactly 4x faster than /2, per the beats-per-pulse table), and `X3` returns exactly one-third of one beat's duration (FR-005)
-- [ ] T024 [P] [US2] Unit test in `tests/components/utilities/ClockDivider.test.ts` verifying `collectDueTicks` over a fixed horizon returns exactly 2 due ticks per beat for an `X2`-rated output and exactly 3 due ticks per beat for an `X3`-rated output, at a known BPM (spec US2 acceptance scenarios 1-2)
+- [X] T023 [P] [US2] Unit test in `tests/components/utilities/ClockDivider.test.ts` verifying `ratePeriodMs(bpm, ClockDividerRate.X2)` returns exactly half the period of `ratePeriodMs(bpm, ClockDividerRate.Div2)` at the same BPM (i.e. x2 is exactly 4x faster than /2, per the beats-per-pulse table), and `X3` returns exactly one-third of one beat's duration (FR-005)
+- [X] T024 [P] [US2] Unit test in `tests/components/utilities/ClockDivider.test.ts` verifying `collectDueTicks` over a fixed horizon returns exactly 2 due ticks per beat for an `X2`-rated output and exactly 3 due ticks per beat for an `X3`-rated output, at a known BPM (spec US2 acceptance scenarios 1-2)
 
 ### Implementation for User Story 2
 
-- [ ] T025 [US2] No new implementation needed — `ratePeriodMs`/`collectDueTicks` (T003-T004, T018) already handle `X2`/`X3` identically to the division rates, since `RATE_BEATS_PER_PULSE` encodes multiplication as a beats-per-pulse value below 1 (contracts/types.ts); this task is a manual confirmation step: set an output to "x2" in the running dev server and verify it visibly/audibly pulses twice per beat (depends on T018, T022)
+- [X] T025 [US2] No new implementation needed — `ratePeriodMs`/`collectDueTicks` (T003-T004, T018) already handle `X2`/`X3` identically to the division rates, since `RATE_BEATS_PER_PULSE` encodes multiplication as a beats-per-pulse value below 1 (contracts/types.ts); this task is a manual confirmation step: set an output to "x2" in the running dev server and verify it visibly/audibly pulses twice per beat (depends on T018, T022)
 
 **Checkpoint**: User Stories 1 AND 2 both work independently — division and multiplication rates both produce correctly-timed pulses from the same scheduler code path, confirming FR-004/FR-005 are satisfied by the same mechanism with no special-casing.
 
@@ -127,13 +127,13 @@ Single project (`src/`, `tests/` at repository root), per plan.md's Project Stru
 
 ### Tests for User Story 3
 
-- [ ] T026 [P] [US3] Unit test in `tests/components/utilities/ClockDivider.test.ts` verifying that, given the same starting `_nextTickTime` and BPM, every due tick time produced for a `Div4`-rated output (via `collectDueTicks`) is also present in the due tick times produced for a `Div2`-rated output over the same horizon — directly proving FR-007 and spec US3 acceptance scenario 2 (related rates always coincide) at the pure-function level
-- [ ] T027 [P] [US3] Unit test in `tests/components/utilities/ClockDivider.test.ts` verifying two `ClockDivider` outputs configured to the same rate (e.g. both `Div4`) produce identical due-tick sequences when driven from the same `_nextTickTime`/BPM — covering the spec edge case "two outputs both set to /4... valid... fan out the same derived rate to multiple destinations"
-- [ ] T028 [P] [US3] Unit test in `tests/components/utilities/ClockDivider.test.ts` verifying `serialize()` includes all six `rateN` parameters and `deserialize()` restores each output's rate exactly, including a mix of divisions and multiplications across the six outputs (FR-009, SC-003)
+- [X] T026 [P] [US3] Unit test in `tests/components/utilities/ClockDivider.test.ts` verifying that, given the same starting `_nextTickTime` and BPM, every due tick time produced for a `Div4`-rated output (via `collectDueTicks`) is also present in the due tick times produced for a `Div2`-rated output over the same horizon — directly proving FR-007 and spec US3 acceptance scenario 2 (related rates always coincide) at the pure-function level
+- [X] T027 [P] [US3] Unit test in `tests/components/utilities/ClockDivider.test.ts` verifying two `ClockDivider` outputs configured to the same rate (e.g. both `Div4`) produce identical due-tick sequences when driven from the same `_nextTickTime`/BPM — covering the spec edge case "two outputs both set to /4... valid... fan out the same derived rate to multiple destinations"
+- [X] T028 [P] [US3] Unit test in `tests/components/utilities/ClockDivider.test.ts` verifying `serialize()` includes all six `rateN` parameters and `deserialize()` restores each output's rate exactly, including a mix of divisions and multiplications across the six outputs (FR-009, SC-003)
 
 ### Implementation for User Story 3
 
-- [ ] T029 [US3] No new implementation needed — the shared-scheduler-loop design (T017-T018) already advances all six outputs from the same `_currentBpm` on every 25ms poll, which is what makes the coincidence guarantee hold by construction (research.md decision 1); this task is a manual confirmation step: configure three outputs to different rates in the running dev server, connect each to a different gate-accepting component, and verify all three trigger independently and correctly, with /2 and /4 (if both configured) visibly coinciding on shared beats (depends on T018, T022)
+- [X] T029 [US3] No new implementation needed — the shared-scheduler-loop design (T017-T018) already advances all six outputs from the same `_currentBpm` on every 25ms poll, which is what makes the coincidence guarantee hold by construction (research.md decision 1); this task is a manual confirmation step: configure three outputs to different rates in the running dev server, connect each to a different gate-accepting component, and verify all three trigger independently and correctly, with /2 and /4 (if both configured) visibly coinciding on shared beats (depends on T018, T022)
 
 **Checkpoint**: All three user stories are independently functional; a Clock Divider with several simultaneously-configured outputs drives multiple destinations correctly, with related rates provably coincident.
 
@@ -143,10 +143,10 @@ Single project (`src/`, `tests/` at repository root), per plan.md's Project Stru
 
 **Purpose**: Final validation and cleanup after all user stories are complete.
 
-- [ ] T030 [P] Run `vitest run` for the full suite and confirm no regressions in existing component/canvas/contract tests
-- [ ] T031 [P] Run `tsc --noEmit` (this project has no separate `lint` npm script — confirmed during feature 035) and fix any type errors introduced by the new files
-- [ ] T032 Manually walk through quickstart.md's Interaction Lifecycle end-to-end in the running dev server (add, configure multiple rates, connect to gate-accepting components, change BPM live, stop/resume transport, save, reload, delete) per this project's verification convention
-- [ ] T033 [P] Add a Clock Divider documentation entry to the Help sidebar in `src/ui/HelpSidebar.ts`, following the pattern used for prior Controllers-category components (e.g. the Arpeggiator entry), placed in the Controllers section, and add it to the "Component Library" overview bullet list
+- [X] T030 [P] Run `vitest run` for the full suite and confirm no regressions in existing component/canvas/contract tests
+- [X] T031 [P] Run `tsc --noEmit` (this project has no separate `lint` npm script — confirmed during feature 035) and fix any type errors introduced by the new files
+- [X] T032 Manually walk through quickstart.md's Interaction Lifecycle end-to-end in the running dev server (add, configure multiple rates, connect to gate-accepting components, change BPM live, stop/resume transport, save, reload, delete) per this project's verification convention
+- [X] T033 [P] Add a Clock Divider documentation entry to the Help sidebar in `src/ui/HelpSidebar.ts`, following the pattern used for prior Controllers-category components (e.g. the Arpeggiator entry), placed in the Controllers section, and add it to the "Component Library" overview bullet list
 
 ---
 

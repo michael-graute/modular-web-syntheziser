@@ -523,7 +523,7 @@ export class HelpSidebar {
         <li><strong style="color: var(--text-primary, #ffffff);">Generators:</strong> Oscillator, FM Oscillator, LFO, Noise, Karplus-Strong</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Processors:</strong> Filters, VCA, Envelopes</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Effects:</strong> Delay, Reverb, Distortion, Chorus, Bitcrusher, Flanger, Phaser, Tremolo, Ring Modulator</li>
-        <li><strong style="color: var(--text-primary, #ffffff);">Controllers:</strong> Keyboard, Sequencer, Chord Finder, Arpeggiator, X-Y Pad</li>
+        <li><strong style="color: var(--text-primary, #ffffff);">Controllers:</strong> Keyboard, Sequencer, Chord Finder, Arpeggiator, X-Y Pad, Clock Divider</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Utilities:</strong> Mixer, Quantizer, Slew Limiter, Notes, Master Output</li>
         <li><strong style="color: var(--text-primary, #ffffff);">Analyzers:</strong> Oscilloscope, VU Meter, Env Follower</li>
       </ul>
@@ -909,6 +909,19 @@ export class HelpSidebar {
       <p style="color: var(--text-secondary, #cccccc);">
         <strong style="color: var(--text-primary, #ffffff);">Typical patch:</strong>
         X-Y Pad (X → Filter Cutoff CV, Y → Filter Resonance CV) → set both Depth knobs to taste, then press Record, sweep the pad, press Stop, and press Play to loop the filter sweep hands-free.
+      </p>
+
+      <h4 style="color: var(--text-primary, #ffffff);">Clock Divider</h4>
+      <p style="color: var(--text-secondary, #cccccc);">
+        Derives six simultaneous gate pulse trains from the shared global tempo — some slower (divisions), some faster (multiplications) — so a single module can drive several differently-timed destinations that always stay in sync with each other and the rest of the patch.
+      </p>
+      <ul style="color: var(--text-secondary, #cccccc);">
+        <li><strong>Out 1–6:</strong> Six independent gate outputs, each with its own rate — connect any of them to any gate-accepting input (Collider, ADSR Gate In, Arpeggiator Gate In, etc.)</li>
+        <li><strong>Rate (per output):</strong> /16, /8, /4, /2 (divisions — one pulse every N beats), or x2, x3 (multiplications — several pulses per beat)</li>
+      </ul>
+      <p style="color: var(--text-secondary, #cccccc);">
+        <strong style="color: var(--text-primary, #ffffff);">Typical patch:</strong>
+        Clock Divider (Out 1 at /4 → Collider Gate In, Out 2 at x2 → Step Sequencer Arp Gate) — both destinations stay locked to the same tempo with no manual BPM math, and changing the global BPM re-times every connected output instantly.
       </p>
 
       <h3 id="components-utilities" style="color: var(--text-primary, #ffffff); margin-top: 24px;">Utilities</h3>
