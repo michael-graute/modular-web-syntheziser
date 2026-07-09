@@ -56,6 +56,7 @@ export enum ComponentType {
   KARPLUS_STRONG = 'karplus-strong',
   XY_PAD = 'xy-pad',
   NOTES = 'notes',
+  CLOCK_DIVIDER = 'clock-divider',
 }
 
 /**

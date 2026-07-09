@@ -29,6 +29,7 @@ import type { XYPad } from '../components/utilities/XYPad';
 import type { Notes } from '../components/utilities/Notes';
 import type { Quantizer } from '../components/utilities/Quantizer';
 import type { BarCount } from '../components/utilities/LooperConstants';
+import { CLOCK_DIVIDER_RATES, RATE_LABELS } from '../../specs/038-clock-divider/contracts/types';
 import { eventBus } from '../core/EventBus';
 import { EventType } from '../core/types';
 import { midiEngine } from '../midi/MidiEngine';
@@ -873,6 +874,37 @@ export class CanvasComponent {
           ],
           'Gate Length'
         ));
+      }
+    }
+
+    // Clock Divider-specific controls — 6 stacked dropdowns, one per output's rate
+    if (this.type === ComponentType.CLOCK_DIVIDER) {
+      const numInputPorts = this.synthComponent.inputs.size;
+      const numOutputPorts = this.synthComponent.outputs.size;
+      const maxPorts = Math.max(numInputPorts, numOutputPorts);
+      const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+
+      const dropdownX = this.position.x + COMPONENT.CONTROL_MARGIN_HORIZONTAL;
+      const dropdownW = this.width - COMPONENT.CONTROL_MARGIN_HORIZONTAL * 2;
+      const rowH = COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL + 12;
+      const baseY = this.position.y + COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP;
+
+      const rateOptions: DropdownOption[] = CLOCK_DIVIDER_RATES.map((rate) => ({
+        value: rate,
+        label: RATE_LABELS[rate],
+      }));
+
+      for (let i = 1; i <= 6; i++) {
+        const rateParam = this.synthComponent.getParameter(`rate${i}`);
+        if (rateParam) {
+          this.controls.push(new Dropdown(
+            dropdownX, baseY + rowH * (i - 1),
+            dropdownW, COMPONENT.DROPDOWN_HEIGHT,
+            rateParam,
+            rateOptions,
+            `Out ${i}`
+          ));
+        }
       }
     }
 
@@ -2771,6 +2803,7 @@ export class CanvasComponent {
       [ComponentType.KARPLUS_STRONG]: 'Karplus-Strong',
       [ComponentType.XY_PAD]: 'X-Y Pad',
       [ComponentType.NOTES]: 'Notes',
+      [ComponentType.CLOCK_DIVIDER]: 'Clock Divider',
     };
     return names[this.type] || 'Component';
   }

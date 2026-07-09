@@ -213,6 +213,11 @@ function getControlLayout(type: ComponentType): ControlLayout {
         hasDropdown: true, // 4 dropdowns: direction, octaves, rate, gate length
       };
 
+    case ComponentType.CLOCK_DIVIDER:
+      return {
+        hasDropdown: true, // 6 dropdowns, one per output's rate
+      };
+
     case ComponentType.POLY_OSCILLATOR:
       return {
         hasDropdown: true,
@@ -330,6 +335,9 @@ function getPortCounts(type: ComponentType): { inputs: number; outputs: number }
     case ComponentType.ARPEGGIATOR:
       return { inputs: 2, outputs: 2 }; // cv-in, gate-in / cv-out, gate-out
 
+    case ComponentType.CLOCK_DIVIDER:
+      return { inputs: 0, outputs: 6 }; // six independently-rated gate outputs, no inputs
+
     case ComponentType.POLY_OSCILLATOR:
       return { inputs: 1, outputs: 1 }; // poly-cv in / poly-audio out
 
@@ -426,6 +434,15 @@ export function calculateComponentHeight(type: ComponentType): number {
     // Each dropdown: 5 spacing + 12 label + 24 height + 8 gap = 49px; last one has no trailing gap
     const dropdownRowHeight = COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL + 12;
     return COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP + dropdownRowHeight * 4 + 10;
+  }
+
+  // Special case for Clock Divider: 6 dropdowns stacked vertically (one per output's rate),
+  // generalizing Arpeggiator's formula from 4 rows to 6 (research.md's layout decision)
+  if (type === ComponentType.CLOCK_DIVIDER) {
+    const maxPorts = Math.max(portCounts.inputs, portCounts.outputs);
+    const portAreaHeight = maxPorts * (COMPONENT.PORT_SIZE + COMPONENT.PORT_PADDING) + COMPONENT.PORT_PADDING;
+    const dropdownRowHeight = COMPONENT.DROPDOWN_HEIGHT + COMPONENT.CONTROL_SPACING_VERTICAL + 12;
+    return COMPONENT.HEADER_HEIGHT + portAreaHeight + COMPONENT.CONTROL_MARGIN_TOP + dropdownRowHeight * 6 + 10;
   }
 
   // Special case for ParametricEQ: 7 knobs across 3 rows (Low: 2, Mid: 3, High: 2)
@@ -590,6 +607,11 @@ export function calculateComponentWidth(type: ComponentType): number {
   // Notes: comfortable line length for a plain-text textarea
   if (type === ComponentType.NOTES) {
     width = 240;
+  }
+
+  // Clock Divider: wide enough for 6 rate-dropdown labels not to feel cramped
+  if (type === ComponentType.CLOCK_DIVIDER) {
+    width = 160;
   }
 
   return width;
