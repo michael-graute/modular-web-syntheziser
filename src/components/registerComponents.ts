@@ -22,6 +22,7 @@ import { ParametricEQ } from './processors/ParametricEQ';
 import { Looper } from './utilities/Looper';
 import { XYPad } from './utilities/XYPad';
 import { Notes } from './utilities/Notes';
+import { ClockDivider } from './utilities/ClockDivider';
 import { Delay } from './effects/Delay';
 import { Reverb } from './effects/Reverb';
 import { Distortion } from './effects/Distortion';
@@ -310,6 +311,15 @@ export function registerAllComponents(): void {
     'Controllers',
     (id, position) => new Arpeggiator(id, position),
     calculateComponentDimensions(ComponentType.ARPEGGIATOR)
+  );
+
+  componentRegistry.register(
+    ComponentType.CLOCK_DIVIDER,
+    'Clock Divider',
+    'Derives synchronized division/multiplication gate pulses from the shared tempo',
+    'Controllers',
+    (id, position) => new ClockDivider(id, position),
+    calculateComponentDimensions(ComponentType.CLOCK_DIVIDER)
   );
 
   // Analyzers

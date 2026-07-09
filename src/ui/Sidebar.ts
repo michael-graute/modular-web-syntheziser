@@ -174,6 +174,7 @@ export class Sidebar {
       [ComponentType.KARPLUS_STRONG]: '♪',
       [ComponentType.XY_PAD]: '⊞',
       [ComponentType.NOTES]: '✎',
+      [ComponentType.CLOCK_DIVIDER]: '⧗',
     };
     return icons[type] || '□';
   }
